@@ -1,3 +1,21 @@
 <resources>
     <string name="app_name">CodeBricks</string>
+
+    <string name="declare_variables">Объявление переменных</string>
+    <string name="variable_names">Имена переменных</string>
+    <string name="example_names">например: x, y, count</string>
+    <string name="default_value">По умолчанию: 0</string>
+    <string name="will_be_created">Будут созданы: %s</string>
+
+    <string name="error_min_one_var">Введите хотя бы одну переменную</string>
+    <string name="error_invalid_chars">Используйте буквы, цифры и _ (начинайте с буквы или _)</string>
+    <string name="error_duplicates">Дубликаты: %s</string>
+
+    <string name="variables_title">Переменные:</string>
+    <string name="no_variables">Нет переменных</string>
+
+    <string name="add_block">Добавить блок</string>
+    <string name="show_stats">Показать статистику</string>
+    <string name="stats_format">Создано переменных: %d</string>
+
 </resources>
