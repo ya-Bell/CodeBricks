@@ -1,0 +1,39 @@
+# System and IDE files
+.DS_Store
+*.iml
+.idea/
+.idea/caches
+.idea/libraries
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+misc.xml
+deploymentTargetDropDown.xml
+render.experimental.xml
+
+# Gradle files and directories
+.gradle/
+build/
+
+# Android Studio files
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+output.json
+local.properties
+
+# Logs
+*.log
+
+# Key files
+*.jks
+*.keystore
+
+# Google service files (e.g., Firebase)
+google-services.json
+
+# Android profiling
+*.hprof
+
