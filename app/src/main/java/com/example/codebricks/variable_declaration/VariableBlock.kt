@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -15,6 +17,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.*
 import java.util.*
 
@@ -28,7 +31,9 @@ data class VariableDeclarationBlock(
 @Composable
 fun DraggableVariableBlock(
     block: VariableDeclarationBlock,
-    onUpdate: (VariableDeclarationBlock) -> Unit
+    onUpdate: (VariableDeclarationBlock) -> Unit,
+    onDelete: (UUID) -> Unit,
+    canDelete: Boolean
 ) {
     var offset by remember { mutableStateOf(block.offset) }
     var text by remember { mutableStateOf(block.variableNames) }
@@ -55,76 +60,108 @@ fun DraggableVariableBlock(
                     shape = RoundedCornerShape(8.dp)
                 )
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    stringResource(R.string.declare_variables),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                OutlinedTextField(
-                    value = text,
-                    onValueChange = { newText ->
-                        text = newText
-                        val validatedBlock = validateVariableBlock(block.copy(variableNames = newText))
-                        onUpdate(validatedBlock)
-                        if (validatedBlock.error == null) {
-                            val names = newText.split(",")
-                                .map { it.trim() }
-                                .filter { it.isNotEmpty() }
-                            VariableManager.declareVariables(names)
-                        }
-                    },
-                    label = { Text(stringResource(R.string.variable_names)) },
-                    placeholder = { Text(stringResource(R.string.example_names)) },
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Text,
-                        imeAction = ImeAction.Done,
-                        autoCorrectEnabled = true
-                    ),
-                    isError = block.error != null,
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                if (block.error != null) {
-                    val names = text.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-                    val errorText = when (block.error) {
-                        "min_one_var" -> stringResource(R.string.error_min_one_var)
-                        "invalid_chars" -> stringResource(R.string.error_invalid_chars)
-                        "duplicates" -> {
-                            val duplicates = names.groupBy { it }.filter { it.value.size > 1 }.keys.joinToString()
-                            stringResource(R.string.error_duplicates, duplicates)
-                        }
-                        else -> block.error
+            Box {
+                if (canDelete) {
+                    IconButton(
+                        onClick = { onDelete(block.id) },
+                        modifier = Modifier.align(Alignment.TopEnd)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Close,
+                            contentDescription = stringResource(R.string.delete_block)
+                        )
                     }
+                }
+                Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = errorText,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.labelSmall,
-                        modifier = Modifier.padding(top = 4.dp)
+                        stringResource(R.string.declare_variables),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
-                } else if (text.isNotEmpty()) {
-                    val createdNames = text.split(",")
-                        .map { it.trim() }
-                        .filter { it.isNotEmpty() }
-                        .joinToString()
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedTextField(
+                        value = text,
+                        onValueChange = { newText ->
+                            text = newText
+                            val validatedBlock = validateVariableBlock(block.copy(variableNames = newText))
+                            onUpdate(validatedBlock)
+                        },
+                        label = { Text(stringResource(R.string.variable_names)) },
+                        placeholder = { Text(stringResource(R.string.example_names)) },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Text,
+                            imeAction = ImeAction.Done,
+                            autoCorrectEnabled = true
+                        ),
+                        isError = block.error != null,
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    if (block.error != null) {
+                        val names = text.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                        val errorText = when (block.error) {
+                            "min_one_var" -> stringResource(R.string.error_min_one_var)
+                            "invalid_chars" -> stringResource(R.string.error_invalid_chars)
+                            "duplicates" -> {
+                                val duplicates = names.groupBy { it }.filter { it.value.size > 1 }.keys.joinToString()
+                                stringResource(R.string.error_duplicates, duplicates)
+                            }
+                            else -> block.error
+                        }
+                        Text(
+                            text = errorText,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    } else if (text.isNotEmpty()) {
+                        val createdNames = text.split(",")
+                            .map { it.trim() }
+                            .filter { it.isNotEmpty() }
+                            .joinToString()
+                        Text(
+                            stringResource(R.string.will_be_created, createdNames),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+
                     Text(
-                        stringResource(R.string.will_be_created, createdNames),
+                        stringResource(R.string.default_value),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(top = 4.dp)
+                        modifier = Modifier.padding(top = 8.dp)
                     )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Button(
+                            onClick = {
+                                val names = text.split(",")
+                                    .map { it.trim() }
+                                    .filter { it.isNotEmpty() }
+                                VariableManager.declareVariables(names)
+                            },
+                            enabled = block.error == null && text.isNotBlank()
+                        ) {
+                            Text(stringResource(R.string.confirm))
+                        }
+                        Button(
+                            onClick = {
+                                VariableManager.clear()
+                            }
+                        ) {
+                            Text(stringResource(R.string.clear_variables))
+                        }
+                    }
                 }
-
-                Text(
-                    stringResource(R.string.default_value),
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
             }
         }
     }

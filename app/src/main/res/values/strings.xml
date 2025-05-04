@@ -18,4 +18,9 @@
     <string name="show_stats">Показать статистику</string>
     <string name="stats_format">Создано переменных: %d</string>
 
+    <string name="confirm">Подтвердить</string>
+    <string name="clear_variables">Очистить переменные</string>
+
+    <string name="delete_block">Удалить блок</string>
+
 </resources>

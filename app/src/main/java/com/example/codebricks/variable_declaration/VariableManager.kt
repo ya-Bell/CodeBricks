@@ -17,6 +17,10 @@ object VariableManager {
 
     fun getAllVariables(): Map<String, Int> = variables.toMap()
 
+    fun clear() {
+        variables.clear()
+        notifyListeners()
+    }
 
     fun addListener(listener: () -> Unit) {
         listeners.add(listener)

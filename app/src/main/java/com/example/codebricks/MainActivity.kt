@@ -36,15 +36,19 @@ class MainActivity : ComponentActivity() {
                 }
 
                 Box(Modifier.fillMaxSize()) {
-                    Box(Modifier.fillMaxSize()) {
-                        blocks.forEach { block ->
-                            DraggableVariableBlock(
-                                block = block,
-                                onUpdate = { updated ->
-                                    blocks = blocks.map { if (it.id == updated.id) updated else it }
+                    blocks.forEach { block ->
+                        DraggableVariableBlock(
+                            block = block,
+                            onUpdate = { updated ->
+                                blocks = blocks.map { if (it.id == updated.id) updated else it }
+                            },
+                            onDelete = { id ->
+                                if (blocks.size > 1) {
+                                    blocks = blocks.filter { it.id != id }
                                 }
-                            )
-                        }
+                            },
+                            canDelete = blocks.size > 1
+                        )
                     }
 
                     VariablePanel(
