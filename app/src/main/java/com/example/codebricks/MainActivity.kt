@@ -31,6 +31,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.codebricks.assignment.AssignmentBlock
 import com.example.codebricks.assignment.DraggableAssignmentBlock
+import com.example.codebricks.assignment.DraggableMultiAssignmentBlock
+import com.example.codebricks.assignment.MultiAssignmentBlock
 import com.example.codebricks.ui.theme.CodeBricksTheme
 import com.example.codebricks.variable_declaration.DraggableVariableBlock
 import com.example.codebricks.variable_declaration.VariableDeclarationBlock
@@ -44,6 +46,7 @@ class MainActivity : ComponentActivity() {
             CodeBricksTheme {
                 var blocks by remember { mutableStateOf(listOf(VariableDeclarationBlock())) }
                 var assignmentBlocks by remember { mutableStateOf(listOf<AssignmentBlock>()) }
+                var multiAssignmentBlocks by remember { mutableStateOf(listOf<MultiAssignmentBlock>()) }
                 val snackbarHostState = remember { SnackbarHostState() }
                 val coroutineScope = rememberCoroutineScope()
                 var variables by remember { mutableStateOf(VariableManager.getAllVariables()) }
@@ -89,6 +92,20 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
+                    multiAssignmentBlocks.forEach { block ->
+                        DraggableMultiAssignmentBlock(
+                            block = block,
+                            onUpdate = { updated ->
+                                multiAssignmentBlocks = multiAssignmentBlocks.map { if (it.id == updated.id) updated else it }
+                            },
+                            onDelete = { id ->
+                                multiAssignmentBlocks = multiAssignmentBlocks.filter { it.id != id }
+                            },
+                            canDelete = multiAssignmentBlocks.size > 1,
+                            variables = variables
+                        )
+                    }
+
                     VariablePanel(
                         variables = variables,
                         modifier = Modifier.align(Alignment.TopEnd)
@@ -113,6 +130,15 @@ class MainActivity : ComponentActivity() {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(stringResource(R.string.add_assignment_block))
+                        }
+
+                        Spacer(Modifier.height(8.dp))
+
+                        Button(
+                            onClick = { multiAssignmentBlocks = multiAssignmentBlocks + MultiAssignmentBlock() },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(stringResource(R.string.add_multi_assignment_block))
                         }
 
                         Spacer(Modifier.height(8.dp))
