@@ -23,4 +23,12 @@
 
     <string name="delete_block">Удалить блок</string>
 
+    <string name="assignment_operator">Оператор присваивания</string>
+    <string name="variable_name">Имя переменной</string>
+    <string name="arithmetic_expression">Арифметическое выражение</string>
+    <string name="example_expression">например: 5 + 3 или x * 2</string>
+    <string name="error_variable_not_found">Переменная не объявлена</string>
+    <string name="error_expression">Ошибка в выражении</string>
+    <string name="add_assignment_block">Добавить присваивание</string>
+
 </resources>

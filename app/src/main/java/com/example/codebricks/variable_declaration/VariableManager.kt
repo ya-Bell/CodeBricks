@@ -26,6 +26,14 @@ object VariableManager {
         listeners.add(listener)
     }
 
+    fun assign(name: String, value: Int) {
+        if (variables.containsKey(name)) {
+            variables[name] = value
+            notifyListeners()
+        }
+    }
+
+
     private fun notifyListeners() {
         listeners.forEach { it() }
     }
