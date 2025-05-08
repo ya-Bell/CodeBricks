@@ -1,8 +1,5 @@
 package com.example.codebricks.assignment
 
-//import androidx.compose.foundation.text.KeyboardOptions
-//import androidx.compose.ui.text.input.ImeAction
-//import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
@@ -53,13 +50,21 @@ fun DraggableAssignmentBlock(
     block: AssignmentBlock,
     onUpdate: (AssignmentBlock) -> Unit,
     onDelete: (UUID) -> Unit,
-    canDelete: Boolean,
-    variables: Map<String, Int>
+    vars: Map<String, Int>,
+    canDelete: Boolean
 ) {
     var offset by remember { mutableStateOf(block.offset) }
     var variableName by remember { mutableStateOf(block.variableName) }
     var expression by remember { mutableStateOf(block.expression) }
-    var error by remember { mutableStateOf<String?>(null) }
+    var errorCode by remember { mutableStateOf<String?>(null) }
+
+    val errorExprMsg = stringResource(R.string.error_expression)
+    val confirmText = stringResource(R.string.confirm)
+    val deleteBlockDesc = stringResource(R.string.delete_block)
+    val assignmentOperatorText = stringResource(R.string.assignment_operator)
+    val variableNameLabel = stringResource(R.string.variable_name)
+    val arithmeticExpressionLabel = stringResource(R.string.arithmetic_expression)
+    val exampleExpressionPlaceholder = stringResource(R.string.example_expression)
 
     Box(
         modifier = Modifier
@@ -77,133 +82,65 @@ fun DraggableAssignmentBlock(
                 .width(320.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .border(
-                    width = 1.dp,
-                    color = if (error != null) MaterialTheme.colorScheme.error
-                    else MaterialTheme.colorScheme.outline,
-                    shape = RoundedCornerShape(8.dp)
+                    1.dp,
+                    if (errorCode != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline,
+                    RoundedCornerShape(8.dp)
                 )
         ) {
             Box {
-                if (canDelete) {
-                    IconButton(
-                        onClick = { onDelete(block.id) },
-                        modifier = Modifier.align(Alignment.TopEnd)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Close,
-                            contentDescription = stringResource(R.string.delete_block)
-                        )
-                    }
+                IconButton(
+                    onClick = { onDelete(block.id) },
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Icon(Icons.Filled.Close, contentDescription = deleteBlockDesc)
                 }
                 Column(Modifier.padding(16.dp)) {
-                    Text(
-                        stringResource(R.string.assignment_operator),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
+                    Text(assignmentOperatorText, style = MaterialTheme.typography.titleMedium)
                     Spacer(Modifier.height(8.dp))
-
                     OutlinedTextField(
                         value = variableName,
                         onValueChange = {
                             variableName = it
-                            val validatedBlock = validateAssignmentBlock(block.copy(variableName = it), variables)
-                            onUpdate(validatedBlock)
+                            onUpdate(block.copy(variableName = it))
                         },
-                        label = { Text(stringResource(R.string.variable_name)) },
-                        singleLine = true,
-                        isError = error != null || block.error == "variable_not_found",
+                        label = { Text(variableNameLabel) },
+                        singleLine = canDelete,
+                        isError = errorCode != null,
                         modifier = Modifier.fillMaxWidth()
                     )
-
-                    if (block.error == "variable_not_found") {
-                        Text(
-                            stringResource(R.string.error_variable_not_found),
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.labelSmall,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
-                    }
-
                     Spacer(Modifier.height(8.dp))
-
                     OutlinedTextField(
                         value = expression,
                         onValueChange = {
                             expression = it
                             onUpdate(block.copy(expression = it))
                         },
-                        label = { Text(stringResource(R.string.arithmetic_expression)) },
-                        placeholder = { Text(stringResource(R.string.example_expression)) },
-                        singleLine = true,
-                        isError = error != null,
+                        label = { Text(arithmeticExpressionLabel) },
+                        placeholder = { Text(exampleExpressionPlaceholder) },
+                        singleLine = canDelete,
+                        isError = errorCode != null,
                         modifier = Modifier.fillMaxWidth()
                     )
-
                     Spacer(Modifier.height(8.dp))
-
-                    if (error != null) {
-                        Text(
-                            text = error!!,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.labelSmall,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
+                    if (errorCode != null) {
+                        Text(errorCode!!, color = MaterialTheme.colorScheme.error)
                     }
-
-                    val errorExpressionText = stringResource(R.string.error_expression)
-
                     Button(
                         onClick = {
                             try {
-                                val value = evaluateExpression(expression, variables)
+                                val value = ExpressionEvaluator.evaluate(expression, vars)
                                 VariableManager.assign(variableName, value)
-                                error = null
+                                errorCode = null
                             } catch (_: Exception) {
-                                error = errorExpressionText
+                                errorCode = errorExprMsg
                             }
                         },
-                        enabled = variableName.isNotBlank() && expression.isNotBlank() &&
-                                block.error == null && variables.containsKey(variableName)
+                        enabled = variableName.isNotBlank() && expression.isNotBlank()
                     ) {
-                        Text(stringResource(R.string.confirm))
+                        Text(confirmText)
                     }
                 }
             }
         }
     }
-}
-
-fun validateAssignmentBlock(block: AssignmentBlock, variables: Map<String, Int>): AssignmentBlock {
-    val errorCode = when {
-        block.variableName.isNotEmpty() && !variables.containsKey(block.variableName) -> "variable_not_found"
-        else -> null
-    }
-    return block.copy(error = errorCode)
-}
-
-fun evaluateExpression(expr: String, variables: Map<String, Int>): Int {
-    val tokens = expr.split(" ").filter { it.isNotBlank() }
-
-    if (tokens.size == 1) {
-        return tokens[0].toIntOrNull() ?: variables[tokens[0]] ?: 0
-    }
-
-    if (tokens.size == 3) {
-        val left = tokens[0].toIntOrNull() ?: variables[tokens[0]] ?: 0
-        val op = tokens[1]
-        val right = tokens[2].toIntOrNull() ?: variables[tokens[2]] ?: 0
-
-        return when (op) {
-            "+" -> left + right
-            "-" -> left - right
-            "*" -> left * right
-            "/" -> if (right != 0) left / right else 0
-            "%" -> if (right != 0) left % right else 0
-            else -> 0
-        }
-    }
-
-    return 0
 }

@@ -1,8 +1,5 @@
 package com.example.codebricks.assignment
 
-//import androidx.compose.foundation.text.KeyboardOptions
-//import androidx.compose.ui.text.input.ImeAction
-//import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
@@ -53,13 +50,22 @@ fun DraggableMultiAssignmentBlock(
     block: MultiAssignmentBlock,
     onUpdate: (MultiAssignmentBlock) -> Unit,
     onDelete: (UUID) -> Unit,
-    canDelete: Boolean,
-    variables: Map<String, Int>
+    vars: Map<String, Int>,
+    canDelete: Boolean
 ) {
     var offset by remember { mutableStateOf(block.offset) }
     var variableNames by remember { mutableStateOf(block.variableNames) }
     var expressions by remember { mutableStateOf(block.expressions) }
-    var errorCode by remember { mutableStateOf<String?>(null) }
+    var error by remember { mutableStateOf<String?>(null) }
+
+    val errorCountMsg = stringResource(R.string.multi_assignment_error_count)
+    val errorExprMsg = stringResource(R.string.multi_assignment_error_expr)
+    val confirmText = stringResource(R.string.confirm)
+    val deleteBlockDesc = stringResource(R.string.delete_block)
+    val multiAssignOperatorText = stringResource(R.string.multi_assignment_operator)
+    val varNamesLabel = stringResource(R.string.multi_assignment_varnames)
+    val exprsLabel = stringResource(R.string.multi_assignment_exprs)
+    val exampleNamesPlaceholder = stringResource(R.string.example_names)
 
     Box(
         modifier = Modifier
@@ -77,101 +83,72 @@ fun DraggableMultiAssignmentBlock(
                 .width(340.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .border(
-                    width = 1.dp,
-                    color = if (errorCode != null) MaterialTheme.colorScheme.error
-                    else MaterialTheme.colorScheme.outline,
-                    shape = RoundedCornerShape(8.dp)
+                    1.dp,
+                    if (error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.outline,
+                    RoundedCornerShape(8.dp)
                 )
         ) {
             Box {
-                if (canDelete) {
-                    IconButton(
-                        onClick = { onDelete(block.id) },
-                        modifier = Modifier.align(Alignment.TopEnd)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Close,
-                            contentDescription = stringResource(R.string.delete_block)
-                        )
-                    }
+                IconButton(
+                    onClick = { onDelete(block.id) },
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Icon(Icons.Filled.Close, contentDescription = deleteBlockDesc)
                 }
                 Column(Modifier.padding(16.dp)) {
-                    Text(
-                        stringResource(R.string.multi_assignment_operator),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
+                    Text(multiAssignOperatorText, style = MaterialTheme.typography.titleMedium)
                     Spacer(Modifier.height(8.dp))
-
                     OutlinedTextField(
                         value = variableNames,
                         onValueChange = {
                             variableNames = it
                             onUpdate(block.copy(variableNames = it))
                         },
-                        label = { Text(stringResource(R.string.multi_assignment_varnames)) },
-                        placeholder = { Text(stringResource(R.string.example_names)) },
-                        singleLine = true,
+                        label = { Text(varNamesLabel) },
+                        placeholder = { Text(exampleNamesPlaceholder) },
+                        singleLine = canDelete,
                         modifier = Modifier.fillMaxWidth()
                     )
-
                     Spacer(Modifier.height(8.dp))
-
                     OutlinedTextField(
                         value = expressions,
                         onValueChange = {
                             expressions = it
                             onUpdate(block.copy(expressions = it))
                         },
-                        label = { Text(stringResource(R.string.multi_assignment_exprs)) },
+                        label = { Text(exprsLabel) },
                         placeholder = { Text("3+2\n4+6\na+b") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(96.dp)
+                        modifier = Modifier.fillMaxWidth().height(96.dp)
                     )
-
                     Spacer(Modifier.height(8.dp))
-
-                    if (errorCode != null) {
-                        val errorText = when (errorCode) {
-                            "count_mismatch" -> stringResource(R.string.multi_assignment_error_count)
-                            "expr_error" -> stringResource(R.string.multi_assignment_error_expr)
-                            else -> errorCode
-                        }
-                        Text(
-                            text = errorText.toString(),
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.labelSmall,
-                            modifier = Modifier.padding(bottom = 8.dp)
-                        )
+                    if (error != null) {
+                        Text(error!!, color = MaterialTheme.colorScheme.error)
                     }
-
                     Button(
                         onClick = {
                             val names = variableNames.split(",").map { it.trim() }.filter { it.isNotEmpty() }
                             val exprs = expressions.lines().map { it.trim() }.filter { it.isNotEmpty() }
                             if (names.size != exprs.size) {
-                                errorCode = "count_mismatch"
+                                error = errorCountMsg
                             } else {
-                                val tempVars = variables.toMutableMap()
+                                val tempVars = vars.toMutableMap()
                                 try {
                                     for (i in names.indices) {
-                                        val value = evaluateExpression(exprs[i], tempVars)
+                                        val value = ExpressionEvaluator.evaluate(exprs[i], tempVars)
                                         tempVars[names[i]] = value
                                     }
                                     for (i in names.indices) {
                                         VariableManager.assign(names[i], tempVars[names[i]] ?: 0)
                                     }
-                                    errorCode = null
+                                    error = null
                                 } catch (_: Exception) {
-                                    errorCode = "expr_error"
+                                    error = errorExprMsg
                                 }
                             }
                         },
                         enabled = variableNames.isNotBlank() && expressions.isNotBlank()
                     ) {
-                        Text(stringResource(R.string.confirm))
+                        Text(confirmText)
                     }
                 }
             }

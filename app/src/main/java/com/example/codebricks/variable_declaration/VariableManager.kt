@@ -1,40 +1,23 @@
 package com.example.codebricks.variable_declaration
 
 object VariableManager {
-    private val variables = mutableMapOf<String, Int>()
+    private val vars = mutableMapOf<String, Int>()
     private val listeners = mutableListOf<() -> Unit>()
 
-    fun declareVariables(names: List<String>) {
+    fun declare(names: List<String>) {
         var changed = false
-        names.forEach { name ->
-            if (!variables.containsKey(name)) {
-                variables[name] = 0
-                changed = true
-            }
-        }
-        if (changed) notifyListeners()
-    }
-
-    fun getAllVariables(): Map<String, Int> = variables.toMap()
-
-    fun clear() {
-        variables.clear()
-        notifyListeners()
-    }
-
-    fun addListener(listener: () -> Unit) {
-        listeners.add(listener)
+        for (n in names) if (vars.putIfAbsent(n, 0) == null) changed = true
+        if (changed) listeners.forEach { it() }
     }
 
     fun assign(name: String, value: Int) {
-        if (variables.containsKey(name)) {
-            variables[name] = value
-            notifyListeners()
+        if (vars.containsKey(name)) {
+            vars[name] = value
+            listeners.forEach { it() }
         }
     }
 
-
-    private fun notifyListeners() {
-        listeners.forEach { it() }
-    }
+    fun clear() { vars.clear(); listeners.forEach { it() } }
+    fun all() = vars.toMap()
+    fun addListener(l: () -> Unit) { listeners.add(l) }
 }
