@@ -87,7 +87,7 @@ In the future, we plan to integrate GitHub Actions or another CI/CD tool for aut
 - [ ] Implement `If` block with condition and nested commands
 - [ ] Visual grouping of nested blocks (Begin-End or similar)
 - [ ] Show current values of variables in UI
-- 
+
 **Advanced ("Bubble Sort" level):**
 - [ ] Implement `While` or `For` loops
 - [ ] Implement `If-Else`
