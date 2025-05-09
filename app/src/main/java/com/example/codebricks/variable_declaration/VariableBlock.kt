@@ -1,25 +1,42 @@
 package com.example.codebricks.variable_declaration
 
-import com.example.codebricks.R
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.unit.*
-import java.util.*
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
+import com.example.codebricks.R
+import java.util.UUID
 
 data class VariableDeclarationBlock(
     val id: UUID = UUID.randomUUID(),
@@ -33,14 +50,14 @@ fun DraggableVariableBlock(
     block: VariableDeclarationBlock,
     onUpdate: (VariableDeclarationBlock) -> Unit,
     onDelete: (UUID) -> Unit,
-    canDelete: Boolean
+    canDelete: Boolean,
 ) {
     var offset by remember { mutableStateOf(block.offset) }
     var text by remember { mutableStateOf(block.variableNames) }
 
     Box(
         modifier = Modifier
-            .offset { offset.toIntOffset() }
+            .offset { IntOffset(offset.x.toInt(), offset.y.toInt()) }
             .pointerInput(Unit) {
                 detectDragGestures { change, dragAmount ->
                     change.consume()
@@ -61,26 +78,15 @@ fun DraggableVariableBlock(
                 )
         ) {
             Box {
-                if (canDelete) {
-                    IconButton(
-                        onClick = { onDelete(block.id) },
-                        modifier = Modifier.align(Alignment.TopEnd)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.Close,
-                            contentDescription = stringResource(R.string.delete_block)
-                        )
-                    }
+                IconButton(
+                    onClick = { onDelete(block.id) },
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.delete_block))
                 }
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        stringResource(R.string.declare_variables),
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
+                    Text(stringResource(R.string.declare_variables), style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
-
                     OutlinedTextField(
                         value = text,
                         onValueChange = { newText ->
@@ -90,16 +96,10 @@ fun DraggableVariableBlock(
                         },
                         label = { Text(stringResource(R.string.variable_names)) },
                         placeholder = { Text(stringResource(R.string.example_names)) },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Text,
-                            imeAction = ImeAction.Done,
-                            autoCorrectEnabled = true
-                        ),
                         isError = block.error != null,
-                        singleLine = true,
+                        singleLine = canDelete,
                         modifier = Modifier.fillMaxWidth()
                     )
-
                     if (block.error != null) {
                         val names = text.split(",").map { it.trim() }.filter { it.isNotEmpty() }
                         val errorText = when (block.error) {
@@ -111,53 +111,24 @@ fun DraggableVariableBlock(
                             }
                             else -> block.error
                         }
-                        Text(
-                            text = errorText,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.labelSmall,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
+                        Text(errorText, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.labelSmall, modifier = Modifier.padding(top = 4.dp))
                     } else if (text.isNotEmpty()) {
-                        val createdNames = text.split(",")
-                            .map { it.trim() }
-                            .filter { it.isNotEmpty() }
-                            .joinToString()
-                        Text(
-                            stringResource(R.string.will_be_created, createdNames),
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(top = 4.dp)
-                        )
+                        val createdNames = text.split(",").map { it.trim() }.filter { it.isNotEmpty() }.joinToString()
+                        Text(stringResource(R.string.will_be_created, createdNames), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 4.dp))
                     }
-
-                    Text(
-                        stringResource(R.string.default_value),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(top = 8.dp)
-                    )
+                    Text(stringResource(R.string.default_value), color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 8.dp))
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Button(
                             onClick = {
-                                val names = text.split(",")
-                                    .map { it.trim() }
-                                    .filter { it.isNotEmpty() }
-                                VariableManager.declareVariables(names)
+                                val names = text.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                                VariableManager.declare(names)
                             },
                             enabled = block.error == null && text.isNotBlank()
-                        ) {
-                            Text(stringResource(R.string.confirm))
-                        }
-                        Button(
-                            onClick = {
-                                VariableManager.clear()
-                            }
-                        ) {
+                        ) { Text(stringResource(R.string.confirm)) }
+                        Button(onClick = { VariableManager.clear() }) {
                             Text(stringResource(R.string.clear_variables))
                         }
                     }
@@ -165,20 +136,4 @@ fun DraggableVariableBlock(
             }
         }
     }
-}
-
-private fun Offset.toIntOffset() = IntOffset(x.toInt(), y.toInt())
-
-fun validateVariableBlock(block: VariableDeclarationBlock): VariableDeclarationBlock {
-    val names = block.variableNames.split(",")
-        .map { it.trim() }
-        .filter { it.isNotEmpty() }
-
-    val errorCode = when {
-        names.isEmpty() -> "min_one_var"
-        names.any { !it.matches(Regex("^[\\p{L}_][\\p{L}0-9_]*$")) } -> "invalid_chars"
-        names.groupBy { it }.any { it.value.size > 1 } -> "duplicates"
-        else -> null
-    }
-    return block.copy(error = errorCode)
 }

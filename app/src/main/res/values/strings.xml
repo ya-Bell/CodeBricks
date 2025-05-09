@@ -20,7 +20,20 @@
 
     <string name="confirm">Подтвердить</string>
     <string name="clear_variables">Очистить переменные</string>
-
     <string name="delete_block">Удалить блок</string>
 
+    <string name="assignment_operator">Оператор присваивания</string>
+    <string name="variable_name">Имя переменной</string>
+    <string name="arithmetic_expression">Арифметическое выражение</string>
+    <string name="example_expression">например: 5 + 3 или x * 2</string>
+    <string name="error_variable_not_found">Переменная не объявлена</string>
+    <string name="error_expression">Ошибка в выражении</string>
+    <string name="add_assignment_block">Добавить присваивание</string>
+
+    <string name="multi_assignment_operator">Множественное присваивание</string>
+    <string name="multi_assignment_varnames">Имена переменных (через запятую)</string>
+    <string name="multi_assignment_exprs">Выражения (по одному на строку)</string>
+    <string name="multi_assignment_error_count">Количество переменных и выражений должно совпадать</string>
+    <string name="multi_assignment_error_expr">Ошибка в выражении</string>
+    <string name="add_multi_assignment_block">Добавить множественное присваивание</string>
 </resources>
