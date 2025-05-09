@@ -14,7 +14,7 @@ The project is designed to help learn the basics of algorithmic thinking.
 ## 📜 Content
 - [🌐 Technologies](#-technologies)
 - [☕ Getting Started](#-getting-started)
-- [🛠️ Development](#-development)
+- [🔧 Development](#-development)
 - [📦 Deploy и CI/CD](#-deploy--cicd)
 - [✅ Completed](#-completed)
 - [🔜 In Progress / To Do](#-in-progress--to-do)
@@ -37,7 +37,7 @@ The project is designed to help learn the basics of algorithmic thinking.
 > The app may work on Android 5.0+ (API 21+), but API 29+ is recommended for stable Compose behavior.
 
 
-## 🛠️ Development
+## 🔧 Development
 ### Installation
 1. Clone the repository:
     ```bash
