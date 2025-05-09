@@ -36,4 +36,19 @@
     <string name="multi_assignment_error_count">Количество переменных и выражений должно совпадать</string>
     <string name="multi_assignment_error_expr">Ошибка в выражении</string>
     <string name="add_multi_assignment_block">Добавить множественное присваивание</string>
+
+    <string name="add_input_block">Добавить ввод</string>
+    <string name="add_output_block">Добавить вывод</string>
+    <string name="input_block_title">Ввод</string>
+    <string name="output_block_title">Вывод</string>
+    <string name="input_variables_label">Имена переменных (через запятую)</string>
+    <string name="button_enter_values">Ввести значения</string>
+    <string name="button_show_values">Показать значения</string>
+    <string name="variable_not_declared">не объявлена</string>
+    <string name="enter_variable_values">Введите значения переменных</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Отмена</string>
+    <string name="example_vars">a, b, c</string>
+
+
 </resources>
