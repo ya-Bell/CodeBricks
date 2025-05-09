@@ -11,7 +11,7 @@ It allows you to create simple programs without writing code — using variables
 The project is designed to help learn the basics of algorithmic thinking.
 
 
-## 📜 Содержание
+## 📜 Content
 - [🌐 Technologies](#-technologies)
 - [☕ Getting Started](#-getting-started)
 - [🛠️ Development](#-development)
