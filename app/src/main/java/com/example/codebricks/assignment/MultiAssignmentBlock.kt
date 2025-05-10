@@ -66,6 +66,7 @@ fun DraggableMultiAssignmentBlock(
     val varNamesLabel = stringResource(R.string.multi_assignment_varnames)
     val exprsLabel = stringResource(R.string.multi_assignment_exprs)
     val exampleNamesPlaceholder = stringResource(R.string.example_names)
+    val exprsHintText = stringResource(R.string.multi_line_placeholder)
 
     Box(
         modifier = Modifier
@@ -117,7 +118,7 @@ fun DraggableMultiAssignmentBlock(
                             onUpdate(block.copy(expressions = it))
                         },
                         label = { Text(exprsLabel) },
-                        placeholder = { Text("3+2\n4+6\na+b") },
+                        placeholder = { Text(exprsHintText) },
                         modifier = Modifier.fillMaxWidth().height(96.dp)
                     )
                     Spacer(Modifier.height(8.dp))

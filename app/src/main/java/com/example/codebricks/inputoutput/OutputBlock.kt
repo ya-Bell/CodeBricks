@@ -7,14 +7,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
@@ -56,14 +53,7 @@ fun DraggableOutputBlock(
 ) {
     var offset by remember { mutableStateOf(block.offset) }
     var variableNames by remember { mutableStateOf(block.variableNames) }
-    val scrollState = rememberScrollState()
     var output by remember { mutableStateOf<String?>(null) }
-
-    val deleteBlockDesc = stringResource(R.string.delete_block)
-    val outputBlockTitle = stringResource(R.string.output_block_title)
-    val inputVariablesLabel = stringResource(R.string.input_variables_label)
-    val buttonShowValues = stringResource(R.string.button_show_values)
-    val variableNotDeclared = stringResource(R.string.variable_not_declared)
 
     Box(
         modifier = Modifier
@@ -78,21 +68,20 @@ fun DraggableOutputBlock(
     ) {
         Card(
             modifier = Modifier
-                .width(320.dp)
+                .width(280.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
         ) {
             Column(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .heightIn(max = 400.dp)
-                    .verticalScroll(scrollState)
+                modifier = Modifier.padding(12.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp)
-                ) {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = stringResource(R.string.output_block_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    )
+
                     if (canDelete) {
                         IconButton(
                             onClick = {
@@ -105,14 +94,13 @@ fun DraggableOutputBlock(
                         ) {
                             Icon(
                                 imageVector = Icons.Filled.Close,
-                                contentDescription = deleteBlockDesc,
+                                contentDescription = stringResource(R.string.delete_block),
                                 tint = MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
                 }
 
-                Text(outputBlockTitle, style = MaterialTheme.typography.titleMedium)
                 Spacer(Modifier.height(8.dp))
 
                 OutlinedTextField(
@@ -120,8 +108,9 @@ fun DraggableOutputBlock(
                     onValueChange = {
                         variableNames = it
                         onUpdate(block.copy(variableNames = it))
+                        output = null
                     },
-                    label = { Text(inputVariablesLabel) },
+                    label = { Text(stringResource(R.string.input_variables_label)) },
                     placeholder = { Text(stringResource(R.string.example_vars)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
@@ -129,21 +118,36 @@ fun DraggableOutputBlock(
 
                 Spacer(Modifier.height(8.dp))
 
+                val notDeclaredText = stringResource(R.string.variable_not_declared)
+
                 Button(
                     onClick = {
-                        val names = variableNames.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-                        output = names.joinToString(", ") { name ->
-                            "$name = ${vars[name]?.toString() ?: variableNotDeclared}"
+
+                        val names = variableNames.split(",")
+                            .map { it.trim() }
+                            .filter { it.isNotEmpty() }
+
+                        val result = StringBuilder()
+
+                        for (name in names) {
+                            val value = vars[name]?.toString() ?: notDeclaredText
+                            result.append("$name = $value\n")
                         }
+
+                        output = result.toString().trim()
                     },
+                    modifier = Modifier.fillMaxWidth(),
                     enabled = variableNames.isNotBlank()
                 ) {
-                    Text(buttonShowValues)
+                    Text(stringResource(R.string.button_show_values))
                 }
 
-                if (!output.isNullOrEmpty()) {
+                output?.let {
                     Spacer(Modifier.height(8.dp))
-                    Text(output!!)
+                    Text(
+                        text = it,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
                 }
             }
         }

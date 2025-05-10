@@ -29,6 +29,7 @@
     <string name="error_variable_not_found">Переменная не объявлена</string>
     <string name="error_expression">Ошибка в выражении</string>
     <string name="add_assignment_block">Добавить присваивание</string>
+    <string name="multi_line_placeholder">3+2\na+b</string>
 
     <string name="multi_assignment_operator">Множественное присваивание</string>
     <string name="multi_assignment_varnames">Имена переменных (через запятую)</string>

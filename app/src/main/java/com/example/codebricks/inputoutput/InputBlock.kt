@@ -7,14 +7,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
@@ -56,7 +53,6 @@ fun DraggableInputBlock(
 ) {
     var offset by remember { mutableStateOf(block.offset) }
     var variableNames by remember { mutableStateOf(block.variableNames) }
-    val scrollState = rememberScrollState()
 
     Box(
         modifier = Modifier
@@ -71,41 +67,37 @@ fun DraggableInputBlock(
     ) {
         Card(
             modifier = Modifier
-                .width(320.dp)
+                .width(280.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
         ) {
             Column(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .heightIn(max = 400.dp)
-                    .verticalScroll(scrollState)
+                modifier = Modifier.padding(12.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp)
-                ) {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = stringResource(R.string.input_block_title),
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.align(Alignment.CenterStart)
+                    )
+
                     if (canDelete) {
                         IconButton(
                             onClick = { onDelete(block.id) },
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
-                                .size(24.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Close,
-                                contentDescription = stringResource(R.string.delete_block),
-                                tint = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
+                                .size(24.dp),
+                            content = {
+                                Icon(
+                                    imageVector = Icons.Filled.Close,
+                                    contentDescription = stringResource(R.string.delete_block),
+                                    tint = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        )
                     }
                 }
 
-                Text(
-                    text = stringResource(R.string.input_block_title),
-                    style = MaterialTheme.typography.titleMedium
-                )
                 Spacer(Modifier.height(8.dp))
 
                 OutlinedTextField(
@@ -127,6 +119,7 @@ fun DraggableInputBlock(
                         val names = variableNames.split(",").map { it.trim() }.filter { it.isNotEmpty() }
                         if (names.isNotEmpty()) onInput(names)
                     },
+                    modifier = Modifier.fillMaxWidth(),
                     enabled = variableNames.isNotBlank()
                 ) {
                     Text(stringResource(R.string.button_enter_values))
