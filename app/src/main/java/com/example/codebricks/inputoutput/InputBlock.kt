@@ -7,8 +7,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -73,41 +75,61 @@ fun DraggableInputBlock(
                 .clip(RoundedCornerShape(8.dp))
                 .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
         ) {
-            Box {
-                IconButton(
-                    onClick = { onDelete(block.id) },
-                    modifier = Modifier.align(Alignment.TopEnd)
-                ) {
-                    Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.delete_block))
-                }
-                Column(
+            Column(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .heightIn(max = 400.dp)
+                    .verticalScroll(scrollState)
+            ) {
+                Box(
                     modifier = Modifier
-                        .padding(16.dp)
-                        .verticalScroll(scrollState)
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
                 ) {
-                    Text(stringResource(R.string.input_block_title), style = MaterialTheme.typography.titleMedium)
-                    Spacer(Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = variableNames,
-                        onValueChange = {
-                            variableNames = it
-                            onUpdate(block.copy(variableNames = it))
-                        },
-                        label = { Text(stringResource(R.string.input_variables_label)) },
-                        placeholder = { Text(stringResource(R.string.example_vars)) },
-                        singleLine = canDelete,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    Button(
-                        onClick = {
-                            val names = variableNames.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-                            onInput(names)
-                        },
-                        enabled = variableNames.isNotBlank()
-                    ) {
-                        Text(stringResource(R.string.button_enter_values))
+                    if (canDelete) {
+                        IconButton(
+                            onClick = { onDelete(block.id) },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Close,
+                                contentDescription = stringResource(R.string.delete_block),
+                                tint = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
                     }
+                }
+
+                Text(
+                    text = stringResource(R.string.input_block_title),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Spacer(Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = variableNames,
+                    onValueChange = {
+                        variableNames = it
+                        onUpdate(block.copy(variableNames = it))
+                    },
+                    label = { Text(stringResource(R.string.input_variables_label)) },
+                    placeholder = { Text(stringResource(R.string.example_vars)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                Button(
+                    onClick = {
+                        val names = variableNames.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+                        if (names.isNotEmpty()) onInput(names)
+                    },
+                    enabled = variableNames.isNotBlank()
+                ) {
+                    Text(stringResource(R.string.button_enter_values))
                 }
             }
         }
