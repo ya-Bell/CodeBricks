@@ -50,6 +50,6 @@
     <string name="ok">OK</string>
     <string name="cancel">Отмена</string>
     <string name="example_vars">a, b, c</string>
-
+    <string name="placeholder_number">например: 123</string>
 
 </resources>
