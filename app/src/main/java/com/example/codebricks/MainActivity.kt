@@ -28,6 +28,11 @@ import com.example.codebricks.assignment.AssignmentBlock
 import com.example.codebricks.assignment.DraggableAssignmentBlock
 import com.example.codebricks.assignment.DraggableMultiAssignmentBlock
 import com.example.codebricks.assignment.MultiAssignmentBlock
+import com.example.codebricks.inputoutput.DraggableInputBlock
+import com.example.codebricks.inputoutput.DraggableOutputBlock
+import com.example.codebricks.inputoutput.InputBlock
+import com.example.codebricks.inputoutput.InputDialog
+import com.example.codebricks.inputoutput.OutputBlock
 import com.example.codebricks.ui.theme.CodeBricksTheme
 import com.example.codebricks.variable_declaration.DraggableVariableBlock
 import com.example.codebricks.variable_declaration.VariableDeclarationBlock
@@ -40,17 +45,25 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             CodeBricksTheme {
+                val snackbarHostState = remember { SnackbarHostState() }
+                val coroutineScope = rememberCoroutineScope()
+
                 var blocks by remember { mutableStateOf(listOf(VariableDeclarationBlock())) }
                 var assignmentBlocks by remember { mutableStateOf(listOf<AssignmentBlock>()) }
                 var multiAssignmentBlocks by remember { mutableStateOf(listOf<MultiAssignmentBlock>()) }
-                val snackbarHostState = remember { SnackbarHostState() }
-                val coroutineScope = rememberCoroutineScope()
+                var inputBlocks by remember { mutableStateOf(listOf<InputBlock>()) }
+                var outputBlocks by remember { mutableStateOf(listOf<OutputBlock>()) }
+
                 var vars by remember { mutableStateOf(VariableManager.all()) }
-                val statsText = stringResource(R.string.stats_format, vars.size)
+                var showInputDialog by remember { mutableStateOf(false) }
+                var inputNames by remember { mutableStateOf(listOf<String>()) }
+                var inputCallback by remember { mutableStateOf<(Map<String, Int>) -> Unit>({}) }
 
                 LaunchedEffect(Unit) {
                     VariableManager.addListener { vars = VariableManager.all() }
                 }
+
+                val statsText = stringResource(R.string.stats_format, vars.size)
 
                 Box(Modifier.fillMaxSize()) {
                     blocks.forEach { block ->
@@ -79,9 +92,46 @@ class MainActivity : ComponentActivity() {
                             vars = vars
                         )
                     }
+                    inputBlocks.forEach { block ->
+                        DraggableInputBlock(
+                            block = block,
+                            onUpdate = { updated -> inputBlocks = inputBlocks.map { if (it.id == updated.id) updated else it } },
+                            onDelete = { id -> inputBlocks = inputBlocks.filter { it.id != id } },
+                            onInput = { names ->
+                                inputNames = names
+                                showInputDialog = true
+                            },
+                            canDelete = true
+                        )
+                    }
+                    outputBlocks.forEach { block ->
+                        DraggableOutputBlock(
+                            block = block,
+                            onUpdate = { updated -> outputBlocks = outputBlocks.map { if (it.id == updated.id) updated else it } },
+                            onDelete = { id -> outputBlocks = outputBlocks.filter { it.id != id } },
+                            vars = vars,
+                            canDelete = true
+                        )
+                    }
+
+                    if (showInputDialog) {
+                        InputDialog(
+                            variableNames = inputNames,
+                            onConfirm = { values ->
+                                values.forEach { (name, value) -> VariableManager.assign(name, value) }
+                                showInputDialog = false
+                                inputCallback(values)
+                            },
+                            onDismiss = { showInputDialog = false }
+                        )
+                    }
+
                     VariablePanel(vars = vars, modifier = Modifier.align(Alignment.TopEnd))
+
                     Column(
-                        modifier = Modifier.align(Alignment.BottomStart).padding(16.dp)
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(16.dp)
                     ) {
                         Button(
                             onClick = { blocks = blocks + VariableDeclarationBlock() },
@@ -99,10 +149,21 @@ class MainActivity : ComponentActivity() {
                         ) { Text(stringResource(R.string.add_multi_assignment_block)) }
                         Spacer(Modifier.height(8.dp))
                         Button(
+                            onClick = { inputBlocks = inputBlocks + InputBlock() },
+                            modifier = Modifier.fillMaxWidth()
+                        ) { Text(stringResource(R.string.add_input_block)) }
+                        Spacer(Modifier.height(8.dp))
+                        Button(
+                            onClick = { outputBlocks = outputBlocks + OutputBlock() },
+                            modifier = Modifier.fillMaxWidth()
+                        ) { Text(stringResource(R.string.add_output_block)) }
+                        Spacer(Modifier.height(8.dp))
+                        Button(
                             onClick = { coroutineScope.launch { snackbarHostState.showSnackbar(statsText) } },
                             modifier = Modifier.fillMaxWidth()
                         ) { Text(stringResource(R.string.show_stats)) }
                     }
+
                     SnackbarHost(
                         hostState = snackbarHostState,
                         modifier = Modifier.align(Alignment.BottomCenter)
