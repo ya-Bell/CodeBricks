@@ -45,7 +45,7 @@ fun DraggableIfBlock(
 ) {
     var offset by remember { mutableStateOf(block.offset) }
     var condition by remember { mutableStateOf(block.condition) }
-    var result by remember { mutableStateOf<String?>(null) }
+    var result by remember { mutableStateOf<ConditionEvaluator.Result?>(null) }
 
     val errorNoOperator = stringResource(R.string.error_no_operator)
     val errorInvalidFormat = stringResource(R.string.error_invalid_format)
@@ -128,7 +128,11 @@ fun DraggableIfBlock(
                 }
                 result?.let {
                     Spacer(Modifier.height(8.dp))
-                    Text(text = it)
+                    Text(
+                        text = it.text,
+                        color = it.color,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
                 }
             }
         }

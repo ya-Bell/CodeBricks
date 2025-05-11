@@ -148,33 +148,34 @@ class MainActivity : ComponentActivity() {
                             onClick = { blocks = blocks + VariableDeclarationBlock() },
                             modifier = Modifier.fillMaxWidth()
                         ) { Text(stringResource(R.string.add_block)) }
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(6.dp))
                         Button(
                             onClick = { assignmentBlocks = assignmentBlocks + AssignmentBlock() },
                             modifier = Modifier.fillMaxWidth()
                         ) { Text(stringResource(R.string.add_assignment_block)) }
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(6.dp))
                         Button(
                             onClick = { multiAssignmentBlocks = multiAssignmentBlocks + MultiAssignmentBlock() },
                             modifier = Modifier.fillMaxWidth()
                         ) { Text(stringResource(R.string.add_multi_assignment_block)) }
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(6.dp))
                         Button(
                             onClick = { inputBlocks = inputBlocks + InputBlock() },
                             modifier = Modifier.fillMaxWidth()
                         ) { Text(stringResource(R.string.add_input_block)) }
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(6.dp))
                         Button(
                             onClick = { outputBlocks = outputBlocks + OutputBlock() },
                             modifier = Modifier.fillMaxWidth()
                         ) { Text(stringResource(R.string.add_output_block)) }
+                        Spacer(Modifier.height(6.dp))
                         Button(
                             onClick = { ifBlocks = ifBlocks + IfBlock() },
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(stringResource(R.string.add_if_block))
                         }
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(6.dp))
                         Button(
                             onClick = { coroutineScope.launch { snackbarHostState.showSnackbar(statsText) } },
                             modifier = Modifier.fillMaxWidth()
