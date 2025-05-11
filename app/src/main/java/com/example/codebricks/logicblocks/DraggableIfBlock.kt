@@ -45,6 +45,13 @@ fun DraggableIfBlock(
 ) {
     var offset by remember { mutableStateOf(block.offset) }
     var condition by remember { mutableStateOf(block.condition) }
+    var result by remember { mutableStateOf<String?>(null) }
+
+    val errorNoOperator = stringResource(R.string.error_no_operator)
+    val errorInvalidFormat = stringResource(R.string.error_invalid_format)
+    val errorVarNotFound = stringResource(R.string.error_variable_not_found2)
+    val conditionTrue = stringResource(R.string.condition_true)
+    val conditionFalse = stringResource(R.string.condition_false)
 
     Box(
         modifier = Modifier
@@ -93,6 +100,7 @@ fun DraggableIfBlock(
                     onValueChange = {
                         condition = it
                         onUpdate(block.copy(condition = it))
+                        result = null
                     },
                     label = { Text(stringResource(R.string.condition_label)) },
                     placeholder = { Text(stringResource(R.string.condition_placeholder)) },
@@ -103,11 +111,24 @@ fun DraggableIfBlock(
                 Spacer(Modifier.height(8.dp))
 
                 Button(
-                    onClick = {},
+                    onClick = {
+                        result = ConditionEvaluator.evaluate(
+                            input = condition,
+                            errorNoOperator = errorNoOperator,
+                            errorInvalidFormat = errorInvalidFormat,
+                            errorVarNotFound = errorVarNotFound,
+                            conditionTrue = conditionTrue,
+                            conditionFalse = conditionFalse
+                        )
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     enabled = condition.isNotBlank()
                 ) {
                     Text(stringResource(R.string.check_condition))
+                }
+                result?.let {
+                    Spacer(Modifier.height(8.dp))
+                    Text(text = it)
                 }
             }
         }
