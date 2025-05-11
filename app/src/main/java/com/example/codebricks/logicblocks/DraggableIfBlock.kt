@@ -29,11 +29,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.codebricks.R
+import com.example.codebricks.inputoutput.DraggableOutputBlock
+import com.example.codebricks.inputoutput.OutputBlock
 import java.util.UUID
 
 @Composable
@@ -41,11 +44,13 @@ fun DraggableIfBlock(
     block: IfBlock,
     onUpdate: (IfBlock) -> Unit,
     onDelete: (UUID) -> Unit,
-    canDelete: Boolean
+    canDelete: Boolean,
+    vars: Map<String, Int>
 ) {
     var offset by remember { mutableStateOf(block.offset) }
     var condition by remember { mutableStateOf(block.condition) }
     var result by remember { mutableStateOf<ConditionEvaluator.Result?>(null) }
+    var innerBlocks by remember { mutableStateOf(block.innerBlocks) }
 
     val errorNoOperator = stringResource(R.string.error_no_operator)
     val errorInvalidFormat = stringResource(R.string.error_invalid_format)
@@ -66,7 +71,7 @@ fun DraggableIfBlock(
     ) {
         Card(
             modifier = Modifier
-                .width(280.dp)
+                .width(320.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .border(1.dp, MaterialTheme.colorScheme.outline, RoundedCornerShape(8.dp))
         ) {
@@ -126,13 +131,45 @@ fun DraggableIfBlock(
                 ) {
                     Text(stringResource(R.string.check_condition))
                 }
+
                 result?.let {
                     Spacer(Modifier.height(8.dp))
-                    Text(
-                        text = it.text,
-                        color = it.color,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
+                    Text(text = it.text, color = it.color)
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                if (result?.color == Color.Green) {
+                    innerBlocks.forEach { innerBlock ->
+                        DraggableOutputBlock(
+                            block = innerBlock,
+                            onUpdate = { updated ->
+                                innerBlocks = innerBlocks.map {
+                                    if (it.id == updated.id) updated else it
+                                }
+                                onUpdate(block.copy(innerBlocks = innerBlocks))
+                            },
+                            onDelete = { id ->
+                                innerBlocks = innerBlocks.filter { it.id != id }
+                                onUpdate(block.copy(innerBlocks = innerBlocks))
+                            },
+                            vars = vars,
+                            canDelete = true
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                Button(
+                    onClick = {
+                        val newBlock = OutputBlock()
+                        innerBlocks = innerBlocks + newBlock
+                        onUpdate(block.copy(innerBlocks = innerBlocks))
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.add_output_block))
                 }
             }
         }

@@ -121,7 +121,8 @@ class MainActivity : ComponentActivity() {
                             block = block,
                             onUpdate = { updated -> ifBlocks = ifBlocks.map { if (it.id == updated.id) updated else it } },
                             onDelete = { id -> ifBlocks = ifBlocks.filter { it.id != id } },
-                            canDelete = true
+                            canDelete = true,
+                            vars = vars
                         )
                     }
 
