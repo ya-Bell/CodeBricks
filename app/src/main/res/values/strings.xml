@@ -52,4 +52,17 @@
     <string name="example_vars">a, b, c</string>
     <string name="placeholder_number">например: 123</string>
 
+    <string name="if_block_title">Условие (if)</string>
+    <string name="condition_label">Условие</string>
+    <string name="condition_placeholder">например: x > 5</string>
+    <string name="check_condition">Проверить</string>
+    <string name="add_if_block">Добавить условие (if)</string>
+
+    <string name="error_no_operator">Ошибка: нет оператора</string>
+    <string name="error_invalid_format">Ошибка: неверный формат</string>
+    <string name="error_variable_not_found2">Ошибка: переменная не найдена</string>
+    <string name="condition_true">Истина</string>
+    <string name="condition_false">Ложь</string>
+
+
 </resources>

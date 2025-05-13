@@ -33,6 +33,8 @@ import com.example.codebricks.inputoutput.DraggableOutputBlock
 import com.example.codebricks.inputoutput.InputBlock
 import com.example.codebricks.inputoutput.InputDialog
 import com.example.codebricks.inputoutput.OutputBlock
+import com.example.codebricks.logicblocks.DraggableIfBlock
+import com.example.codebricks.logicblocks.IfBlock
 import com.example.codebricks.ui.theme.CodeBricksTheme
 import com.example.codebricks.variable_declaration.DraggableVariableBlock
 import com.example.codebricks.variable_declaration.VariableDeclarationBlock
@@ -58,6 +60,7 @@ class MainActivity : ComponentActivity() {
                 var showInputDialog by remember { mutableStateOf(false) }
                 var inputNames by remember { mutableStateOf(listOf<String>()) }
                 var inputCallback by remember { mutableStateOf<(Map<String, Int>) -> Unit>({}) }
+                var ifBlocks by remember { mutableStateOf(listOf<IfBlock>()) }
 
                 LaunchedEffect(Unit) {
                     VariableManager.addListener { vars = VariableManager.all() }
@@ -113,6 +116,15 @@ class MainActivity : ComponentActivity() {
                             canDelete = true
                         )
                     }
+                    ifBlocks.forEach { block ->
+                        DraggableIfBlock(
+                            block = block,
+                            onUpdate = { updated -> ifBlocks = ifBlocks.map { if (it.id == updated.id) updated else it } },
+                            onDelete = { id -> ifBlocks = ifBlocks.filter { it.id != id } },
+                            canDelete = true,
+                            vars = vars
+                        )
+                    }
 
                     if (showInputDialog) {
                         InputDialog(
@@ -137,27 +149,34 @@ class MainActivity : ComponentActivity() {
                             onClick = { blocks = blocks + VariableDeclarationBlock() },
                             modifier = Modifier.fillMaxWidth()
                         ) { Text(stringResource(R.string.add_block)) }
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(6.dp))
                         Button(
                             onClick = { assignmentBlocks = assignmentBlocks + AssignmentBlock() },
                             modifier = Modifier.fillMaxWidth()
                         ) { Text(stringResource(R.string.add_assignment_block)) }
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(6.dp))
                         Button(
                             onClick = { multiAssignmentBlocks = multiAssignmentBlocks + MultiAssignmentBlock() },
                             modifier = Modifier.fillMaxWidth()
                         ) { Text(stringResource(R.string.add_multi_assignment_block)) }
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(6.dp))
                         Button(
                             onClick = { inputBlocks = inputBlocks + InputBlock() },
                             modifier = Modifier.fillMaxWidth()
                         ) { Text(stringResource(R.string.add_input_block)) }
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(6.dp))
                         Button(
                             onClick = { outputBlocks = outputBlocks + OutputBlock() },
                             modifier = Modifier.fillMaxWidth()
                         ) { Text(stringResource(R.string.add_output_block)) }
-                        Spacer(Modifier.height(8.dp))
+                        Spacer(Modifier.height(6.dp))
+                        Button(
+                            onClick = { ifBlocks = ifBlocks + IfBlock() },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(stringResource(R.string.add_if_block))
+                        }
+                        Spacer(Modifier.height(6.dp))
                         Button(
                             onClick = { coroutineScope.launch { snackbarHostState.showSnackbar(statsText) } },
                             modifier = Modifier.fillMaxWidth()
