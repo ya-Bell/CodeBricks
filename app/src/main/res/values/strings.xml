@@ -76,5 +76,14 @@
     <string name="run_button">Run</string>
     <string name="stop_button">Stop</string>
 
+    <string name="variables_button">Variables</string>
+    <string name="math_button">Math</string>
+    <string name="comparison_button">Comparison</string>
+    <string name="logic_button">Logic</string>
+    <string name="input_output_button">Input/Output</string>
+    <string name="control_button">Control</string>
+    <string name="loops_button">Loops</string>
+    <string name="functions_button">Functions</string>
+
 
 </resources>

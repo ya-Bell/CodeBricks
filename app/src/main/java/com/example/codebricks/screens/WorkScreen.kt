@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -42,6 +43,8 @@ import com.example.codebricks.R
 @Composable
 fun WorkScreen() {
 
+    var selectedClass by remember { mutableStateOf("Control") }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -55,11 +58,15 @@ fun WorkScreen() {
 
         ConsoleSection()
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(14.dp))
 
         WorkSpaceSection()
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(14.dp))
+
+        BottomBar(
+            onClassSelected = { selectedClass = it },
+        )
 
     }
 }
@@ -86,6 +93,7 @@ fun Header() {
 
             Text(
                 text = stringResource(id = R.string.app_name),
+                fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.align(Alignment.CenterVertically)
             )
@@ -291,6 +299,209 @@ fun WorkSpaceSection() {
                     fontWeight = FontWeight.Bold
                 )
             }
+        }
+    }
+}
+@Composable
+fun BottomBar(
+    onClassSelected: (String) -> Unit,
+) {
+    Column {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                .background(Color(0xFFD9D9D9))
+                .border(
+                    1.dp,
+                    Color.Gray,
+                    RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+                )
+                .padding(8.dp)
+                .height(20.dp)
+        ) {
+            LazyRow(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                item {
+                    val buttonModifier = Modifier
+                        .padding(end = 8.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .border(1.5.dp, Color.Black, RoundedCornerShape(10.dp))
+                        .height(26.dp)
+                        .width(100.dp)
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        Button(
+                            onClick = { onClassSelected("Control") },
+                            modifier = buttonModifier,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(
+                                    0xFF3F51B5
+                                )
+                            ),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(
+                                stringResource(id = R.string.control_button),
+                                fontSize = 12.sp,
+                                color = Color.Black
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Button(
+                            onClick = { onClassSelected("Variables") },
+                            modifier = buttonModifier,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(
+                                    0xFFFFA500
+                                )
+                            ),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(
+                                stringResource(id = R.string.variables_button),
+                                fontSize = 12.sp,
+                                color = Color.Black
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Button(
+                            onClick = { onClassSelected("Math") },
+                            modifier = buttonModifier,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(
+                                    0xFF4FC3F7
+                                )
+                            ),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(
+                                stringResource(id = R.string.math_button),
+                                fontSize = 12.sp,
+                                color = Color.Black
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Button(
+                            onClick = { onClassSelected("Comparison") },
+                            modifier = buttonModifier,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(
+                                    0xFF9C27B0
+                                )
+                            ),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(
+                                stringResource(id = R.string.comparison_button),
+                                fontSize = 12.sp,
+                                color = Color.Black
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Button(
+                            onClick = { onClassSelected("Logic") },
+                            modifier = buttonModifier,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(
+                                    0xFF81C784
+                                )
+                            ),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(
+                                stringResource(id = R.string.logic_button),
+                                fontSize = 12.sp,
+                                color = Color.Black
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Button(
+                            onClick = { onClassSelected("Input/Output") },
+                            modifier = buttonModifier,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(
+                                    0xFFE57373
+                                )
+                            ),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(
+                                stringResource(id = R.string.input_output_button),
+                                fontSize = 12.sp,
+                                color = Color.Black
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Button(
+                            onClick = { onClassSelected("Loops") },
+                            modifier = buttonModifier,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(
+                                    0xFFFFEB3B
+                                )
+                            ),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(
+                                stringResource(id = R.string.loops_button),
+                                fontSize = 12.sp,
+                                color = Color.Black
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Button(
+                            onClick = { onClassSelected("Functions") },
+                            modifier = buttonModifier,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(
+                                    0xFFE91E63
+                                )
+                            ),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text(
+                                stringResource(id = R.string.functions_button),
+                                fontSize = 12.sp,
+                                color = Color.Black
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp)
+                .clip(
+                    RoundedCornerShape(
+                        bottomStart = 16.dp,
+                        bottomEnd = 16.dp
+                    )
+                )
+                .background(Color.White)
+                .border(
+                    1.dp,
+                    Color.Gray,
+                    RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
+                )
+        ) {
         }
     }
 }
