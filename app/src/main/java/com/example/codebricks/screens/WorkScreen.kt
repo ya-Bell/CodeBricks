@@ -38,12 +38,25 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.codebricks.R
+import com.example.codebricks.blocks.BlockSection
+import com.example.codebricks.control.DraggableControlBlock
+import com.example.codebricks.dragging.DraggableItem
+import com.example.codebricks.print.DraggablePrintBlock
+import com.example.codebricks.variables.DeclareVariable
+import com.example.codebricks.viewmodel.Variable
+import com.example.codebricks.viewmodel.VariableViewModel
 
 @Composable
 fun WorkScreen() {
 
+    val viewModel: VariableViewModel = viewModel()
+
     var selectedClass by remember { mutableStateOf("Control") }
+
+    var showDialog by remember { mutableStateOf(false) }
+
 
     Column(
         modifier = Modifier
@@ -60,13 +73,20 @@ fun WorkScreen() {
 
         Spacer(modifier = Modifier.height(14.dp))
 
-        WorkSpaceSection()
+        WorkSpaceSection(viewModel)
 
         Spacer(modifier = Modifier.height(14.dp))
 
         BottomBar(
+            selectedClass = selectedClass,
             onClassSelected = { selectedClass = it },
+            viewModel = viewModel
         )
+
+        if (showDialog) {
+            DeclareVariable(viewModel = viewModel)
+            showDialog = false
+        }
 
     }
 }
@@ -175,12 +195,15 @@ fun ConsoleSection() {
 }
 
 @Composable
-fun WorkSpaceSection() {
+fun WorkSpaceSection(viewModel: VariableViewModel) {
     val isStarted = remember { mutableStateOf(false) }
     val processRunning = remember { mutableStateOf(false) }
 
     var containerWidth by remember { mutableFloatStateOf(0f) }
     var containerHeight by remember { mutableFloatStateOf(0f) }
+
+    val blocks = viewModel.variables
+    val controlBlocks = viewModel.blocks.filter { it.type == "Control" }
 
     fun toggleProcess() {
         processRunning.value = !processRunning.value
@@ -245,11 +268,40 @@ fun WorkSpaceSection() {
                 .background(Color.White)
                 .border(1.dp, Color.Gray)
                 .onSizeChanged { size ->
-
                     containerWidth = size.width.toFloat()
                     containerHeight = size.height.toFloat()
                 }
         ) {
+            blocks.forEach { variable ->
+                if (variable.type != "Control") {
+                    DraggableItem(variable = variable, containerWidth = containerWidth, containerHeight = containerHeight)
+                }
+            }
+
+            controlBlocks.forEach { controlBlock ->
+                if (controlBlock.name == "Print") {
+                    val selectedVariable = controlBlock.value as? Variable
+                    if (selectedVariable != null) {
+                        DraggablePrintBlock(variable = selectedVariable, containerWidth = containerWidth, containerHeight = containerHeight)
+                    }
+                } else {
+                    DraggableControlBlock(type = controlBlock.name, containerWidth = containerWidth, containerHeight = containerHeight)
+                }
+            }
+
+            if (blocks.isEmpty()) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.no_variables_created),
+                        fontSize = 18.sp,
+                        color = Color.Gray,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         }
 
         Row(
@@ -291,9 +343,7 @@ fun WorkSpaceSection() {
                 contentPadding = PaddingValues(0.dp)
             ) {
                 Text(
-                    text = if (processRunning.value) stringResource(id = R.string.stop_button) else stringResource(
-                        id = R.string.run_button
-                    ),
+                    text = if (processRunning.value) stringResource(id = R.string.stop_button) else stringResource(id = R.string.run_button),
                     color = Color.Black,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold
@@ -302,9 +352,12 @@ fun WorkSpaceSection() {
         }
     }
 }
+
 @Composable
 fun BottomBar(
+    selectedClass: String,
     onClassSelected: (String) -> Unit,
+    viewModel: VariableViewModel
 ) {
     Column {
         Box(
@@ -502,6 +555,7 @@ fun BottomBar(
                     RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
                 )
         ) {
+            BlockSection(selectedClass, viewModel)
         }
     }
 }

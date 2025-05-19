@@ -48,7 +48,6 @@
     <string name="variable_not_declared">не объявлена</string>
     <string name="enter_variable_values">Введите значения переменных</string>
     <string name="ok">OK</string>
-    <string name="cancel">Отмена</string>
     <string name="example_vars">a, b, c</string>
     <string name="placeholder_number">например: 123</string>
 
@@ -89,6 +88,21 @@
     <string name="control_button">Control</string>
     <string name="loops_button">Loops</string>
     <string name="functions_button">Functions</string>
+
+    <string name="no_variables_created">No variables created yet.</string>
+    <string name="create_print_block">Create Print Block</string>
+    <string name="select_variable_for_print">Select Variable for Print</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="create_start_block">Create Start Block</string>
+
+    <string name="create_stop_block">Create Stop Block</string>
+
+    <string name="math_blocks">Math blocks go here</string>
+    <string name="comparison_blocks">Comparison blocks go here</string>
+    <string name="logic_blocks">Logic blocks go here</string>
+    <string name="loops_blocks">Loops blocks go here</string>
+    <string name="functions_blocks">Function blocks go here</string>
 
 
 </resources>
