@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -43,6 +44,10 @@ fun WorkScreen() {
     ) {
 
         Header()
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        ConsoleSection()
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -117,3 +122,37 @@ fun Header() {
         }
     }
 }
+
+@Composable
+fun ConsoleSection() {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                .background(Color(0xFFD9D9D9))
+                .border(1.dp, Color.Gray, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                .padding(4.dp)
+        ) {
+            Text(
+                text = stringResource(id = R.string.console_label),
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .align(Alignment.CenterStart)
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(140.dp)
+                .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
+                .background(Color.White)
+                .border(1.dp, Color.Gray, RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
+        ) {
+        }
+    }
+}
+

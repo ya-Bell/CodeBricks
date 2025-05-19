@@ -69,5 +69,7 @@
     <string name="help_button">Help</string>
     <string name="back_button">Back</string>
 
+    <string name="console_label">Console</string>
+
 
 </resources>
