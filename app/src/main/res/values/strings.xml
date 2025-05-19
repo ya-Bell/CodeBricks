@@ -64,5 +64,10 @@
     <string name="condition_true">Истина</string>
     <string name="condition_false">Ложь</string>
 
+    <string name="code_bricks_logo">CodeBricks</string>
+
+    <string name="help_button">Help</string>
+    <string name="back_button">Back</string>
+
 
 </resources>
