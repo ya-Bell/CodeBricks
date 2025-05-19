@@ -289,19 +289,6 @@ fun WorkSpaceSection(viewModel: VariableViewModel) {
                 }
             }
 
-            if (blocks.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.no_variables_created),
-                        fontSize = 18.sp,
-                        color = Color.Gray,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
         }
 
         Row(
