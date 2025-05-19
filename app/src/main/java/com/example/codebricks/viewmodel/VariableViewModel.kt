@@ -25,7 +25,7 @@ class VariableViewModel : ViewModel() {
     }
 
     fun declarePrintBlock(variable: Variable) {
-        val printBlock = Variable(name = "Print", value = variable, type = "Control")
+        val printBlock = Variable(name = "Print", value = variable, type = "Print")
         _blocks.value = _blocks.value + printBlock
     }
 

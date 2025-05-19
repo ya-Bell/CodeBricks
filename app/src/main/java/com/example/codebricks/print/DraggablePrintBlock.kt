@@ -47,8 +47,10 @@ fun DraggablePrintBlock(variable: Variable?, containerWidth: Float, containerHei
                 }
             }
     ) {
+        val displayText = "print(${variable?.name})"
+
         Text(
-            text = "print(${variable?.name})",
+            text = displayText,
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(4.dp),

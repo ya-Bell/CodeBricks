@@ -202,8 +202,10 @@ fun WorkSpaceSection(viewModel: VariableViewModel) {
     var containerWidth by remember { mutableFloatStateOf(0f) }
     var containerHeight by remember { mutableFloatStateOf(0f) }
 
-    val blocks = viewModel.variables
     val controlBlocks = viewModel.blocks.filter { it.type == "Control" }
+    val printBlocks = viewModel.blocks.filter { it.type == "Print" }
+    val variableBlocks = viewModel.variables
+
 
     fun toggleProcess() {
         processRunning.value = !processRunning.value
@@ -272,23 +274,25 @@ fun WorkSpaceSection(viewModel: VariableViewModel) {
                     containerHeight = size.height.toFloat()
                 }
         ) {
-            blocks.forEach { variable ->
-                if (variable.type != "Control") {
-                    DraggableItem(variable = variable, containerWidth = containerWidth, containerHeight = containerHeight)
-                }
-            }
-
             controlBlocks.forEach { controlBlock ->
-                if (controlBlock.name == "Print") {
-                    val selectedVariable = controlBlock.value as? Variable
-                    if (selectedVariable != null) {
-                        DraggablePrintBlock(variable = selectedVariable, containerWidth = containerWidth, containerHeight = containerHeight)
-                    }
-                } else {
-                    DraggableControlBlock(type = controlBlock.name, containerWidth = containerWidth, containerHeight = containerHeight)
-                }
+                DraggableControlBlock(
+                    type = controlBlock.name,
+                    containerWidth = containerWidth,
+                    containerHeight = containerHeight
+                )
             }
 
+            printBlocks.forEach { printBlock ->
+                DraggablePrintBlock(
+                    variable = printBlock.value as? Variable,
+                    containerWidth = containerWidth,
+                    containerHeight = containerHeight
+                )
+            }
+
+            variableBlocks.forEach { variable ->
+                DraggableItem(variable = variable, containerWidth = containerWidth, containerHeight = containerHeight)
+            }
         }
 
         Row(
