@@ -71,5 +71,10 @@
 
     <string name="console_label">Console</string>
 
+    <string name="workspace_label">WorkSpace</string>
+    <string name="debug_button">Debug</string>
+    <string name="run_button">Run</string>
+    <string name="stop_button">Stop</string>
+
 
 </resources>
