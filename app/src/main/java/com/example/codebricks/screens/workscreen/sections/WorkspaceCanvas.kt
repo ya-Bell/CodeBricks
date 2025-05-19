@@ -7,24 +7,26 @@ import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.control.DraggableControlBlock
 import com.example.codebricks.blocks.print.DraggablePrintBlock
+import com.example.codebricks.blocks.variables.DraggableItem
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
-import com.example.codebricks.blocks.variables.DraggableItem
 
 
 @Composable
@@ -35,8 +37,8 @@ fun WorkspaceCanvas(
     var scale by remember { mutableFloatStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
 
-    var containerWidth by remember { mutableStateOf(0f) }
-    var containerHeight by remember { mutableStateOf(0f) }
+    var containerWidth by remember { mutableFloatStateOf(0f) }
+    var containerHeight by remember { mutableFloatStateOf(0f) }
 
     val gestureModifier = Modifier.pointerInput(Unit) {
         detectTransformGestures { _, pan, zoom, _ ->
@@ -48,11 +50,9 @@ fun WorkspaceCanvas(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(320.dp)
-            .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
+            .height(330.dp)
             .background(Color.White)
-            .border(1.dp, Color.Gray, RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
-            .padding(8.dp)
+            .border(1.dp, Color.Gray)
             .onSizeChanged { size ->
                 containerWidth = size.width.toFloat()
                 containerHeight = size.height.toFloat()
@@ -64,7 +64,7 @@ fun WorkspaceCanvas(
                 translationX = offset.x,
                 translationY = offset.y
             )
-            .then(gestureModifier)
+            .then(gestureModifier),
     ) {
         val controlBlocks = viewModel.programBlocks.filter {
             it.type == BlockType.CONTROL_START || it.type == BlockType.CONTROL_STOP

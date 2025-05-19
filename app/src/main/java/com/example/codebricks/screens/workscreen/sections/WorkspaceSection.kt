@@ -1,11 +1,14 @@
 package com.example.codebricks.screens.workscreen.sections
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.example.codebricks.viewmodel.VariableViewModel
-import com.example.codebricks.workscreen.WorkspaceControlBar
 
 @Composable
 fun WorkSpaceSection(viewModel: VariableViewModel) {
@@ -22,9 +25,6 @@ fun WorkSpaceSection(viewModel: VariableViewModel) {
                 containerHeight = h
             }
         )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
         WorkspaceControlBar(viewModel = viewModel)
     }
 }
