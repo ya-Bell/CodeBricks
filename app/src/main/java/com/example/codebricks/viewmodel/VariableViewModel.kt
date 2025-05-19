@@ -2,33 +2,91 @@ package com.example.codebricks.viewmodel
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.example.codebricks.blocks.common.Block
+import com.example.codebricks.blocks.common.BlockType
 
 data class Variable(val name: String, val value: Any, val type: String)
 
 class VariableViewModel : ViewModel() {
 
+    // Переменные как "память"
     private val _variables = mutableStateOf<List<Variable>>(emptyList())
     val variables: List<Variable> get() = _variables.value
 
-    private val _blocks = mutableStateOf<List<Variable>>(emptyList())
-    val blocks: List<Variable> get() = _blocks.value
+    // Программа = список блоков
+    private val _programBlocks = mutableStateOf<List<Block>>(emptyList())
+    val programBlocks: List<Block> get() = _programBlocks.value
 
+    // Вывод консоли
+    val consoleOutput = mutableStateOf("Console ready.")
+
+    // Добавить сообщение в консоль
+    private fun logToConsole(message: String) {
+        consoleOutput.value += "\n$message"
+    }
+
+    // Добавить блок в программу
+    private fun addBlock(block: Block) {
+        _programBlocks.value += block
+    }
+
+    // Создание переменной
     fun declareVariable(name: String, value: Any, type: String) {
         val newVariable = Variable(name, value, type)
-        _variables.value = _variables.value + newVariable
+        _variables.value += newVariable
+
+        val block = Block(
+            type = BlockType.VARIABLE_DECLARE,
+            value = newVariable
+        )
+        addBlock(block)
     }
 
-
-    fun declareControlBlock(type: String) {
-        val newControlBlock = Variable(name = type, value = 0, type = "Control")
-        _blocks.value = _blocks.value + newControlBlock
-    }
-
+    // Создание блока Print(variable)
     fun declarePrintBlock(variable: Variable) {
-        val printBlock = Variable(name = "Print", value = variable, type = "Print")
-        _blocks.value = _blocks.value + printBlock
+        val referenceBlock = Block(
+            type = BlockType.VARIABLE_REFERENCE,
+            value = variable
+        )
+        val printBlock = Block(
+            type = BlockType.IO_PRINT,
+            inputBlocks = mutableListOf(referenceBlock)
+        )
+        addBlock(printBlock)
     }
 
+    // Start / Stop
+    fun declareControlBlock(type: String) {
+        val blockType = when (type) {
+            "Start" -> BlockType.CONTROL_START
+            "Stop" -> BlockType.CONTROL_STOP
+            else -> BlockType.CONTROL_START
+        }
 
+        val controlBlock = Block(
+            type = blockType
+        )
+        addBlock(controlBlock)
+    }
+
+    fun executeProgram(onFinish: () -> Unit = {}) {
+        consoleOutput.value = "Compiling..."
+        logToConsole("Running program...")
+
+        for (block in programBlocks) {
+            when (block.type) {
+                BlockType.CONTROL_START -> logToConsole("🟢 Program started")
+                BlockType.CONTROL_STOP -> logToConsole("🔴 Program stopped")
+                BlockType.IO_PRINT -> {
+                    val input = block.inputBlocks.firstOrNull()
+                    val variable = input?.value as? Variable
+                    logToConsole("Output: ${variable?.value}")
+                }
+                else -> logToConsole("Block '${block.type}' not yet implemented")
+            }
+        }
+
+        logToConsole("Done.")
+        onFinish()
+    }
 }
-

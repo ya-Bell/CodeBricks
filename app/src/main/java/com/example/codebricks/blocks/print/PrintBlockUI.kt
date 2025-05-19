@@ -1,4 +1,4 @@
-package com.example.codebricks.control
+package com.example.codebricks.blocks.print
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,9 +24,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.codebricks.viewmodel.Variable
 
 @Composable
-fun DraggableControlBlock(type: String, containerWidth: Float, containerHeight: Float) {
+fun DraggablePrintBlock(variable: Variable?, containerWidth: Float, containerHeight: Float) {
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
 
     Box(
@@ -35,7 +36,7 @@ fun DraggableControlBlock(type: String, containerWidth: Float, containerHeight: 
             .requiredSize(140.dp, 40.dp)
             .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
             .clip(RoundedCornerShape(12.dp))
-            .background(if (type == "Start") Color(0xFF4CAF50) else Color(0xFFf44336))
+            .background(Color(0xFFE57373))
             .pointerInput(Unit) {
                 detectDragGestures { change, dragAmount ->
                     offset = Offset(
@@ -46,8 +47,10 @@ fun DraggableControlBlock(type: String, containerWidth: Float, containerHeight: 
                 }
             }
     ) {
+        val displayText = "print(${variable?.name})"
+
         Text(
-            text = type,
+            text = displayText,
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(4.dp),

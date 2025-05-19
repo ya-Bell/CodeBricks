@@ -1,20 +1,22 @@
-package com.example.codebricks.blocks
+package com.example.codebricks.screens.workscreen.sections
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.codebricks.R
-import com.example.codebricks.control.CreateControlBlock
-import com.example.codebricks.print.CreatePrintBlock
-import com.example.codebricks.variables.DeclareVariable
+import com.example.codebricks.blocks.control.CreateControlBlock
+import com.example.codebricks.blocks.print.CreatePrintBlock
+import com.example.codebricks.blocks.variables.DeclareVariable
+import com.example.codebricks.ui.theme.CodeBricksTheme
 import com.example.codebricks.viewmodel.VariableViewModel
 
 @Composable
 fun BlockSection(selectedClass: String, viewModel: VariableViewModel) {
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(modifier = Modifier) {
         when (selectedClass) {
             "Control" -> {
                 CreateControlBlock(viewModel)
@@ -41,5 +43,21 @@ fun BlockSection(selectedClass: String, viewModel: VariableViewModel) {
                 Text(stringResource(id = R.string.functions_blocks))
             }
         }
+    }
+}
+
+@SuppressLint("ViewModelConstructorInComposable")
+@Preview(showBackground = true)
+@Composable
+fun BlockSectionPreview() {
+    val mockViewModel = VariableViewModel().apply {
+        declareVariable("score", 10, "int")
+    }
+
+    CodeBricksTheme {
+        BlockSection(
+            selectedClass = "Variables",
+            viewModel = mockViewModel
+        )
     }
 }

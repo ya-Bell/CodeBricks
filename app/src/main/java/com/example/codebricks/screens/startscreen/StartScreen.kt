@@ -1,9 +1,11 @@
-package com.example.codebricks.screens
+package com.example.codebricks.screens.startscreen
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.animateColor
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateDp
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -145,7 +147,7 @@ fun SettingsOverlay(
     isEnglish: Boolean,
     onLanguageToggle: (Boolean) -> Unit
 ) {
-    val visibleState = remember { androidx.compose.animation.core.MutableTransitionState(true) }
+    val visibleState = remember { MutableTransitionState(true) }
 
     if (!visibleState.currentState && !visibleState.targetState) {
         LaunchedEffect(Unit) {
@@ -267,6 +269,7 @@ fun SettingsOverlay(
 }
 
 
+@SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
 fun CustomSwitch(
     checked: Boolean,

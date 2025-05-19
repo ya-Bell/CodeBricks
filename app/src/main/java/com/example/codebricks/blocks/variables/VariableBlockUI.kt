@@ -1,4 +1,4 @@
-package com.example.codebricks.print
+package com.example.codebricks.blocks.variables
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.sp
 import com.example.codebricks.viewmodel.Variable
 
 @Composable
-fun DraggablePrintBlock(variable: Variable?, containerWidth: Float, containerHeight: Float) {
+fun DraggableItem(variable: Variable, containerWidth: Float, containerHeight: Float) {
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
 
     Box(
@@ -36,7 +36,7 @@ fun DraggablePrintBlock(variable: Variable?, containerWidth: Float, containerHei
             .requiredSize(140.dp, 40.dp)
             .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFFE57373))
+            .background(Color(0xFFFFA500))
             .pointerInput(Unit) {
                 detectDragGestures { change, dragAmount ->
                     offset = Offset(
@@ -47,16 +47,16 @@ fun DraggablePrintBlock(variable: Variable?, containerWidth: Float, containerHei
                 }
             }
     ) {
-        val displayText = "print(${variable?.name})"
+        val displayText = "Declare ${variable.type} ${variable.name}  = ${variable.value}"
 
         Text(
             text = displayText,
             modifier = Modifier
                 .align(Alignment.Center)
-                .padding(4.dp),
+                .padding(0.dp),
             fontWeight = FontWeight.Bold,
             fontSize = 12.sp,
-            color = Color.White
+            color = Color.Black
         )
     }
 }

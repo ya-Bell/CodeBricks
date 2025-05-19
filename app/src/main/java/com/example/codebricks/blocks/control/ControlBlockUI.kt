@@ -1,4 +1,4 @@
-package com.example.codebricks.dragging
+package com.example.codebricks.blocks.control
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,10 +24,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.codebricks.viewmodel.Variable
 
 @Composable
-fun DraggableItem(variable: Variable, containerWidth: Float, containerHeight: Float) {
+fun DraggableControlBlock(type: String, containerWidth: Float, containerHeight: Float) {
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
 
     Box(
@@ -36,7 +35,7 @@ fun DraggableItem(variable: Variable, containerWidth: Float, containerHeight: Fl
             .requiredSize(140.dp, 40.dp)
             .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFFFFA500))
+            .background(if (type == "Start") Color(0xFF4CAF50) else Color(0xFFf44336))
             .pointerInput(Unit) {
                 detectDragGestures { change, dragAmount ->
                     offset = Offset(
@@ -47,16 +46,14 @@ fun DraggableItem(variable: Variable, containerWidth: Float, containerHeight: Fl
                 }
             }
     ) {
-        val displayText = "Declare ${variable.type} ${variable.name}  = ${variable.value}"
-
         Text(
-            text = displayText,
+            text = type,
             modifier = Modifier
                 .align(Alignment.Center)
-                .padding(0.dp),
+                .padding(4.dp),
             fontWeight = FontWeight.Bold,
             fontSize = 12.sp,
-            color = Color.Black
+            color = Color.White
         )
     }
 }
