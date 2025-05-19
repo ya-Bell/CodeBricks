@@ -20,6 +20,11 @@ class VariableViewModel : ViewModel() {
     // Вывод консоли
     val consoleOutput = mutableStateOf("Console ready.")
 
+    // Очистка консоли
+    fun clearConsole() {
+        consoleOutput.value = "Console cleared."
+    }
+
     // Добавить сообщение в консоль
     private fun logToConsole(message: String) {
         consoleOutput.value += "\n$message"
@@ -30,7 +35,7 @@ class VariableViewModel : ViewModel() {
         _programBlocks.value += block
     }
 
-    // очистка
+    // Очистка рабочей зоны
     fun clearWorkspace() {
         _variables.value = emptyList()
         _programBlocks.value = emptyList()
