@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.sp
 import com.example.codebricks.R
 
 @Composable
-fun WorkScreen() {
+fun WorkScreen(onBackClick: () -> Unit) {
 
     var selectedClass by remember { mutableStateOf("Control") }
 
@@ -52,7 +52,7 @@ fun WorkScreen() {
             .padding(16.dp)
     ) {
 
-        Header()
+        Header(onBackClick = onBackClick)
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -71,8 +71,9 @@ fun WorkScreen() {
     }
 }
 
+
 @Composable
-fun Header() {
+fun Header(onBackClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -103,7 +104,7 @@ fun Header() {
 
         Row {
             Button(
-                onClick = {  },
+                onClick = {/* TODO: добавить help */},
                 modifier = Modifier
                     .padding(start = 8.dp)
                     .clip(RoundedCornerShape(12.dp))
@@ -122,7 +123,7 @@ fun Header() {
             Spacer(modifier = Modifier.width(8.dp))
 
             Button(
-                onClick = {},
+                onClick = onBackClick,
                 modifier = Modifier
                     .padding(start = 8.dp)
                     .clip(RoundedCornerShape(12.dp))
@@ -140,6 +141,7 @@ fun Header() {
         }
     }
 }
+
 
 @Composable
 fun ConsoleSection() {
@@ -173,6 +175,7 @@ fun ConsoleSection() {
         }
     }
 }
+
 
 @Composable
 fun WorkSpaceSection() {
