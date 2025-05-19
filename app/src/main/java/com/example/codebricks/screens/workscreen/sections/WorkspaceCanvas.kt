@@ -26,6 +26,7 @@ import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.blocks.variables.DraggableItem
 
+
 @Composable
 fun WorkspaceCanvas(
     viewModel: VariableViewModel,
@@ -33,6 +34,9 @@ fun WorkspaceCanvas(
 ) {
     var scale by remember { mutableFloatStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
+
+    var containerWidth by remember { mutableStateOf(0f) }
+    var containerHeight by remember { mutableStateOf(0f) }
 
     val gestureModifier = Modifier.pointerInput(Unit) {
         detectTransformGestures { _, pan, zoom, _ ->
@@ -50,7 +54,9 @@ fun WorkspaceCanvas(
             .border(1.dp, Color.Gray, RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
             .padding(8.dp)
             .onSizeChanged { size ->
-                onSizeChanged(size.width.toFloat(), size.height.toFloat())
+                containerWidth = size.width.toFloat()
+                containerHeight = size.height.toFloat()
+                onSizeChanged(containerWidth, containerHeight)
             }
             .graphicsLayer(
                 scaleX = scale,
@@ -69,8 +75,8 @@ fun WorkspaceCanvas(
         controlBlocks.forEach { block ->
             DraggableControlBlock(
                 type = block.type.name,
-                containerWidth = offset.x,
-                containerHeight = offset.y
+                containerWidth = containerWidth,
+                containerHeight = containerHeight
             )
         }
 
@@ -78,21 +84,20 @@ fun WorkspaceCanvas(
             val variable = block.inputBlocks.firstOrNull()?.value as? Variable
             DraggablePrintBlock(
                 variable = variable,
-                containerWidth = offset.x,
-                containerHeight = offset.y
+                containerWidth = containerWidth,
+                containerHeight = containerHeight
             )
         }
 
         variableBlocks.forEach { variable ->
             DraggableItem(
                 variable = variable,
-                containerWidth = offset.x,
-                containerHeight = offset.y
+                containerWidth = containerWidth,
+                containerHeight = containerHeight
             )
         }
     }
 }
-
 
 
 @SuppressLint("ViewModelConstructorInComposable")

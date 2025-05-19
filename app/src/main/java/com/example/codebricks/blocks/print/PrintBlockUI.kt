@@ -47,7 +47,7 @@ fun DraggablePrintBlock(variable: Variable?, containerWidth: Float, containerHei
                 }
             }
     ) {
-        val displayText = "print(${variable?.name})"
+        val displayText = variable?.let { "print(${it.name})" } ?: "print(?)"
 
         Text(
             text = displayText,

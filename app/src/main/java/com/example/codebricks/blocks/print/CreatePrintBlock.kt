@@ -35,7 +35,7 @@ fun CreatePrintBlock(viewModel: VariableViewModel) {
                         viewModel.variables.forEach { variable ->
                             Button(
                                 onClick = {
-                                    viewModel.declarePrintBlock(variable) // ✅ теперь вызывается функция
+                                    viewModel.declarePrintBlock(variable)
                                     showDialog.value = false
                                 },
                                 modifier = Modifier.padding(4.dp)
