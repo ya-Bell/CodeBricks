@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -59,6 +60,9 @@ fun WorkspaceControlBar(viewModel: VariableViewModel) {
                 .padding(start = 8.dp)
                 .size(26.dp)
                 .clip(RoundedCornerShape(8.dp))
+                .clickable {
+                    viewModel.clearWorkspace()
+                }
         ) {
             Image(
                 painter = painterResource(id = R.drawable.baseline_delete_forever_24),

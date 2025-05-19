@@ -30,6 +30,12 @@ class VariableViewModel : ViewModel() {
         _programBlocks.value += block
     }
 
+    // очистка
+    fun clearWorkspace() {
+        _variables.value = emptyList()
+        _programBlocks.value = emptyList()
+    }
+
     // Создание переменной
     fun declareVariable(name: String, value: Any, type: String) {
         val newVariable = Variable(name, value, type)
