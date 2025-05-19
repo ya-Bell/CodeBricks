@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -52,7 +53,6 @@ fun WorkspaceControlBar(viewModel: VariableViewModel) {
             .padding(horizontal = 8.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
-
     ) {
         // Trash icon
         Box(
@@ -66,7 +66,7 @@ fun WorkspaceControlBar(viewModel: VariableViewModel) {
         ) {
             Image(
                 painter = painterResource(id = R.drawable.baseline_delete_forever_24),
-                contentDescription = "Trash Bin",
+                contentDescription = stringResource(id = R.string.trash_bin),
                 modifier = Modifier.fillMaxSize()
             )
         }
@@ -98,14 +98,13 @@ fun WorkspaceControlBar(viewModel: VariableViewModel) {
             contentPadding = PaddingValues(0.dp)
         ) {
             Text(
-                text = if (processRunning) "Reset" else "Run",
+                text = stringResource(id = if (processRunning) R.string.reset else R.string.run),
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold
             )
         }
     }
 }
-
 
 @SuppressLint("ViewModelConstructorInComposable")
 @Preview(showBackground = true)

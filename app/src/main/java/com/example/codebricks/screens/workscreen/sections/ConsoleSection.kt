@@ -23,8 +23,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.codebricks.R
 import com.example.codebricks.viewmodel.VariableViewModel
 
 @Composable
@@ -44,7 +46,7 @@ fun ConsoleSection(viewModel: VariableViewModel) {
                 .padding(horizontal = 12.dp, vertical = 8.dp)
         ) {
             Text(
-                text = "Console",
+                text = stringResource(id = R.string.console_header),
                 fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                 fontSize = 14.sp,
                 style = MaterialTheme.typography.bodyMedium
@@ -82,7 +84,7 @@ fun ConsoleSection(viewModel: VariableViewModel) {
             ) {
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = "Clear Console",
+                    contentDescription = stringResource(id = R.string.clear_console),
                     modifier = Modifier.fillMaxSize(),
                     tint = Color.Gray
                 )

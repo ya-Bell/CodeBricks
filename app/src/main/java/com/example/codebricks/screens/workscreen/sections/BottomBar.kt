@@ -2,19 +2,32 @@ package com.example.codebricks.screens.workscreen.sections
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.codebricks.R
 import com.example.codebricks.viewmodel.VariableViewModel
 
 @Composable
@@ -51,14 +64,14 @@ fun BottomBlockBar(
                         .width(100.dp)
 
                     val categories = listOf(
-                        "Control" to Color(0xFF3F51B5),
-                        "Variables" to Color(0xFFFFA500),
-                        "Math" to Color(0xFF4FC3F7),
-                        "Comparison" to Color(0xFF9C27B0),
-                        "Logic" to Color(0xFF81C784),
-                        "Input/Output" to Color(0xFFE57373),
-                        "Loops" to Color(0xFFFFEB3B),
-                        "Functions" to Color(0xFFE91E63)
+                        stringResource(id = R.string.control) to Color(0xFF3F51B5),
+                        stringResource(id = R.string.variables) to Color(0xFFFFA500),
+                        stringResource(id = R.string.math) to Color(0xFF4FC3F7),
+                        stringResource(id = R.string.comparison) to Color(0xFF9C27B0),
+                        stringResource(id = R.string.logic) to Color(0xFF81C784),
+                        stringResource(id = R.string.input_output) to Color(0xFFE57373),
+                        stringResource(id = R.string.loops) to Color(0xFFFFEB3B),
+                        stringResource(id = R.string.functions) to Color(0xFFE91E63)
                     )
 
                     Row(

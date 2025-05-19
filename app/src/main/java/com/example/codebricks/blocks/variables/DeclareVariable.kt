@@ -16,11 +16,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.codebricks.R
 import com.example.codebricks.viewmodel.VariableViewModel
-
 
 @Composable
 fun DeclareVariable(viewModel: VariableViewModel) {
@@ -35,13 +36,13 @@ fun DeclareVariable(viewModel: VariableViewModel) {
             onClick = { showDialog.value = true },
             modifier = Modifier.padding(4.dp)
         ) {
-            Text("Create Variable", fontSize = 12.sp)
+            Text(text = stringResource(id = R.string.create_variable), fontSize = 12.sp)
         }
 
         if (showDialog.value) {
             AlertDialog(
                 onDismissRequest = { showDialog.value = false },
-                title = { Text("Declare Variable") },
+                title = { Text(text = stringResource(id = R.string.declare_variable)) },
                 text = {
                     Column {
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -51,7 +52,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                 modifier = Modifier.padding(4.dp).weight(1f),
                                 shape = RoundedCornerShape(10.dp)
                             ) {
-                                Text("Single", fontWeight = FontWeight.Bold)
+                                Text(text = stringResource(id = R.string.single), fontWeight = FontWeight.Bold)
                             }
                             Button(
                                 onClick = { isMultiple.value = true },
@@ -59,7 +60,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                 modifier = Modifier.padding(4.dp).weight(1f),
                                 shape = RoundedCornerShape(10.dp)
                             ) {
-                                Text("Multiple", fontWeight = FontWeight.Bold)
+                                Text(text = stringResource(id = R.string.multiple), fontWeight = FontWeight.Bold)
                             }
                         }
 
@@ -67,7 +68,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                             OutlinedTextField(
                                 value = names.value,
                                 onValueChange = { names.value = it },
-                                label = { Text("Variable Names (comma separated)") },
+                                label = { Text(text = stringResource(id = R.string.variable_names)) },
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(10.dp)
                             )
@@ -75,7 +76,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                             OutlinedTextField(
                                 value = value.value,
                                 onValueChange = { value.value = it },
-                                label = { Text("Variable Values (comma separated)") },
+                                label = { Text(text = stringResource(id = R.string.variable_values)) },
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(10.dp)
                             )
@@ -83,7 +84,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                             OutlinedTextField(
                                 value = names.value,
                                 onValueChange = { names.value = it },
-                                label = { Text("Name") },
+                                label = { Text(text = stringResource(id = R.string.name)) },
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(10.dp)
                             )
@@ -91,13 +92,13 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                             OutlinedTextField(
                                 value = value.value,
                                 onValueChange = { value.value = it },
-                                label = { Text("Initial Value") },
+                                label = { Text(text = stringResource(id = R.string.initial_value)) },
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(10.dp)
                             )
                         }
 
-                        Text("Select Type", fontWeight = FontWeight.Bold)
+                        Text(text = stringResource(id = R.string.select_type), fontWeight = FontWeight.Bold)
                         Column {
                             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                                 Button(
@@ -108,7 +109,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                     modifier = Modifier.padding(4.dp).weight(1f),
                                     shape = RoundedCornerShape(10.dp)
                                 ) {
-                                    Text("int")
+                                    Text(text = stringResource(id = R.string.integers))
                                 }
                                 Button(
                                     onClick = { type.value = "bool" },
@@ -118,7 +119,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                     modifier = Modifier.padding(4.dp).weight(1f),
                                     shape = RoundedCornerShape(10.dp)
                                 ) {
-                                    Text("bool")
+                                    Text(text = stringResource(id = R.string.bool))
                                 }
                             }
 
@@ -131,7 +132,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                     modifier = Modifier.padding(4.dp).weight(1f),
                                     shape = RoundedCornerShape(10.dp)
                                 ) {
-                                    Text("string")
+                                    Text(text = stringResource(id = R.string.string))
                                 }
                                 Button(
                                     onClick = { type.value = "double" },
@@ -141,7 +142,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                     modifier = Modifier.padding(4.dp).weight(1f),
                                     shape = RoundedCornerShape(10.dp)
                                 ) {
-                                    Text("double")
+                                    Text(text = stringResource(id = R.string.doubles))
                                 }
                             }
                         }
@@ -184,17 +185,15 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
                     ) {
-                        Text("Create", color = Color.White)
+                        Text(text = stringResource(id = R.string.create), color = Color.White)
                     }
                 },
                 dismissButton = {
                     Button(onClick = { showDialog.value = false }) {
-                        Text("Cancel")
+                        Text(text = stringResource(id = R.string.cancel))
                     }
                 }
             )
         }
     }
 }
-
-

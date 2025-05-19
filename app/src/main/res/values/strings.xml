@@ -2,7 +2,6 @@
     <string name="app_name">CodeBricks</string>
 
     <string name="declare_variables">Объявление переменных</string>
-    <string name="variable_names">Имена переменных</string>
     <string name="example_names">например: x, y, count</string>
     <string name="default_value">По умолчанию: 0</string>
     <string name="will_be_created">Будут созданы: %s</string>
@@ -103,6 +102,55 @@
     <string name="logic_blocks">Logic blocks go here</string>
     <string name="loops_blocks">Loops blocks go here</string>
     <string name="functions_blocks">Function blocks go here</string>
+
+    <string name="select_variable_to_print">Select variable to print</string>
+
+    <string name="create_variable">Create Variable</string>
+    <string name="declare_variable">Declare Variable</string>
+    <string name="single">Single</string>
+    <string name="multiple">Multiple</string>
+    <string name="variable_names">Variable Names (comma separated)</string>
+    <string name="variable_values">Variable Values (comma separated)</string>
+    <string name="name">Name</string>
+    <string name="initial_value">Initial Value</string>
+    <string name="select_type">Select Type</string>
+    <string name="integers">int</string>
+    <string name="bool">bool</string>
+    <string name="string">string</string>
+    <string name="doubles">double</string>
+    <string name="create">Create</string>
+
+    <string name="trash_bin">Trash Bin</string>
+    <string name="run">Run</string>
+    <string name="reset">Reset</string>
+
+    <string name="workspace">Workspace</string>
+    <string name="debug">Debug</string>
+
+    <string name="help">Help</string>
+    <string name="back">Back</string>
+
+    <string name="create_variable_button">Create Variable</string>
+    <string name="create_print_block_button">Create Print Block</string>
+    <string name="create_start_block_button">Create Start Block</string>
+    <string name="create_stop_block_button">Create Stop Block</string>
+    <string name="declare_variable_title">Declare Variable</string>
+    <string name="declare_variable_confirm_button">Create</string>
+    <string name="declare_variable_cancel_button">Cancel</string>
+
+    <string name="error_invalid_input">Invalid input value</string>
+
+    <string name="console_header">Console</string>
+    <string name="clear_console">Clear Console</string>
+
+    <string name="control">Control</string>
+    <string name="variables">Variables</string>
+    <string name="math">Math</string>
+    <string name="comparison">Comparison</string>
+    <string name="logic">Logic</string>
+    <string name="input_output">Input/Output</string>
+    <string name="loops">Loops</string>
+    <string name="functions">Functions</string>
 
 
 </resources>
