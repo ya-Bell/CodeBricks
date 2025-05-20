@@ -84,7 +84,7 @@ fun WorkspaceControlBar(viewModel: VariableViewModel) {
                             return@launch
                         }
 
-                        processRunning = true
+                        viewModel.shouldDrawConnections.value = true
                         viewModel.linkBlocksByPosition()
                         viewModel.executeProgram {
                             processRunning = false
