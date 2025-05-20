@@ -38,7 +38,7 @@ fun WorkspaceHeader() {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = stringResource(id = R.string.workspace), // Использование строки из strings.xml
+            text = stringResource(id = R.string.workspace),
             fontWeight = FontWeight.Bold,
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.padding(start = 8.dp)
@@ -59,7 +59,7 @@ fun WorkspaceHeader() {
             contentPadding = PaddingValues(0.dp)
         ) {
             Text(
-                text = stringResource(id = R.string.debug), // Использование строки из strings.xml
+                text = stringResource(id = R.string.debug),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold
             )

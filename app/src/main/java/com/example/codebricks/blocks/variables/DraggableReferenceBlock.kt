@@ -5,7 +5,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -27,36 +26,33 @@ import androidx.compose.ui.unit.sp
 import com.example.codebricks.viewmodel.Variable
 
 @Composable
-fun DraggableItem(variable: Variable, containerWidth: Float, containerHeight: Float) {
+fun DraggableReferenceBlock(variable: Variable, containerWidth: Float, containerHeight: Float) {
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
 
     Box(
         modifier = Modifier
             .offset { IntOffset(offset.x.toInt(), offset.y.toInt()) }
-            .requiredSize(140.dp, 40.dp)
-            .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFFFFA500))
+            .requiredSize(100.dp, 32.dp)
+            .border(2.dp, Color.Black, RoundedCornerShape(50))
+            .clip(RoundedCornerShape(50))
+            .background(Color(0xFFEEEEEE))
             .pointerInput(Unit) {
                 detectDragGestures { change, dragAmount ->
                     offset = Offset(
-                        (offset.x + dragAmount.x).coerceIn(0f, containerWidth - 140.dp.toPx()),
-                        (offset.y + dragAmount.y).coerceIn(0f, containerHeight - 40.dp.toPx())
+                        (offset.x + dragAmount.x).coerceIn(0f, containerWidth - 100.dp.toPx()),
+                        (offset.y + dragAmount.y).coerceIn(0f, containerHeight - 32.dp.toPx())
                     )
                     change.consume()
                 }
-            }
+            },
+        contentAlignment = Alignment.Center
     ) {
-        val displayText = "Declare ${variable.type} ${variable.name}  = ${variable.value}"
-
         Text(
-            text = displayText,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(0.dp),
+            text = "[${variable.name}]",
             fontWeight = FontWeight.Bold,
             fontSize = 12.sp,
             color = Color.Black
         )
     }
 }
+

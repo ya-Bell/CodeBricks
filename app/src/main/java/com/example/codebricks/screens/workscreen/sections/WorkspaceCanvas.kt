@@ -24,7 +24,8 @@ import androidx.compose.ui.unit.dp
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.control.DraggableControlBlock
 import com.example.codebricks.blocks.print.DraggablePrintBlock
-import com.example.codebricks.blocks.variables.DraggableItem
+import com.example.codebricks.blocks.variables.DraggableDeclareBlock
+import com.example.codebricks.blocks.variables.DraggableReferenceBlock
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
 
@@ -70,7 +71,6 @@ fun WorkspaceCanvas(
             it.type == BlockType.CONTROL_START || it.type == BlockType.CONTROL_STOP
         }
         val printBlocks = viewModel.programBlocks.filter { it.type == BlockType.IO_PRINT }
-        val variableBlocks = viewModel.variables
 
         controlBlocks.forEach { block ->
             DraggableControlBlock(
@@ -89,12 +89,32 @@ fun WorkspaceCanvas(
             )
         }
 
-        variableBlocks.forEach { variable ->
-            DraggableItem(
-                variable = variable,
-                containerWidth = containerWidth,
-                containerHeight = containerHeight
-            )
+        val declareBlocks = viewModel.programBlocks.filter {
+            it.type == BlockType.VARIABLE_DECLARE
+        }
+        val referenceBlocks = viewModel.programBlocks.filter {
+            it.type == BlockType.VARIABLE_REFERENCE
+        }
+        declareBlocks.forEach { block ->
+            val variable = block.value as? Variable
+            if (variable != null) {
+                DraggableDeclareBlock(
+                    variable = variable,
+                    containerWidth = containerWidth,
+                    containerHeight = containerHeight
+                )
+            }
+        }
+
+        referenceBlocks.forEach { block ->
+            val variable = block.value as? Variable
+            if (variable != null) {
+                DraggableReferenceBlock(
+                    variable = variable,
+                    containerWidth = containerWidth,
+                    containerHeight = containerHeight
+                )
+            }
         }
     }
 }

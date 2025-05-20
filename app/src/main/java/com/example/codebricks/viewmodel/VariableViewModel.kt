@@ -100,4 +100,13 @@ class VariableViewModel : ViewModel() {
         logToConsole("Done.")
         onFinish()
     }
+
+    fun addReferenceBlock(variable: Variable) {
+        println("Добавлен вставочный блок: ${variable.name}")
+        val block = Block(
+            type = BlockType.VARIABLE_REFERENCE,
+            value = variable
+        )
+        _programBlocks.value += block
+    }
 }
