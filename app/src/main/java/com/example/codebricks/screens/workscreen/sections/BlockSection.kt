@@ -1,9 +1,11 @@
 package com.example.codebricks.screens.workscreen.sections
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,8 +30,10 @@ fun BlockSection(selectedClass: String, viewModel: VariableViewModel) {
                 CreateControlBlock(viewModel)
             }
             "Variables" -> {
-                DeclareVariable(viewModel)
-                SetVariableButton(viewModel)
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    DeclareVariable(viewModel)
+                    SetVariableButton(viewModel)
+                }
                 Spacer(modifier = Modifier.height(8.dp))
                 Row {
                     viewModel.variables.forEach { variable ->
