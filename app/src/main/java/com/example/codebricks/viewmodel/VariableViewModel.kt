@@ -65,6 +65,20 @@ class VariableViewModel : ViewModel() {
         )
         addBlock(printBlock)
     }
+    fun declareSetVariable(variable: Variable, newValue: Any) {
+
+        val updatedVariable = variable.copy(value = newValue)
+
+        _variables.value = _variables.value.map {
+            if (it.name == variable.name) updatedVariable else it
+        }
+
+        val setVariableBlock = Block(
+            type = BlockType.VARIABLE_SET,
+            value = updatedVariable
+        )
+        addBlock(setVariableBlock)
+    }
 
     // Start / Stop
     fun declareControlBlock(type: String) {

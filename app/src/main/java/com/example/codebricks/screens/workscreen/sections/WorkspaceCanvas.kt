@@ -26,6 +26,7 @@ import com.example.codebricks.blocks.control.DraggableControlBlock
 import com.example.codebricks.blocks.print.DraggablePrintBlock
 import com.example.codebricks.blocks.variables.DraggableDeclareBlock
 import com.example.codebricks.blocks.variables.DraggableReferenceBlock
+import com.example.codebricks.blocks.variables.DraggableSetVariableBlock
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
 
@@ -72,6 +73,8 @@ fun WorkspaceCanvas(
         }
         val printBlocks = viewModel.programBlocks.filter { it.type == BlockType.IO_PRINT }
 
+        val setVariableBlocks = viewModel.programBlocks.filter { it.type == BlockType.VARIABLE_SET }
+
         controlBlocks.forEach { block ->
             DraggableControlBlock(
                 type = block.type.name,
@@ -88,6 +91,11 @@ fun WorkspaceCanvas(
                 containerHeight = containerHeight
             )
         }
+        setVariableBlocks.forEach { block ->
+            val variable = block.value as? Variable
+            DraggableSetVariableBlock(variable = variable, containerWidth = containerWidth, containerHeight = containerHeight)
+        }
+
 
         val declareBlocks = viewModel.programBlocks.filter {
             it.type == BlockType.VARIABLE_DECLARE

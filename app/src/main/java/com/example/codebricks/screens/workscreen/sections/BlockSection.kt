@@ -15,6 +15,7 @@ import com.example.codebricks.R
 import com.example.codebricks.blocks.control.CreateControlBlock
 import com.example.codebricks.blocks.print.CreatePrintBlock
 import com.example.codebricks.blocks.variables.DeclareVariable
+import com.example.codebricks.blocks.variables.SetVariableButton
 import com.example.codebricks.blocks.variables.VariableReferenceBlock
 import com.example.codebricks.ui.theme.CodeBricksTheme
 import com.example.codebricks.viewmodel.VariableViewModel
@@ -28,6 +29,7 @@ fun BlockSection(selectedClass: String, viewModel: VariableViewModel) {
             }
             "Variables" -> {
                 DeclareVariable(viewModel)
+                SetVariableButton(viewModel)
                 Spacer(modifier = Modifier.height(8.dp))
                 Row {
                     viewModel.variables.forEach { variable ->
