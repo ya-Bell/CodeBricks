@@ -1,10 +1,12 @@
 package com.example.codebricks.screens.workscreen.sections
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
@@ -27,8 +29,10 @@ import com.example.codebricks.blocks.print.DraggablePrintBlock
 import com.example.codebricks.blocks.variables.DraggableDeclareBlock
 import com.example.codebricks.blocks.variables.DraggableReferenceBlock
 import com.example.codebricks.blocks.variables.DraggableSetVariableBlock
+import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
+
 
 
 @Composable
@@ -41,6 +45,8 @@ fun WorkspaceCanvas(
 
     var containerWidth by remember { mutableFloatStateOf(0f) }
     var containerHeight by remember { mutableFloatStateOf(0f) }
+
+    val redrawTrigger = BlockPositionTracker.redrawTrigger.value
 
     val gestureModifier = Modifier.pointerInput(Unit) {
         detectTransformGestures { _, pan, zoom, _ ->
@@ -77,6 +83,7 @@ fun WorkspaceCanvas(
 
         controlBlocks.forEach { block ->
             DraggableControlBlock(
+                id = block.id,
                 type = block.type.name,
                 containerWidth = containerWidth,
                 containerHeight = containerHeight
@@ -86,6 +93,7 @@ fun WorkspaceCanvas(
         printBlocks.forEach { block ->
             val variable = block.inputBlocks.firstOrNull()?.value as? Variable
             DraggablePrintBlock(
+                id = block.id,
                 variable = variable,
                 containerWidth = containerWidth,
                 containerHeight = containerHeight
@@ -93,7 +101,11 @@ fun WorkspaceCanvas(
         }
         setVariableBlocks.forEach { block ->
             val variable = block.value as? Variable
-            DraggableSetVariableBlock(variable = variable, containerWidth = containerWidth, containerHeight = containerHeight)
+            DraggableSetVariableBlock(
+                id = block.id,
+                variable = variable,
+                containerWidth = containerWidth,
+                containerHeight = containerHeight)
         }
 
 
@@ -107,6 +119,7 @@ fun WorkspaceCanvas(
             val variable = block.value as? Variable
             if (variable != null) {
                 DraggableDeclareBlock(
+                    id = block.id,
                     variable = variable,
                     containerWidth = containerWidth,
                     containerHeight = containerHeight
@@ -118,12 +131,38 @@ fun WorkspaceCanvas(
             val variable = block.value as? Variable
             if (variable != null) {
                 DraggableReferenceBlock(
+                    id = block.id,
                     variable = variable,
                     containerWidth = containerWidth,
                     containerHeight = containerHeight
                 )
             }
         }
+
+        if (viewModel.shouldDrawConnections.value) {
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                //  redrawTrigger, чтобы Canvas знал об изменении
+                redrawTrigger
+
+                for (block in viewModel.programBlocks) {
+                    val from = BlockPositionTracker.getPosition(block.id)
+                    val to = block.nextBlockId?.let { BlockPositionTracker.getPosition(it) }
+
+                    if (from != null && to != null) {
+                        val fromPoint = from + Offset(140.dp.toPx() / 2, 40.dp.toPx() / 2)
+                        val toPoint = to + Offset(140.dp.toPx() / 2, 40.dp.toPx() / 2)
+
+                        drawLine(
+                            color = Color.Black,
+                            start = fromPoint,
+                            end = toPoint,
+                            strokeWidth = 4f
+                        )
+                    }
+                }
+            }
+        }
+
     }
 }
 

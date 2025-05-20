@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,11 +25,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 
 @Composable
-fun DraggableControlBlock(type: String, containerWidth: Float, containerHeight: Float) {
+fun DraggableControlBlock(
+    id: String,
+    type: String,
+    containerWidth: Float,
+    containerHeight: Float
+) {
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
-
+    LaunchedEffect(Unit) {
+        BlockPositionTracker.updateBlockPosition(id, offset)
+    }
     Box(
         modifier = Modifier
             .offset { IntOffset(offset.x.toInt(), offset.y.toInt()) }
@@ -42,6 +51,7 @@ fun DraggableControlBlock(type: String, containerWidth: Float, containerHeight: 
                         (offset.x + dragAmount.x).coerceIn(0f, containerWidth - 140.dp.toPx()),
                         (offset.y + dragAmount.y).coerceIn(0f, containerHeight - 40.dp.toPx())
                     )
+                    BlockPositionTracker.updateBlockPosition(id, offset)
                     change.consume()
                 }
             }
@@ -56,4 +66,5 @@ fun DraggableControlBlock(type: String, containerWidth: Float, containerHeight: 
             color = Color.White
         )
     }
+
 }

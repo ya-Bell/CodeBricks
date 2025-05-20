@@ -77,9 +77,18 @@ fun WorkspaceControlBar(viewModel: VariableViewModel) {
                 if (!processRunning) {
                     processRunning = true
                     scope.launch {
-                        viewModel.executeProgram(onFinish = {
+                        val orderCheck = viewModel.checkBlockOrder()
+                        if (!orderCheck.isValid) {
+                            viewModel.consoleOutput.value = orderCheck.errorMessage ?: "❌ Unknown block order error."
                             processRunning = false
-                        })
+                            return@launch
+                        }
+
+                        processRunning = true
+                        viewModel.linkBlocksByPosition()
+                        viewModel.executeProgram {
+                            processRunning = false
+                        }
                     }
                 } else {
                     processRunning = false

@@ -30,7 +30,7 @@ fun VariableReferenceBlock(variable: Variable, viewModel: VariableViewModel) {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "[${variable.name}]",
+            text = variable.name,
             fontSize = 12.sp,
             color = Color.Black
         )

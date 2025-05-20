@@ -68,6 +68,7 @@ fun WorkScreen(onBackClick: () -> Unit) {
             showDialog = false
         }
     }
+
 }
 
 @Composable
@@ -83,7 +84,7 @@ fun Header(onBackClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = stringResource(id = R.string.app_name), // Используем строку из strings.xml
+                text = stringResource(id = R.string.app_name),
                 fontWeight = FontWeight.Bold,
                 style = MaterialTheme.typography.titleMedium
             )
@@ -102,7 +103,7 @@ fun Header(onBackClick: () -> Unit) {
                     contentColor = Color.Black
                 )
             ) {
-                Text(stringResource(id = R.string.help), color = Color.Black) // Используем строку из strings.xml
+                Text(stringResource(id = R.string.help), color = Color.Black)
             }
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -117,7 +118,7 @@ fun Header(onBackClick: () -> Unit) {
                     contentColor = Color.Black
                 )
             ) {
-                Text(stringResource(id = R.string.back), color = Color.Black) // Используем строку из strings.xml
+                Text(stringResource(id = R.string.back), color = Color.Black)
             }
         }
     }
