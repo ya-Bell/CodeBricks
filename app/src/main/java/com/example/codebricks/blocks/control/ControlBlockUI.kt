@@ -47,10 +47,7 @@ fun DraggableControlBlock(
             .background(if (type == "Start") Color(0xFF4CAF50) else Color(0xFFf44336))
             .pointerInput(Unit) {
                 detectDragGestures { change, dragAmount ->
-                    offset = Offset(
-                        (offset.x + dragAmount.x).coerceIn(0f, containerWidth - 140.dp.toPx()),
-                        (offset.y + dragAmount.y).coerceIn(0f, containerHeight - 40.dp.toPx())
-                    )
+                    offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
                     BlockPositionTracker.updateBlockPosition(id, offset)
                     change.consume()
                 }
@@ -66,5 +63,4 @@ fun DraggableControlBlock(
             color = Color.White
         )
     }
-
 }

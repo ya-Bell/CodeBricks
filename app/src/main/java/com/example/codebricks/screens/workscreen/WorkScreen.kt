@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,6 +40,9 @@ fun WorkScreen(onBackClick: () -> Unit) {
     var selectedClass by remember { mutableStateOf("Control") }
     var showDialog by remember { mutableStateOf(false) }
 
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -47,20 +51,21 @@ fun WorkScreen(onBackClick: () -> Unit) {
     ) {
         Header(onBackClick = onBackClick)
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
         ConsoleSection(viewModel = viewModel)
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
-        WorkSpaceSection(viewModel = viewModel)
+        WorkSpaceSection(viewModel = viewModel, modifier = Modifier.weight(1f))
 
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         BottomBlockBar(
             selectedClass = selectedClass,
             onClassSelected = { selectedClass = it },
-            viewModel = viewModel
+            viewModel = viewModel,
+            screenHeight = screenHeight
         )
 
         if (showDialog) {
@@ -68,8 +73,8 @@ fun WorkScreen(onBackClick: () -> Unit) {
             showDialog = false
         }
     }
-
 }
+
 
 @Composable
 fun Header(onBackClick: () -> Unit) {
@@ -124,8 +129,36 @@ fun Header(onBackClick: () -> Unit) {
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
+@Preview(
+
+    name = "Phone - Pixel 4",
+    showBackground = true,
+    showSystemUi = true,
+    device = "spec:width=411dp,height=891dp,dpi=420"
+)
 @Composable
-fun WorkScreenPreview() {
+fun WorkScreenPreview_Pixel4() {
+    WorkScreen(onBackClick = {})
+}
+
+@Preview(
+    name = "Tablet - Nexus 9",
+    showBackground = true,
+    showSystemUi = true,
+    device = "spec:width=768dp,height=1024dp,dpi=320"
+)
+@Composable
+fun WorkScreenPreview_Tablet() {
+    WorkScreen(onBackClick = {})
+}
+
+@Preview(
+    name = "Small Phone - Nexus One",
+    showBackground = true,
+    showSystemUi = true,
+    device = "spec:width=320dp,height=480dp,dpi=160"
+)
+@Composable
+fun WorkScreenPreview_Small() {
     WorkScreen(onBackClick = {})
 }

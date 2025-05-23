@@ -48,10 +48,7 @@ fun DraggableReferenceBlock(
             .background(Color(0xFFEEEEEE))
             .pointerInput(Unit) {
                 detectDragGestures { change, dragAmount ->
-                    offset = Offset(
-                        (offset.x + dragAmount.x).coerceIn(0f, containerWidth - 100.dp.toPx()),
-                        (offset.y + dragAmount.y).coerceIn(0f, containerHeight - 32.dp.toPx())
-                    )
+                    offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
                     BlockPositionTracker.updateBlockPosition(id, offset)
                     change.consume()
                 }

@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -34,10 +35,17 @@ import com.example.codebricks.viewmodel.VariableViewModel
 fun BottomBlockBar(
     selectedClass: String,
     onClassSelected: (String) -> Unit,
-    viewModel: VariableViewModel
+    viewModel: VariableViewModel,
+    screenHeight: Int
 ) {
+
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp
+
+    val adaptiveHeight = screenHeight * 0.15f
+
     Column {
-        // Кнопки выбора категории
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -95,11 +103,10 @@ fun BottomBlockBar(
             }
         }
 
-        // Отображение блоков выбранной категории
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .height(adaptiveHeight.dp)
                 .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
                 .background(Color.White)
                 .border(1.dp, Color.Gray, RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
@@ -112,9 +119,13 @@ fun BottomBlockBar(
 @Preview(showBackground = true)
 @Composable
 fun BottomBlockBarPreview() {
+    val screenHeight = LocalConfiguration.current.screenHeightDp
+
+
     BottomBlockBar(
         selectedClass = "Control",
         onClassSelected = {},
-        viewModel = viewModel()
+        viewModel = viewModel(),
+        screenHeight = screenHeight
     )
 }

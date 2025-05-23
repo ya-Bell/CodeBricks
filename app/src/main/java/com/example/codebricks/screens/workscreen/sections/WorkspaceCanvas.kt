@@ -5,10 +5,13 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -21,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.codebricks.blocks.common.BlockType
@@ -43,10 +47,15 @@ fun WorkspaceCanvas(
     var scale by remember { mutableFloatStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
 
-    var containerWidth by remember { mutableFloatStateOf(0f) }
-    var containerHeight by remember { mutableFloatStateOf(0f) }
+    var containerWidth by remember { mutableStateOf(0f) }
+    var containerHeight by remember { mutableStateOf(0f) }
 
     val redrawTrigger = BlockPositionTracker.redrawTrigger.value
+
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp
+
+    val adaptiveHeight = screenHeight * 0.35f
 
     val gestureModifier = Modifier.pointerInput(Unit) {
         detectTransformGestures { _, pan, zoom, _ ->
@@ -58,9 +67,11 @@ fun WorkspaceCanvas(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(330.dp)
+            .height(adaptiveHeight.dp)
             .background(Color.White)
             .border(1.dp, Color.Gray)
+            .verticalScroll(rememberScrollState())
+            .horizontalScroll(rememberScrollState())
             .onSizeChanged { size ->
                 containerWidth = size.width.toFloat()
                 containerHeight = size.height.toFloat()
