@@ -58,6 +58,9 @@ class VariableViewModel : ViewModel() {
         BlockPositionTracker.redrawTrigger.value++
         addBlock(block)
     }
+    fun isVariableAlreadyDeclared(name: String): Boolean {
+        return variables.any { it.name == name }
+    }
 
     // Создание блока Print(variable)
     fun declarePrintBlock(variable: Variable) {
