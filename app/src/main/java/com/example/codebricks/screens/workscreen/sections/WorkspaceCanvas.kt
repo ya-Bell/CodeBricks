@@ -100,12 +100,13 @@ fun WorkspaceCanvas(
             )
         }
         setVariableBlocks.forEach { block ->
-            val variable = block.value as? Variable
             DraggableSetVariableBlock(
                 id = block.id,
-                variable = variable,
                 containerWidth = containerWidth,
-                containerHeight = containerHeight)
+                containerHeight = containerHeight,
+                inputBlocks = block.inputBlocks,
+                viewModel = viewModel
+            )
         }
 
 
@@ -134,7 +135,8 @@ fun WorkspaceCanvas(
                     id = block.id,
                     variable = variable,
                     containerWidth = containerWidth,
-                    containerHeight = containerHeight
+                    containerHeight = containerHeight,
+                    viewModel = viewModel
                 )
             }
         }

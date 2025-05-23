@@ -1,10 +1,13 @@
 package com.example.codebricks.viewmodel
 
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
+import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
+import androidx.compose.runtime.State
 
 data class Variable(val name: String, var value: Any, val type: String)
 
@@ -73,22 +76,98 @@ class VariableViewModel : ViewModel() {
         addBlock(printBlock)
 
     }
-    fun declareSetVariable(variable: Variable, newValue: Any) {
+//    fun declareSetVariable(variable: Variable, newValue: Any) {
+//        val referenceVarBlock = Block(
+//            type = BlockType.VARIABLE_REFERENCE,
+//            value = variable
+//        )
+//
+//        val referenceValueBlock = Block(
+//            type = BlockType.VARIABLE_REFERENCE,
+//            value = Variable(name = newValue.toString(), value = newValue, type = variable.type)
+//        )
+//
+//        val setBlock = Block(
+//            type = BlockType.VARIABLE_SET,
+//            inputBlocks = mutableListOf(referenceVarBlock, referenceValueBlock)
+//        )
+//
+//        BlockPositionTracker.redrawTrigger.value++
+//        addBlock(setBlock)
+//    }
 
-        val updatedVariable = variable.copy(value = newValue)
+    //test
+    private val _highlightedSlot = mutableStateOf<Pair<String, Int>?>(null)
+    val highlightedSlot: State<Pair<String, Int>?> = _highlightedSlot
 
-        _variables.value = _variables.value.map {
-            if (it.name == variable.name) updatedVariable else it
-        }
-
-        val setVariableBlock = Block(
-            type = BlockType.VARIABLE_SET,
-            value = updatedVariable
-        )
-        BlockPositionTracker.redrawTrigger.value++
-        addBlock(setVariableBlock)
+    fun onDragOverSlot(blockId: String, slotIndex: Int) {
+        _highlightedSlot.value = blockId to slotIndex
     }
 
+    fun onDragExitSlot() {
+        _highlightedSlot.value = null
+    }
+    fun declareEmptySetVariableBlock() {
+        val firstVar = variables.firstOrNull()
+        val referenceBlock = firstVar?.let {
+            Block(type = BlockType.VARIABLE_REFERENCE, value = it)
+        }
+
+        val setBlock = Block(
+            type = BlockType.VARIABLE_SET,
+            inputBlocks = referenceBlock?.let { mutableListOf(it) } ?: mutableListOf()
+        )
+
+        BlockPositionTracker.redrawTrigger.value++
+        addBlock(setBlock)
+    }
+
+    fun updateSetBlockTarget(blockId: String, variable: Variable) {
+        _programBlocks.value = _programBlocks.value.map { block ->
+            if (block.id == blockId && block.type == BlockType.VARIABLE_SET) {
+                val refBlock = Block(
+                    type = BlockType.VARIABLE_REFERENCE,
+                    value = variable
+                )
+                block.inputBlocks.apply {
+                    if (isEmpty()) {
+                        add(refBlock)
+                    } else {
+                        this[0] = refBlock
+                    }
+                }
+            }
+            block
+        }
+        BlockPositionTracker.redrawTrigger.value++
+    }
+
+    fun updateSetBlockValue(blockId: String, rawValue: String) {
+        _programBlocks.value = _programBlocks.value.map { block ->
+            if (block.id == blockId && block.type == BlockType.VARIABLE_SET) {
+                val type = (block.inputBlocks.getOrNull(0)?.value as? Variable)?.type ?: "string"
+
+                val parsed: Any = when (type) {
+                    "int" -> rawValue.toIntOrNull() ?: 0
+                    "double" -> rawValue.replace(",", ".").toDoubleOrNull() ?: 0.0
+                    "bool" -> rawValue.toBooleanStrictOrNull() ?: false
+                    else -> rawValue
+                }
+
+                val fakeVariable = Variable(name = rawValue, value = parsed, type = type)
+                val ref = Block(type = BlockType.VARIABLE_REFERENCE, value = fakeVariable)
+
+                if (block.inputBlocks.size < 2) {
+                    block.inputBlocks.add(ref)
+                } else {
+                    block.inputBlocks[1] = ref
+                }
+            }
+            block
+        }
+
+        BlockPositionTracker.redrawTrigger.value++
+    }
     // Start / Stop
     fun declareControlBlock(type: String) {
         val blockType = when (type) {
@@ -104,6 +183,7 @@ class VariableViewModel : ViewModel() {
         addBlock(controlBlock)
     }
 
+
     fun addReferenceBlock(variable: Variable) {
         println("Added insert block: ${variable.name}")
         val block = Block(
@@ -112,6 +192,43 @@ class VariableViewModel : ViewModel() {
         )
         BlockPositionTracker.redrawTrigger.value++
         _programBlocks.value += block
+    }
+
+    fun tryInsertReferenceBlock(position: Offset, referenceBlockId: String) {
+        val refBlock = programBlocks.find { it.id == referenceBlockId } ?: return
+        println(">> Drop at: $position")
+        programBlocks.forEach { block ->
+            if (block.type == BlockType.VARIABLE_SET) {
+                val targetBounds = BlockSlotTracker.getSlotBounds(block.id, 0)
+                val valueBounds = BlockSlotTracker.getSlotBounds(block.id, 1)
+                println(">> Set block: ${block.id}")
+                println("   TargetBounds: $targetBounds")
+                println("   ValueBounds: $valueBounds")
+                if (targetBounds?.contains(position) == true) {
+                    println("✔ Inserted into input[0]")
+                    if (block.inputBlocks.size < 1) {
+                        block.inputBlocks.add(refBlock)
+                    } else {
+                        block.inputBlocks[0] = refBlock
+                    }
+                    _programBlocks.value = _programBlocks.value.toList()
+                    BlockPositionTracker.redrawTrigger.value++
+                    return
+                }
+
+                if (valueBounds?.contains(position) == true) {
+                    println("✔ Inserted into input[1]")
+                    while (block.inputBlocks.size < 2) {
+                        block.inputBlocks.add(Block(type = BlockType.VARIABLE_REFERENCE))
+                    }
+                    block.inputBlocks[1] = refBlock
+                    _programBlocks.value = _programBlocks.value.toList()
+                    BlockPositionTracker.redrawTrigger.value++
+                    return
+                }
+                println("Inserted into value slot: ${refBlock.value}")
+            }
+        }
     }
 
     fun executeProgram(onFinish: () -> Unit) {
@@ -135,19 +252,29 @@ class VariableViewModel : ViewModel() {
                 }
 
                 BlockType.VARIABLE_SET -> {
-                    val variable = current.value as? Variable
+                    val targetVar = current.inputBlocks.getOrNull(0)?.value as? Variable
+                    val valueBlock = current.inputBlocks.getOrNull(1)?.value as? Variable
 
-                    if (variable == null) {
-                        logToConsole("❌ Error: VARIABLE_SET block has no variable")
+                    if (targetVar == null) {
+                        logToConsole("❌ Error: No variable selected in Set block.")
+                    } else if (valueBlock == null) {
+                        logToConsole("❌ Error: No value provided for ${targetVar.name}")
                     } else {
-                        val target = declaredVariables[variable.name]
+                        val memoryVar = declaredVariables[targetVar.name]
 
-                        if (target != null) {
-                            target.value = variable.value
-                            logToConsole("📝 Set ${target.name} to ${target.value}")
-                        } else {
-                            logToConsole("❌ Error: variable '${variable.name}' not declared")
+                        if (memoryVar != null) {
+                            val refName = valueBlock.name
+                            val referenced = declaredVariables[refName]
+
+                            if (referenced != null) {
+                                memoryVar.value = referenced.value
+                                logToConsole("📝 Set ${memoryVar.name} to ${referenced.value} (from ${refName})")
+                            } else {
+                                memoryVar.value = valueBlock.value
+                                logToConsole("📝 Set ${memoryVar.name} to ${valueBlock.value}")
+                            }
                         }
+
                     }
                 }
 
@@ -230,18 +357,38 @@ class VariableViewModel : ViewModel() {
                     }
                 }
 
-                BlockType.IO_PRINT, BlockType.VARIABLE_SET -> {
-                    val usedVar = when (block.type) {
-                        BlockType.IO_PRINT -> block.inputBlocks.firstOrNull()?.value as? Variable
-                            ?: block.value as? Variable
-                        BlockType.VARIABLE_SET -> block.value as? Variable
-                        else -> null
-                    }
+                BlockType.VARIABLE_SET -> {
+                    val variable = block.inputBlocks.getOrNull(0)?.value as? Variable
+                    val value = block.inputBlocks.getOrNull(1)?.value as? Variable
 
-                    if (usedVar != null && usedVar.name !in declared) {
+                    if (variable == null) {
                         return BlockOrderResult(
                             isValid = false,
-                            errorMessage = "❌ Error: Variable '${usedVar.name}' is used before it is declared."
+                            errorMessage = "❌ Error: Set block is missing target variable."
+                        )
+                    }
+
+                    if (value == null) {
+                        return BlockOrderResult(
+                            isValid = false,
+                            errorMessage = "❌ Error: Set block for '${variable.name}' is missing a value."
+                        )
+                    }
+
+                    if (variable.name !in declared) {
+                        return BlockOrderResult(
+                            isValid = false,
+                            errorMessage = "❌ Error: Variable '${variable.name}' is used before it is declared."
+                        )
+                    }
+                }
+
+                BlockType.IO_PRINT -> {
+                    val variable = block.inputBlocks.firstOrNull()?.value as? Variable
+                    if (variable != null && variable.name !in declared) {
+                        return BlockOrderResult(
+                            isValid = false,
+                            errorMessage = "❌ Error: Variable '${variable.name}' is used before it is declared."
                         )
                     }
                 }
