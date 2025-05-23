@@ -3,13 +3,17 @@ package com.example.codebricks
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.*
-import com.example.codebricks.screens.workscreen.WorkScreen
-import com.example.codebricks.ui.theme.CodeBricksTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.codebricks.screens.startscreen.SplashScreen
 import com.example.codebricks.screens.startscreen.StartScreen
+import com.example.codebricks.screens.workscreen.WorkScreen
+import com.example.codebricks.ui.theme.CodeBricksTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,8 +27,12 @@ class MainActivity : ComponentActivity() {
 
                 NavHost(
                     navController = navController,
-                    startDestination = "start"
+                    startDestination = "splash"
                 ) {
+                    composable("splash") {
+                        SplashScreen(navController = navController)
+                    }
+
                     composable("start") {
                         StartScreen(
                             onStartClick = { navController.navigate("work") },
@@ -46,4 +54,3 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
