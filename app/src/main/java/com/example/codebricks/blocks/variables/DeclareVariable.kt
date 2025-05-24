@@ -36,6 +36,8 @@ fun DeclareVariable(viewModel: VariableViewModel) {
     val isValueError = remember { mutableStateOf(false) }
     val isSubmitDisabled = remember { mutableStateOf(true) }
 
+    val selectedBool = remember { mutableStateOf("true") }
+
     LaunchedEffect(isMultiple.value) {
         names.value = ""
         value.value = ""
@@ -249,6 +251,44 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                     Text(text = stringResource(id = R.string.doubles))
                                 }
                             }
+                            if (type.value == "bool") {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceEvenly
+                                ) {
+                                    Button(
+                                        onClick = {
+                                            if (isMultiple.value) {
+                                                value.value = if (value.value.isEmpty()) "true" else "${value.value}, true"
+                                            } else {
+                                                selectedBool.value = "true"
+                                                value.value = "true"
+                                            }
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = if (selectedBool.value == "true") Color.Gray else Color.LightGray),
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier.padding(4.dp)
+                                    ) {
+                                        Text(text = "True", fontSize = 10.sp)
+                                    }
+
+                                    Button(
+                                        onClick = {
+                                            if (isMultiple.value) {
+                                                value.value = if (value.value.isEmpty()) "false" else "${value.value}, false"
+                                            } else {
+                                                selectedBool.value = "false"
+                                                value.value = "false"
+                                            }
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = if (selectedBool.value == "false") Color.Gray else Color.LightGray),
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier.padding(4.dp)
+                                    ) {
+                                        Text(text = "False", fontSize = 10.sp)
+                                    }
+                                }
+                            }
                         }
                     }
                 },
@@ -269,7 +309,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                     namesList.forEachIndexed { index, name ->
                                         val parsedValue: Any = when (type.value) {
                                             "int" -> valuesFinal[index].toIntOrNull() ?: 0
-                                            "bool" -> valuesFinal[index].toBooleanStrictOrNull() == true
+                                            "bool" -> valuesFinal[index].toBooleanStrictOrNull() ?: false
                                             "double" -> valuesFinal[index].toDoubleOrNull() ?: 0.0
                                             else -> valuesFinal[index]
                                         }
@@ -278,7 +318,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                 } else {
                                     val parsedValue: Any = when (type.value) {
                                         "int" -> value.value.toIntOrNull() ?: 0
-                                        "bool" -> value.value.toBooleanStrictOrNull() == false
+                                        "bool" -> selectedBool.value.toBooleanStrictOrNull() ?: false
                                         "double" -> value.value.toDoubleOrNull() ?: 0.0
                                         else -> value.value
                                     }
