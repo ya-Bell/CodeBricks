@@ -36,6 +36,15 @@ fun DeclareVariable(viewModel: VariableViewModel) {
     val isValueError = remember { mutableStateOf(false) }
     val isSubmitDisabled = remember { mutableStateOf(true) }
 
+    LaunchedEffect(isMultiple.value) {
+        names.value = ""
+        value.value = ""
+        errorMessage.value = ""
+        isNameError.value = false
+        isValueError.value = false
+        isSubmitDisabled.value = true
+    }
+
     LaunchedEffect(showDialog.value) {
         if (showDialog.value) {
             names.value = ""
