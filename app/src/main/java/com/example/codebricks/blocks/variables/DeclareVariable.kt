@@ -1,5 +1,6 @@
 package com.example.codebricks.blocks.variables
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -253,7 +254,9 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                             }
                             if (type.value == "bool") {
                                 Row(
-                                    modifier = Modifier.fillMaxWidth(),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
                                     horizontalArrangement = Arrangement.SpaceEvenly
                                 ) {
                                     Button(
@@ -265,11 +268,21 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                                 value.value = "true"
                                             }
                                         },
-                                        colors = ButtonDefaults.buttonColors(containerColor = if (selectedBool.value == "true") Color.Gray else Color.LightGray),
-                                        shape = RoundedCornerShape(8.dp),
-                                        modifier = Modifier.padding(4.dp)
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = if (selectedBool.value == "true") Color(0xFF4CAF50) else Color.Gray
+                                        ),
+                                        shape = RoundedCornerShape(50),
+                                        modifier = Modifier
+                                            .padding(8.dp)
+                                            .weight(1f)
+                                            .animateContentSize()
                                     ) {
-                                        Text(text = "True", fontSize = 10.sp)
+                                        Text(
+                                            text = "True",
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White
+                                        )
                                     }
 
                                     Button(
@@ -281,11 +294,21 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                                 value.value = "false"
                                             }
                                         },
-                                        colors = ButtonDefaults.buttonColors(containerColor = if (selectedBool.value == "false") Color.Gray else Color.LightGray),
-                                        shape = RoundedCornerShape(8.dp),
-                                        modifier = Modifier.padding(4.dp)
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = if (selectedBool.value == "false") Color(0xFFf44336) else Color.Gray
+                                        ),
+                                        shape = RoundedCornerShape(50),
+                                        modifier = Modifier
+                                            .padding(8.dp)
+                                            .weight(1f)
+                                            .animateContentSize()
                                     ) {
-                                        Text(text = "False", fontSize = 10.sp)
+                                        Text(
+                                            text = "False",
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White
+                                        )
                                     }
                                 }
                             }
