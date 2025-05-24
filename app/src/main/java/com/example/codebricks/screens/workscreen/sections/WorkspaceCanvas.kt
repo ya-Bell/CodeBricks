@@ -86,7 +86,10 @@ fun WorkspaceCanvas(
                 id = block.id,
                 type = block.type.name,
                 containerWidth = containerWidth,
-                containerHeight = containerHeight
+                containerHeight = containerHeight,
+                onDelete = { blockId ->
+                    viewModel.removeBlockById(blockId)
+                }
             )
         }
 

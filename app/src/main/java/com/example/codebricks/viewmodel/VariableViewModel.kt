@@ -107,6 +107,11 @@ class VariableViewModel : ViewModel() {
         addBlock(controlBlock)
     }
 
+    fun removeBlockById(blockId: String) {
+        _programBlocks.value = _programBlocks.value.filterNot { it.id == blockId }
+        BlockPositionTracker.redrawTrigger.value++
+    }
+
     fun addReferenceBlock(variable: Variable) {
         println("Added insert block: ${variable.name}")
         val block = Block(
