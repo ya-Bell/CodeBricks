@@ -1,5 +1,7 @@
 package com.example.codebricks.blocks.variables
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -8,7 +10,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -24,30 +25,26 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.boundsInParent
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
-import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
 import com.example.codebricks.viewmodel.Variable
 import androidx.compose.material3.*
 import androidx.compose.foundation.text.*
 import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.ui.geometry.toRect
-import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import com.example.codebricks.viewmodel.VariableViewModel
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.codebricks.blocks.common.BlockType
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.Dp
+import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,17 +59,29 @@ fun DraggableSetVariableBlock(
 
     val targetVar = inputBlocks.getOrNull(0)?.value as? Variable
     val valueVar = inputBlocks.getOrNull(1)?.value as? Variable
-
     val variableType = targetVar?.type ?: "string"
-    val valueText = remember { mutableStateOf("") }
 
-    LaunchedEffect(offset) {
-        BlockPositionTracker.updateBlockPosition(id, offset)
+    val inputText = remember(id) { mutableStateOf("") }
+    /* val showApply = remember { mutableStateOf(false) } */
+    val isEditing = remember { mutableStateOf(false) }
+    val isError = remember { mutableStateOf(false) }
+
+
+    val redrawTrigger = BlockPositionTracker.redrawTrigger.value
+
+    LaunchedEffect(valueVar?.name, isEditing.value){
+        if (valueVar != null && !isEditing.value && inputText.value.isNotEmpty()) {
+            inputText.value = ""
+        }
     }
+    LaunchedEffect(redrawTrigger, valueVar) {
+    }
+
     Box(
         modifier = Modifier
             .offset { IntOffset(offset.x.toInt(), offset.y.toInt()) }
-            .requiredSize(300.dp, 44.dp)
+            .height(44.dp)
+            .widthIn(max = 500.dp)
             .clip(RoundedCornerShape(12.dp))
             .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
             .background(Color(0xFFFB8C00))
@@ -90,16 +99,11 @@ fun DraggableSetVariableBlock(
         Row(
             modifier = Modifier
                 .align(Alignment.Center)
-                .padding(horizontal = 8.dp),
+                .padding(horizontal = 8.dp)
+                .horizontalScroll(rememberScrollState()),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Set",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                modifier = Modifier.padding(end = 4.dp)
-            )
+            Text("Set", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White, modifier = Modifier.padding(end = 4.dp))
 
             val expanded = remember { mutableStateOf(false) }
             val selectedVar = remember { mutableStateOf(targetVar?.name ?: "") }
@@ -111,7 +115,7 @@ fun DraggableSetVariableBlock(
                 Box(
                     modifier = Modifier
                         .menuAnchor(type = MenuAnchorType.PrimaryEditable, enabled = true)
-                        .width(64.dp)
+                        .widthIn(min = 48.dp, max = 300.dp)
                         .height(24.dp)
                         .background(Color.White, RoundedCornerShape(4.dp))
                         .border(1.dp, Color.Black, RoundedCornerShape(4.dp))
@@ -121,9 +125,9 @@ fun DraggableSetVariableBlock(
                     Text(
                         text = selectedVar.value,
                         fontSize = 11.sp,
-                        color = Color.Black
-                    )
-                }
+                        color = Color.Black,
+                        modifier = Modifier.padding(horizontal = 8.dp)
+                    )                }
 
                 ExposedDropdownMenu(
                     expanded = expanded.value,
@@ -141,109 +145,143 @@ fun DraggableSetVariableBlock(
                     }
                 }
             }
-            Text(
-                text = " to ",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White,
-                modifier = Modifier.padding(horizontal = 4.dp)
-            )
 
-            val slotBoundsKey = id to 1
+            Text(" to ", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
 
             val isHighlighted = viewModel.highlightedSlot.value == (id to 1)
+            val valueBlock = inputBlocks.getOrNull(1)
+            val blockId = valueBlock?.id
+
+            val blockWidth = blockId?.let { BlockPositionTracker.getBlockWidth(it) }
+            val textLength = if (isEditing.value) inputText.value.length else valueVar?.name?.length ?: 1
+
+            val targetWidth: Dp = when {
+                blockWidth != null && valueVar != null && !isEditing.value -> {
+                    with(LocalDensity.current) { blockWidth.toDp() }.coerceIn(32.dp, 240.dp)
+                }
+                else -> (textLength * 7 + 20).dp.coerceIn(32.dp, 240.dp)
+            }
+
+            val animatedWidth by animateDpAsState(
+                targetValue = targetWidth,
+                animationSpec = tween(200)
+            )
+
 
             Box(
                 modifier = Modifier
-                    .width(120.dp)
                     .height(24.dp)
-                    .onGloballyPositioned { coords ->
-                        val globalBounds = coords.boundsInParent()
+                    .width(animatedWidth)
+                    .background(Color.White, RoundedCornerShape(12.dp))
+                    .onGloballyPositioned {
+                        val globalBounds = it.boundsInWindow()
                         BlockSlotTracker.setSlotBounds(id, 1, globalBounds)
                     }
-                    .pointerInteropFilter { event ->
-                        when (event.action) {
-                            android.view.MotionEvent.ACTION_HOVER_ENTER,
-                            android.view.MotionEvent.ACTION_HOVER_MOVE -> {
-                                viewModel.onDragOverSlot(id, 1)
-                            }
-
-                            android.view.MotionEvent.ACTION_HOVER_EXIT -> {
-                                viewModel.onDragExitSlot()
-                            }
-                        }
-                        false
-                    }
-                    .background(Color.White, RoundedCornerShape(4.dp))
                     .border(
-                        width = 2.dp,
-                        color = if (isHighlighted) Color(0xFF4CAF50) else Color.Black,
-                        shape = RoundedCornerShape(4.dp)
+                        2.dp,
+                        if (isError.value) Color.Red else if (isHighlighted) Color(0xFF4CAF50) else Color.Black,
+                        RoundedCornerShape(12.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                if (valueVar != null) {
-                    Text(text = valueVar.name, fontSize = 11.sp, color = Color.Black)
+                if (valueVar != null && !isEditing.value) {
+                    Text(
+                        text = valueVar.name,
+                        fontSize = 11.sp,
+                        color = Color.Black,
+                        modifier = Modifier
+                            .clickable {
+                                inputText.value = valueVar.name
+                                isEditing.value = true
+                            }
+                            .padding(horizontal = 8.dp)
+                    )
                 } else {
                     when (variableType) {
                         "bool" -> {
-                            val selected = remember { mutableStateOf("true") }
+                            val boolOptions = listOf("true", "false")
+                            val selectedBool = remember { mutableStateOf("true") }
+                            val boolExpanded = remember { mutableStateOf(false) }
 
-                            Text(
-                                text = selected.value,
-                                fontSize = 11.sp,
-                                modifier = Modifier
-                                    .clickable {
-                                        selected.value =
-                                            if (selected.value == "true") "false" else "true"
-                                        viewModel.updateSetBlockValue(id, selected.value)
+                            ExposedDropdownMenuBox(
+                                expanded = boolExpanded.value,
+                                onExpandedChange = { boolExpanded.value = !boolExpanded.value }
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .menuAnchor(type = MenuAnchorType.PrimaryEditable, enabled = true)
+                                        .width(80.dp)
+                                        .height(24.dp)
+                                        .background(Color.White, RoundedCornerShape(12.dp))
+                                        .border(1.dp, Color.Black, RoundedCornerShape(12.dp))
+                                        .clickable { boolExpanded.value = true },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(selectedBool.value, fontSize = 11.sp, color = Color.Black)
+                                }
+
+                                ExposedDropdownMenu(
+                                    expanded = boolExpanded.value,
+                                    onDismissRequest = { boolExpanded.value = false }
+                                ) {
+                                    boolOptions.forEach { option ->
+                                        DropdownMenuItem(
+                                            text = { Text(option) },
+                                            onClick = {
+                                                selectedBool.value = option
+                                                boolExpanded.value = false
+                                                viewModel.updateSetBlockValue(id, option)
+                                                isEditing.value = false
+                                            }
+                                        )
                                     }
-                                    .padding(4.dp),
-                                color = Color.Black
-                            )
+                                }
+                            }
                         }
 
                         else -> {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(Color.White, RoundedCornerShape(4.dp))
-                                    .border(1.dp, Color.Red, RoundedCornerShape(4.dp)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text("DROP HERE", fontSize = 10.sp, color = Color.Gray)
-                            }
+                            BasicTextField(
+                                value = inputText.value,
+                                onValueChange = {
+                                    inputText.value = it
+                                    isEditing.value = true
+                                    /* showApply.value = it.isNotBlank() */
+                                    isError.value = when (variableType) {
+                                        "int" -> it.any { c -> !c.isDigit() }
+                                        "double" -> it.replace(",", ".").toDoubleOrNull() == null
+                                        else -> false
+                                    }
+                                },
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                keyboardActions = KeyboardActions(
+                                    onDone = {
+                                        if (!isError.value) {
+                                            val cleanedValue = if (variableType == "double") {
+                                                inputText.value.replace(",", ".").toDoubleOrNull()?.toString() ?: "0.0"
+                                            } else inputText.value
+
+                                            viewModel.updateSetBlockValue(id, cleanedValue)
+                                            isEditing.value = false
+                                        }
+                                    }
+                                ),
+                                singleLine = true,
+                                textStyle = TextStyle(fontSize = 12.sp, color = Color.Black),
+                                decorationBox = { innerTextField ->
+                                    Box(
+                                        modifier = Modifier.padding(horizontal = 4.dp),
+                                        contentAlignment = Alignment.CenterStart
+                                    ) {
+                                        innerTextField()
+                                    }
+                                }
+                            )
                         }
                     }
                 }
             }
+
         }
     }
 }
-//@Preview(showBackground = true)
-//@Composable
-//fun DraggableSetVariableBlockPreview() {
-//    val mockVariable = Variable(name = "score", value = 10, type = "int")
-//    val block = Block(
-//        id = "preview-set-block",
-//        type = BlockType.VARIABLE_SET,
-//        inputBlocks = mutableListOf(
-//            Block(type = BlockType.VARIABLE_REFERENCE, value = mockVariable)
-//        )
-//    )
-//
-//    val mockViewModel = VariableViewModel().apply {
-//        declareVariable("score", 10, "int")
-//        declareVariable("lives", 3, "int")
-//    }
-//
-//    DraggableSetVariableBlock(
-//        id = block.id,
-//        containerWidth = 400f,
-//        containerHeight = 300f,
-//        inputBlocks = block.inputBlocks,
-//        viewModel = mockViewModel
-//    )
-//}
-
 

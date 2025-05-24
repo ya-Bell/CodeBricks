@@ -134,8 +134,6 @@ fun WorkspaceCanvas(
                 DraggableReferenceBlock(
                     id = block.id,
                     variable = variable,
-                    containerWidth = containerWidth,
-                    containerHeight = containerHeight,
                     viewModel = viewModel
                 )
             }

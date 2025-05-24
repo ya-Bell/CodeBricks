@@ -76,37 +76,10 @@ class VariableViewModel : ViewModel() {
         addBlock(printBlock)
 
     }
-//    fun declareSetVariable(variable: Variable, newValue: Any) {
-//        val referenceVarBlock = Block(
-//            type = BlockType.VARIABLE_REFERENCE,
-//            value = variable
-//        )
-//
-//        val referenceValueBlock = Block(
-//            type = BlockType.VARIABLE_REFERENCE,
-//            value = Variable(name = newValue.toString(), value = newValue, type = variable.type)
-//        )
-//
-//        val setBlock = Block(
-//            type = BlockType.VARIABLE_SET,
-//            inputBlocks = mutableListOf(referenceVarBlock, referenceValueBlock)
-//        )
-//
-//        BlockPositionTracker.redrawTrigger.value++
-//        addBlock(setBlock)
-//    }
 
-    //test
     private val _highlightedSlot = mutableStateOf<Pair<String, Int>?>(null)
     val highlightedSlot: State<Pair<String, Int>?> = _highlightedSlot
 
-    fun onDragOverSlot(blockId: String, slotIndex: Int) {
-        _highlightedSlot.value = blockId to slotIndex
-    }
-
-    fun onDragExitSlot() {
-        _highlightedSlot.value = null
-    }
     fun declareEmptySetVariableBlock() {
         val firstVar = variables.firstOrNull()
         val referenceBlock = firstVar?.let {
@@ -143,6 +116,8 @@ class VariableViewModel : ViewModel() {
     }
 
     fun updateSetBlockValue(blockId: String, rawValue: String) {
+        if (rawValue.isBlank()) return
+
         _programBlocks.value = _programBlocks.value.map { block ->
             if (block.id == blockId && block.type == BlockType.VARIABLE_SET) {
                 val type = (block.inputBlocks.getOrNull(0)?.value as? Variable)?.type ?: "string"
@@ -168,6 +143,7 @@ class VariableViewModel : ViewModel() {
 
         BlockPositionTracker.redrawTrigger.value++
     }
+
     // Start / Stop
     fun declareControlBlock(type: String) {
         val blockType = when (type) {
@@ -197,38 +173,49 @@ class VariableViewModel : ViewModel() {
     fun tryInsertReferenceBlock(position: Offset, referenceBlockId: String) {
         val refBlock = programBlocks.find { it.id == referenceBlockId } ?: return
         println(">> Drop at: $position")
-        programBlocks.forEach { block ->
-            if (block.type == BlockType.VARIABLE_SET) {
-                val targetBounds = BlockSlotTracker.getSlotBounds(block.id, 0)
-                val valueBounds = BlockSlotTracker.getSlotBounds(block.id, 1)
-                println(">> Set block: ${block.id}")
-                println("   TargetBounds: $targetBounds")
-                println("   ValueBounds: $valueBounds")
-                if (targetBounds?.contains(position) == true) {
-                    println("✔ Inserted into input[0]")
-                    if (block.inputBlocks.size < 1) {
-                        block.inputBlocks.add(refBlock)
-                    } else {
-                        block.inputBlocks[0] = refBlock
+
+        val matchedSlot = BlockSlotTracker.getAllSlots().find { (_, _, bounds) ->
+            bounds.contains(position)
+        }
+
+        if (matchedSlot != null) {
+            val targetBlock = programBlocks.find { it.id == matchedSlot.blockId }
+            if (targetBlock != null && targetBlock.type == BlockType.VARIABLE_SET) {
+                val slotIndex = matchedSlot.slotIndex
+
+                // Проверка типа переменной
+                val targetVar = targetBlock.inputBlocks.getOrNull(0)?.value as? Variable
+                val refVar = refBlock.value as? Variable
+
+                if (slotIndex == 1 && targetVar != null && refVar != null) {
+                    if (targetVar.type != refVar.type) {
+                        logToConsole("❌ Type mismatch: ${refVar.type} cannot be assigned to ${targetVar.type}")
+                        return
                     }
-                    _programBlocks.value = _programBlocks.value.toList()
-                    BlockPositionTracker.redrawTrigger.value++
-                    return
                 }
 
-                if (valueBounds?.contains(position) == true) {
-                    println("✔ Inserted into input[1]")
-                    while (block.inputBlocks.size < 2) {
-                        block.inputBlocks.add(Block(type = BlockType.VARIABLE_REFERENCE))
-                    }
-                    block.inputBlocks[1] = refBlock
-                    _programBlocks.value = _programBlocks.value.toList()
-                    BlockPositionTracker.redrawTrigger.value++
-                    return
+                while (targetBlock.inputBlocks.size <= slotIndex) {
+                    targetBlock.inputBlocks.add(Block(type = BlockType.VARIABLE_REFERENCE))
                 }
-                println("Inserted into value slot: ${refBlock.value}")
+
+                targetBlock.inputBlocks[slotIndex] = refBlock
+
+                _programBlocks.value = _programBlocks.value.toList()
+                BlockPositionTracker.redrawTrigger.value++
             }
         }
+    }
+
+
+    fun removeReferenceFromParent(referenceId: String) {
+        _programBlocks.value.forEach { block ->
+            val index = block.inputBlocks.indexOfFirst { it.id == referenceId }
+            if (index != -1) {
+                block.inputBlocks.removeAt(index)
+            }
+        }
+        _programBlocks.value = _programBlocks.value.toList()
+        BlockPositionTracker.redrawTrigger.value++
     }
 
     fun executeProgram(onFinish: () -> Unit) {
@@ -326,6 +313,11 @@ class VariableViewModel : ViewModel() {
             currentBlock.nextBlockId = nextBlock.id
         }
         BlockPositionTracker.redrawTrigger.value++
+    }
+    fun findBlockContaining(childId: String): Block? {
+        return programBlocks.find { block ->
+            block.inputBlocks.any { it.id == childId }
+        }
     }
 
     data class BlockOrderResult(
