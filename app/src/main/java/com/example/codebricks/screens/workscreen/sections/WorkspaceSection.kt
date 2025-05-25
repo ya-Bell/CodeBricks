@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import com.example.codebricks.viewmodel.VariableViewModel
 
 @Composable
@@ -27,4 +28,17 @@ fun WorkSpaceSection(viewModel: VariableViewModel) {
         )
         WorkspaceControlBar(viewModel = viewModel)
     }
+}
+
+
+@Preview(
+    name = "WorkSpaceSection Preview",
+    showBackground = true,
+    widthDp = 360,
+    heightDp = 640
+)
+@Composable
+fun WorkSpaceSectionPreview() {
+    val previewViewModel = remember { VariableViewModel() }
+    WorkSpaceSection(viewModel = previewViewModel)
 }

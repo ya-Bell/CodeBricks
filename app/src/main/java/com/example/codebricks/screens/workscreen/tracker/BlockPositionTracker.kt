@@ -8,9 +8,8 @@ object BlockPositionTracker {
     val redrawTrigger = mutableStateOf(0)
 
     fun updateBlockPosition(id: String, position: Offset) {
-        println("📌 update position for $id = $position")
         blockPositions[id] = position
-        redrawTrigger.value++ // форсим перерисовку
+        redrawTrigger.value++
     }
     fun clear() {
         blockPositions.clear()
@@ -18,4 +17,12 @@ object BlockPositionTracker {
     }
 
     fun getPosition(id: String): Offset? = blockPositions[id]
+
+    private val blockSizes = mutableMapOf<String, Pair<Float, Float>>()
+
+    fun setBlockSize(id: String, width: Float, height: Float) {
+        blockSizes[id] = width to height
+    }
+
+    fun getBlockWidth(id: String): Float? = blockSizes[id]?.first
 }
