@@ -1,5 +1,6 @@
 package com.example.codebricks.blocks.variables
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -36,6 +37,16 @@ import com.example.codebricks.viewmodel.VariableViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeclareVariable(viewModel: VariableViewModel) {
+    val buttonModifier = Modifier
+        .padding(4.dp)
+        .height(36.dp)
+        .fillMaxWidth()
+
+    val buttonColors = ButtonDefaults.buttonColors(
+        containerColor = Color(0xFFFFA500),
+        contentColor = Color.Black
+    )
+
     val showDialog = remember { mutableStateOf(false) }
     val isMultiple = remember { mutableStateOf(false) }
     val names = remember { mutableStateOf("") }
@@ -192,9 +203,11 @@ fun DeclareVariable(viewModel: VariableViewModel) {
     Column {
         Button(
             onClick = { showDialog.value = true },
-            modifier = Modifier.padding(4.dp)
+            modifier = buttonModifier,
+            colors = buttonColors,
+            border = BorderStroke(2.dp, Color.Black)
         ) {
-            Text(text = stringResource(id = R.string.create_variable), fontSize = 12.sp)
+            Text(text = stringResource(id = R.string.create_variable), fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
         }
 
         if (showDialog.value) {

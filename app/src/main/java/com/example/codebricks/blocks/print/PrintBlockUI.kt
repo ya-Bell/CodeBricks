@@ -2,12 +2,18 @@ package com.example.codebricks.blocks.print
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,9 +39,14 @@ fun DraggablePrintBlock(
     id: String,
     variable: Variable?,
     containerWidth: Float,
-    containerHeight: Float
+    containerHeight: Float,
+    onDelete: (String) -> Unit
 ){
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
+    var showDeleteIcon by remember { mutableStateOf(false) }
+    var dragStartTime by remember { mutableStateOf<Long>(0L) }
+    var isPressed by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         BlockPositionTracker.updateBlockPosition(id, offset)
     }
@@ -48,12 +59,47 @@ fun DraggablePrintBlock(
             .background(Color(0xFFE57373))
             .pointerInput(Unit) {
                 detectDragGestures { change, dragAmount ->
+                    if (!isPressed) {
+                        isPressed = true
+                        dragStartTime = System.currentTimeMillis()
+                    }
+
                     offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
                     BlockPositionTracker.updateBlockPosition(id, offset)
                     change.consume()
+
+                    if (System.currentTimeMillis() - dragStartTime >= 2500) {
+                        showDeleteIcon = true
+                    }
                 }
             }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = {
+                        isPressed = false
+                        showDeleteIcon = false
+                    }
+                )
+            }
     ) {
+        if (showDeleteIcon) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(4.dp)
+                    .clickable {
+                        onDelete(id)
+                    }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = "Delete Block",
+                    modifier = Modifier.size(12.dp),
+                    tint = Color.Black
+                )
+            }
+        }
+
         val displayText = variable?.let { "print(${it.name})" } ?: "print(?)"
 
         Text(

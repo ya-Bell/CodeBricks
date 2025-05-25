@@ -11,9 +11,17 @@ import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.foundation.layout.requiredSizeIn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -91,6 +99,8 @@ fun DraggableReferenceBlock(
                 val offsetToUse = if (isInserted) localOffset.value else animOffset.value
                 IntOffset(offsetToUse.x.roundToInt(), offsetToUse.y.roundToInt())
             }
+            .widthIn(min = 70.dp)
+            .requiredSizeIn(minHeight = 32.dp)
             .requiredSize(60.dp, 24.dp)
             .border(2.dp, Color.Black, RoundedCornerShape(50))
             .clip(RoundedCornerShape(50))

@@ -3,10 +3,11 @@ package com.example.codebricks.screens.workscreen.sections
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -16,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.example.codebricks.R
 import com.example.codebricks.blocks.control.CreateControlBlock
 import com.example.codebricks.blocks.print.CreatePrintBlock
+import com.example.codebricks.blocks.variables.ChangeVariableButton
 import com.example.codebricks.blocks.variables.DeclareVariable
 import com.example.codebricks.blocks.variables.SetVariableButton
 import com.example.codebricks.blocks.variables.VariableReferenceBlock
@@ -27,16 +29,37 @@ fun BlockSection(selectedClass: String, viewModel: VariableViewModel) {
     Column(modifier = Modifier) {
         when (selectedClass) {
             "Control" -> {
-                CreateControlBlock(viewModel)
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    item {
+                        CreateControlBlock(viewModel)
+                    }
+                }
             }
             "Variables" -> {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    DeclareVariable(viewModel)
-                    SetVariableButton(viewModel)
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    item {
+                        DeclareVariable(viewModel)
+                    }
+                    item {
+                        SetVariableButton(viewModel)
+                    }
+                    item {
+                        ChangeVariableButton(viewModel)
+                    }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                Row {
-                    viewModel.variables.forEach { variable ->
+
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(viewModel.variables) { variable ->
                         VariableReferenceBlock(variable = variable, viewModel = viewModel)
                     }
                 }
