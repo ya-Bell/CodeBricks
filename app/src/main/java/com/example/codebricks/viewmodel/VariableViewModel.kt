@@ -61,6 +61,9 @@ class VariableViewModel : ViewModel() {
         BlockPositionTracker.redrawTrigger.value++
         addBlock(block)
     }
+    fun isVariableAlreadyDeclared(name: String): Boolean {
+        return variables.any { it.name == name }
+    }
 
     // Создание блока Print(variable)
     fun declarePrintBlock(variable: Variable) {
@@ -144,6 +147,7 @@ class VariableViewModel : ViewModel() {
         BlockPositionTracker.redrawTrigger.value++
     }
 
+
     // Start / Stop
     fun declareControlBlock(type: String) {
         val blockType = when (type) {
@@ -157,6 +161,11 @@ class VariableViewModel : ViewModel() {
         )
         BlockPositionTracker.redrawTrigger.value++
         addBlock(controlBlock)
+    }
+
+    fun removeBlockById(blockId: String) {
+        _programBlocks.value = _programBlocks.value.filterNot { it.id == blockId }
+        BlockPositionTracker.redrawTrigger.value++
     }
 
 
@@ -265,6 +274,7 @@ class VariableViewModel : ViewModel() {
                     }
                 }
 
+
                 BlockType.IO_PRINT -> {
                     val input = current.inputBlocks.firstOrNull()
                     val variable = input?.value as? Variable
@@ -348,7 +358,6 @@ class VariableViewModel : ViewModel() {
                         declared.add(variable.name)
                     }
                 }
-
                 BlockType.VARIABLE_SET -> {
                     val variable = block.inputBlocks.getOrNull(0)?.value as? Variable
                     val value = block.inputBlocks.getOrNull(1)?.value as? Variable
