@@ -97,7 +97,10 @@ fun WorkspaceCanvas(
                 id = block.id,
                 type = block.type.name,
                 containerWidth = containerWidth,
-                containerHeight = containerHeight
+                containerHeight = containerHeight,
+                onDelete = { blockId ->
+                    viewModel.removeBlockById(blockId)
+                }
             )
         }
 
@@ -111,12 +114,13 @@ fun WorkspaceCanvas(
             )
         }
         setVariableBlocks.forEach { block ->
-            val variable = block.value as? Variable
             DraggableSetVariableBlock(
                 id = block.id,
-                variable = variable,
                 containerWidth = containerWidth,
-                containerHeight = containerHeight)
+                containerHeight = containerHeight,
+                inputBlocks = block.inputBlocks,
+                viewModel = viewModel
+            )
         }
 
 
@@ -144,8 +148,7 @@ fun WorkspaceCanvas(
                 DraggableReferenceBlock(
                     id = block.id,
                     variable = variable,
-                    containerWidth = containerWidth,
-                    containerHeight = containerHeight
+                    viewModel = viewModel
                 )
             }
         }

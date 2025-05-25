@@ -20,8 +20,6 @@ fun WorkSpaceSection(viewModel: VariableViewModel, modifier: Modifier = Modifier
             viewModel = viewModel,
             onSizeChanged = { w, h -> },
         )
-
         WorkspaceControlBar(viewModel = viewModel)
     }
 }
-
