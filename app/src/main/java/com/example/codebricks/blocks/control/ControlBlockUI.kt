@@ -64,10 +64,7 @@ fun DraggableControlBlock(
                         dragStartTime = System.currentTimeMillis()
                     }
 
-                    offset = Offset(
-                        (offset.x + dragAmount.x).coerceIn(0f, containerWidth - 140.dp.toPx()),
-                        (offset.y + dragAmount.y).coerceIn(0f, containerHeight - 40.dp.toPx())
-                    )
+                    offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
                     BlockPositionTracker.updateBlockPosition(id, offset)
                     change.consume()
 
@@ -113,4 +110,5 @@ fun DraggableControlBlock(
             color = Color.White
         )
     }
+
 }

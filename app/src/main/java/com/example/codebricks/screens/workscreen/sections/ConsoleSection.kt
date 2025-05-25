@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,9 +32,16 @@ import com.example.codebricks.viewmodel.VariableViewModel
 
 @Composable
 fun ConsoleSection(viewModel: VariableViewModel) {
+
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp
+
+    val consoleHeight = screenHeight * 0.2f
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .height(consoleHeight.dp)
             .clip(RoundedCornerShape(16.dp))
             .border(1.dp, Color.Gray, RoundedCornerShape(16.dp))
             .background(Color.White)

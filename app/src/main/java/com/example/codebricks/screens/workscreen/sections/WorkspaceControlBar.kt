@@ -44,6 +44,7 @@ fun WorkspaceControlBar(viewModel: VariableViewModel) {
     var processRunning by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -114,6 +115,7 @@ fun WorkspaceControlBar(viewModel: VariableViewModel) {
         }
     }
 }
+
 
 @SuppressLint("ViewModelConstructorInComposable")
 @Preview(showBackground = true)
