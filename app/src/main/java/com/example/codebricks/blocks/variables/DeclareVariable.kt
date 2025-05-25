@@ -123,16 +123,24 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                 return
             }
 
-            valuesList.forEachIndexed { index, value ->
+            valuesList.forEachIndexed { index, valueStr ->
                 val parsedValue = when (type.value) {
-                    "int" -> value.toIntOrNull() ?: 0
-                    "bool" -> value.toBooleanStrictOrNull() ?: false
-                    "double" -> value.toDoubleOrNull() ?: 0.0
-                    else -> value
+                    "int" -> valueStr.toIntOrNull() ?: 0
+                    "bool" -> valueStr.toBooleanStrictOrNull() ?: false
+                    "double" -> valueStr.toDoubleOrNull() ?: 0.0
+                    "string" -> valueStr
+                    else -> valueStr
                 }
 
                 if (parsedValue == null) {
                     errorMessage.value = "Invalid value format for ${namesList.getOrNull(index) ?: "?"}"
+                    isValueError.value = true
+                    isSubmitDisabled.value = true
+                    return
+                }
+
+                if (type.value == "string" && parsedValue.toString().trim().isEmpty()) {
+                    errorMessage.value = "String value cannot be empty."
                     isValueError.value = true
                     isSubmitDisabled.value = true
                     return
@@ -155,10 +163,18 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                 }
             }
 
+            if (type.value == "string" && value.value.trim().isEmpty()) {
+                errorMessage.value = "String value cannot be empty."
+                isValueError.value = true
+                isSubmitDisabled.value = true
+                return
+            }
+
             val parsedValue = when (type.value) {
                 "int" -> value.value.toIntOrNull() ?: 0
                 "bool" -> value.value.toBooleanStrictOrNull() ?: false
                 "double" -> value.value.toDoubleOrNull() ?: 0.0
+                "string" -> value.value
                 else -> value.value
             }
 
@@ -427,6 +443,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                             "int" -> valuesFinal[index].toIntOrNull() ?: 0
                                             "bool" -> valuesFinal[index].toBooleanStrictOrNull() ?: false
                                             "double" -> valuesFinal[index].toDoubleOrNull() ?: 0.0
+                                            "string" -> "\"${valuesFinal[index]}\""
                                             else -> valuesFinal[index]
                                         }
                                         viewModel.declareVariable(name, parsedValue, type.value)
@@ -436,6 +453,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                         "int" -> value.value.toIntOrNull() ?: 0
                                         "bool" -> selectedBool.value.toBooleanStrictOrNull() ?: false
                                         "double" -> value.value.toDoubleOrNull() ?: 0.0
+                                        "string" -> "\"${value.value}\""
                                         else -> value.value
                                     }
                                     viewModel.declareVariable(names.value, parsedValue, type.value)
