@@ -47,7 +47,7 @@ fun WorkScreen(onBackClick: () -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFB7EFFF))
-            .padding(16.dp)
+            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
     ) {
         Header(onBackClick = onBackClick)
 
@@ -57,7 +57,7 @@ fun WorkScreen(onBackClick: () -> Unit) {
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        WorkSpaceSection(viewModel = viewModel, modifier = Modifier.weight(1f))
+        WorkSpaceSection(viewModel = viewModel)
 
         Spacer(modifier = Modifier.height(10.dp))
 

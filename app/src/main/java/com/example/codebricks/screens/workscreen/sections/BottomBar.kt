@@ -42,7 +42,7 @@ fun BottomBlockBar(
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp
 
-    val adaptiveHeight = screenHeight * 0.15f
+    val adaptiveHeight = screenHeight * 0.2f
 
     Column {
 
