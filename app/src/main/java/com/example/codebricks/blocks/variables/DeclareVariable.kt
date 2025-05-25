@@ -1,21 +1,29 @@
 package com.example.codebricks.blocks.variables
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -25,6 +33,7 @@ import androidx.compose.ui.unit.sp
 import com.example.codebricks.R
 import com.example.codebricks.viewmodel.VariableViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DeclareVariable(viewModel: VariableViewModel) {
     val showDialog = remember { mutableStateOf(false) }
@@ -130,7 +139,6 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                 }
             }
         } else {
-
             if (!names.value.matches(Regex("[a-zA-Z][a-zA-Z0-9]*"))) {
                 errorMessage.value = "Invalid variable name."
                 isNameError.value = true
@@ -211,38 +219,94 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                             isError = isNameError.value
                         )
 
-                        OutlinedTextField(
-                            value = value.value,
-                            onValueChange = {
-                                val input = it
-                                val parts = input.split(",").map { it.trim() }
+                        if (!(type.value == "bool" && !isMultiple.value)) {
+                            OutlinedTextField(
+                                value = value.value,
+                                onValueChange = {
+                                    val input = it
+                                    val parts = input.split(",").map { it.trim() }
 
-                                val isValid = if (isMultiple.value) {
-                                    parts.all { part ->
+                                    val isValid = if (isMultiple.value) {
+                                        parts.all { part ->
+                                            when (type.value) {
+                                                "int" -> part.matches(Regex("^-?\\d*"))
+                                                "double" -> part.matches(Regex("^-?\\d*\\.?\\d*"))
+                                                "bool" -> part.equals("true", ignoreCase = true) || part.equals("false", ignoreCase = true)
+                                                else -> true
+                                            }
+                                        }
+                                    } else {
                                         when (type.value) {
-                                            "int" -> part.matches(Regex("^-?\\d*"))
-                                            "double" -> part.matches(Regex("^-?\\d*\\.?\\d*"))
+                                            "int" -> input.matches(Regex("^-?\\d*"))
+                                            "double" -> input.matches(Regex("^-?\\d*\\.?\\d*"))
+                                            "bool" -> input.equals("true", ignoreCase = true) || input.equals("false", ignoreCase = true)
                                             else -> true
                                         }
                                     }
-                                } else {
-                                    when (type.value) {
-                                        "int" -> input.matches(Regex("^-?\\d*"))
-                                        "double" -> input.matches(Regex("^-?\\d*\\.?\\d*"))
-                                        else -> true
+
+                                    if (isValid) {
+                                        value.value = input
+                                        validateInputs()
+                                    }
+                                },
+                                label = { Text(text = stringResource(id = R.string.initial_value)) },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(10.dp),
+                                isError = isValueError.value
+                            )
+                        } else {
+                            val options = listOf("true", "false")
+                            var expanded by remember { mutableStateOf(false) }
+
+                            ExposedDropdownMenuBox(
+                                expanded = expanded,
+                                onExpandedChange = { expanded = !expanded },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 8.dp)
+                            ) {
+                                OutlinedTextField(
+                                    readOnly = true,
+                                    value = value.value,
+                                    onValueChange = {},
+                                    label = { Text("Select Boolean") },
+                                    trailingIcon = {
+                                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                                    },
+                                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                                )
+
+                                ExposedDropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false }
+                                ) {
+                                    options.forEach { selectionOption ->
+                                        DropdownMenuItem(
+                                            text = { Text(selectionOption) },
+                                            onClick = {
+                                                value.value = selectionOption
+                                                selectedBool.value = selectionOption
+                                                expanded = false
+                                                validateInputs()
+                                            }
+                                        )
                                     }
                                 }
+                            }
+                        }
 
-                                if (isValid) {
-                                    value.value = input
-                                    validateInputs()
-                                }
-                            },
-                            label = { Text(text = stringResource(id = R.string.initial_value)) },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(10.dp),
-                            isError = isValueError.value
-                        )
+                        if (isMultiple.value && value.value.isNotEmpty()) {
+                            val entered = value.value.split(",").map { it.trim() }.filter { it.isNotEmpty() }.size
+                            val expected = names.value.split(",").map { it.trim() }.filter { it.isNotEmpty() }.size
+                            if (entered < expected && expected > 1) {
+                                Text(
+                                    text = "Will auto-fill ${expected - entered} missing value(s) with '${value.value.split(',').last().trim()}'",
+                                    fontSize = 12.sp,
+                                    color = Color.Gray,
+                                    modifier = Modifier.padding(top = 4.dp)
+                                )
+                            }
+                        }
 
                         Text(text = stringResource(id = R.string.select_type), fontWeight = FontWeight.Bold)
                         Column {
@@ -283,63 +347,61 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                     Text(text = stringResource(id = R.string.doubles))
                                 }
                             }
-                            if (type.value == "bool") {
+
+                            if (type.value == "bool" && isMultiple.value) {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(16.dp),
-                                    horizontalArrangement = Arrangement.SpaceEvenly
+                                        .padding(vertical = 4.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                                 ) {
                                     Button(
                                         onClick = {
-                                            if (isMultiple.value) {
-                                                value.value = if (value.value.isEmpty()) "true" else "${value.value}, true"
-                                            } else {
-                                                selectedBool.value = "true"
-                                                value.value = "true"
-                                            }
+                                            value.value = if (value.value.isEmpty()) "true" else "${value.value}, true"
+                                            validateInputs()
                                         },
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = if (selectedBool.value == "true") Color(0xFF4CAF50) else Color.Gray
-                                        ),
-                                        shape = RoundedCornerShape(50),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                                        shape = RoundedCornerShape(10.dp),
                                         modifier = Modifier
-                                            .padding(8.dp)
-                                            .weight(1f)
-                                            .animateContentSize()
+                                            .width(90.dp)
+                                            .height(36.dp),
+                                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                                     ) {
-                                        Text(
-                                            text = "True",
-                                            fontSize = 14.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color.White
-                                        )
+                                        Text("True", color = Color.White, fontWeight = FontWeight.Bold)
                                     }
 
                                     Button(
                                         onClick = {
-                                            if (isMultiple.value) {
-                                                value.value = if (value.value.isEmpty()) "false" else "${value.value}, false"
-                                            } else {
-                                                selectedBool.value = "false"
-                                                value.value = "false"
+                                            value.value = if (value.value.isEmpty()) "false" else "${value.value}, false"
+                                            validateInputs()
+                                        },
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF44336)),
+                                        shape = RoundedCornerShape(10.dp),
+                                        modifier = Modifier
+                                            .width(90.dp)
+                                            .height(36.dp),
+                                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                                    ) {
+                                        Text("False", color = Color.White, fontWeight = FontWeight.Bold)
+                                    }
+
+                                    Button(
+                                        onClick = {
+                                            val list = value.value.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toMutableList()
+                                            if (list.isNotEmpty()) {
+                                                list.removeAt(list.lastIndex)
+                                                value.value = list.joinToString(", ")
+                                                validateInputs()
                                             }
                                         },
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = if (selectedBool.value == "false") Color(0xFFf44336) else Color.Gray
-                                        ),
-                                        shape = RoundedCornerShape(50),
+                                        colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
+                                        shape = RoundedCornerShape(10.dp),
                                         modifier = Modifier
-                                            .padding(8.dp)
-                                            .weight(1f)
-                                            .animateContentSize()
+                                            .width(90.dp)
+                                            .height(36.dp),
+                                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                                     ) {
-                                        Text(
-                                            text = "False",
-                                            fontSize = 14.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color.White
-                                        )
+                                        Text("Remove", color = Color.White, fontWeight = FontWeight.Bold)
                                     }
                                 }
                             }
