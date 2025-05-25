@@ -33,9 +33,10 @@ import com.example.codebricks.blocks.variables.DraggableDeclareBlock
 import com.example.codebricks.blocks.variables.DraggableReferenceBlock
 import com.example.codebricks.blocks.variables.DraggableSetVariableBlock
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
+import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
 
-@SuppressLint("ViewModelConstructorInComposable")
+@SuppressLint("ViewModelConstructorInComposable", "ConfigurationScreenWidthHeight")
 @Composable
 fun WorkspaceCanvas(
     viewModel: VariableViewModel,
@@ -100,7 +101,7 @@ fun WorkspaceCanvas(
         }
 
         printBlocks.forEach { block ->
-            val variable = block.inputBlocks.firstOrNull()?.value as? com.example.codebricks.viewmodel.Variable
+            val variable = block.inputBlocks.firstOrNull()?.value as? Variable
             DraggablePrintBlock(
                 id = block.id,
                 variable = variable,
@@ -122,7 +123,7 @@ fun WorkspaceCanvas(
         }
 
         changeVariableBlocks.forEach { block ->
-            val variable = block.inputBlocks.getOrNull(0)?.value as? com.example.codebricks.viewmodel.Variable
+            val variable = block.inputBlocks.getOrNull(0)?.value as? Variable
             DraggableChangeVariableBlock(
                 id = block.id,
                 variable = variable,
@@ -143,7 +144,7 @@ fun WorkspaceCanvas(
         }
 
         declareBlocks.forEach { block ->
-            val variable = block.value as? com.example.codebricks.viewmodel.Variable
+            val variable = block.value as? Variable
             if (variable != null) {
                 DraggableDeclareBlock(
                     id = block.id,
@@ -156,7 +157,7 @@ fun WorkspaceCanvas(
         }
 
         referenceBlocks.forEach { block ->
-            val variable = block.value as? com.example.codebricks.viewmodel.Variable
+            val variable = block.value as? Variable
             if (variable != null) {
                 DraggableReferenceBlock(
                     id = block.id,

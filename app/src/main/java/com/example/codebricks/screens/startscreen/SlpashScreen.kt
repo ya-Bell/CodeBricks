@@ -56,7 +56,7 @@ fun SplashScreen(navController: NavController) {
         isProgressVisible = true
         Handler(Looper.getMainLooper()).postDelayed({
             navController.navigate("start")
-        }, 3400)
+        }, 4000)
 
         (1..10).forEach { i ->
             delay(220)

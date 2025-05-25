@@ -1,5 +1,7 @@
 package com.example.codebricks.blocks.variables
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,7 +10,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -102,10 +103,9 @@ fun DraggableChangeVariableBlock(
     Box(
         modifier = Modifier
             .offset { IntOffset(offset.x.roundToInt(), offset.y.roundToInt()) }
-            .width(190.dp)
             .height(44.dp)
-            .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
             .clip(RoundedCornerShape(12.dp))
+            .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
             .background(Color(0xFFFB8C00))
             .pointerInput(Unit) {
                 detectDragGestures { change, dragAmount ->
@@ -123,13 +123,12 @@ fun DraggableChangeVariableBlock(
                     }
                 }
             }
-            .padding(horizontal = 6.dp, vertical = 2.dp)
+            .padding(horizontal = 4.dp)
     ) {
         if (showDeleteIcon) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(1.dp)
                     .clickable {
                         onDelete(id)
                     }
@@ -158,13 +157,12 @@ fun DraggableChangeVariableBlock(
                 expanded = expandedVar.value,
                 onExpandedChange = { expandedVar.value = !expandedVar.value },
                 modifier = Modifier
-                    .weight(1f)
-                    .widthIn(min = 48.dp, max = 140.dp)
             ) {
                 Box(
                     modifier = Modifier
                         .menuAnchor(type = MenuAnchorType.PrimaryEditable, enabled = true)
-                        .fillMaxWidth()
+                        .widthIn(min = 48.dp, max = 300.dp)
+                        .height(24.dp)
                         .height(24.dp)
                         .background(Color.White, RoundedCornerShape(4.dp))
                         .border(1.dp, Color.Black, RoundedCornerShape(4.dp))
@@ -177,7 +175,7 @@ fun DraggableChangeVariableBlock(
                 ExposedDropdownMenu(
                     expanded = expandedVar.value,
                     onDismissRequest = { expandedVar.value = false },
-                    modifier = Modifier.widthIn(min = 48.dp, max = 140.dp)
+                    modifier = Modifier.widthIn(min = 32.dp, max = 140.dp)
                 ) {
                     viewModel.variables.forEach { variable ->
                         DropdownMenuItem(
@@ -208,7 +206,7 @@ fun DraggableChangeVariableBlock(
                 Box(
                     modifier = Modifier
                         .menuAnchor(type = MenuAnchorType.PrimaryEditable, enabled = true)
-                        .width(28.dp)
+                        .width(24.dp)
                         .height(24.dp)
                         .background(Color.White, RoundedCornerShape(4.dp))
                         .border(1.dp, Color.Black, RoundedCornerShape(4.dp))
@@ -238,15 +236,18 @@ fun DraggableChangeVariableBlock(
 
             Spacer(modifier = Modifier.width(4.dp))
 
+            val targetWidth = (inputText.value.length * 8 + 20).dp.coerceIn(32.dp, 240.dp)
+            val animatedWidth by animateDpAsState(
+                targetValue = targetWidth,
+                animationSpec = tween(200)
+            )
+
             BasicTextField(
                 value = inputText.value,
                 onValueChange = { newValue ->
-                    if (newValue.isEmpty() || newValue.all { it.isDigit() }) {
-                        inputText.value = newValue
-                        isError.value = false
-                    } else {
-                        isError.value = true
-                    }
+                    inputText.value = newValue
+                    isEditing.value = true
+                    isError.value = newValue.any { c -> !c.isDigit() }
                 },
                 keyboardOptions = KeyboardOptions.Default.copy(
                     imeAction = ImeAction.Done,
@@ -265,8 +266,16 @@ fun DraggableChangeVariableBlock(
                     fontSize = 12.sp,
                     color = if (isError.value) Color.Red else Color.Black
                 ),
+                decorationBox = { innerTextField ->
+                    Box(
+                        modifier = Modifier.padding(horizontal = 4.dp),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        innerTextField()
+                    }
+                },
                 modifier = Modifier
-                    .width(35.dp)
+                    .width(animatedWidth)
                     .height(24.dp)
                     .background(Color.White, RoundedCornerShape(12.dp))
                     .border(
