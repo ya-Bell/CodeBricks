@@ -107,6 +107,13 @@ fun DeclareVariable(viewModel: VariableViewModel) {
         if (isMultiple.value) {
             val valuesList = value.value.split(",").map { it.trim() }
 
+            if (valuesList.size > namesList.size) {
+                errorMessage.value = "Too many values. Expected ${namesList.size}, but got ${valuesList.size}."
+                isValueError.value = true
+                isSubmitDisabled.value = true
+                return
+            }
+
             valuesList.forEachIndexed { index, value ->
                 val parsedValue = when (type.value) {
                     "int" -> value.toIntOrNull() ?: 0
@@ -116,7 +123,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                 }
 
                 if (parsedValue == null) {
-                    errorMessage.value = "Invalid value format for ${namesList[index]}"
+                    errorMessage.value = "Invalid value format for ${namesList.getOrNull(index) ?: "?"}"
                     isValueError.value = true
                     isSubmitDisabled.value = true
                     return
@@ -206,7 +213,31 @@ fun DeclareVariable(viewModel: VariableViewModel) {
 
                         OutlinedTextField(
                             value = value.value,
-                            onValueChange = { value.value = it; validateInputs() },
+                            onValueChange = {
+                                val input = it
+                                val parts = input.split(",").map { it.trim() }
+
+                                val isValid = if (isMultiple.value) {
+                                    parts.all { part ->
+                                        when (type.value) {
+                                            "int" -> part.matches(Regex("^-?\\d*"))
+                                            "double" -> part.matches(Regex("^-?\\d*\\.?\\d*"))
+                                            else -> true
+                                        }
+                                    }
+                                } else {
+                                    when (type.value) {
+                                        "int" -> input.matches(Regex("^-?\\d*"))
+                                        "double" -> input.matches(Regex("^-?\\d*\\.?\\d*"))
+                                        else -> true
+                                    }
+                                }
+
+                                if (isValid) {
+                                    value.value = input
+                                    validateInputs()
+                                }
+                            },
                             label = { Text(text = stringResource(id = R.string.initial_value)) },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(10.dp),
