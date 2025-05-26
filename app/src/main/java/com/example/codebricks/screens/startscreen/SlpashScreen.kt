@@ -1,7 +1,5 @@
 package com.example.codebricks.screens.startscreen
 
-import android.os.Handler
-import android.os.Looper
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -13,23 +11,11 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -47,36 +33,50 @@ fun SplashScreen(navController: NavController) {
     var progress by remember { mutableFloatStateOf(0f) }
 
     val progressAnim by animateFloatAsState(
-        targetValue = progress.coerceAtMost(1f),
-        animationSpec = tween(durationMillis = 2000, easing = LinearEasing)
+        targetValue = progress.coerceIn(0f, 1f),
+        animationSpec = tween(durationMillis = 200, easing = LinearEasing)
     )
 
     LaunchedEffect(Unit) {
         isLogoVisible = true
         isProgressVisible = true
-        Handler(Looper.getMainLooper()).postDelayed({
-            navController.navigate("start")
-        }, 4000)
 
-        (1..10).forEach { i ->
+        repeat(10) {
             delay(220)
-            progress += 0.2f
+            progress += 0.1f
         }
+
+        delay(500)
+        navController.currentBackStackEntry
+            ?.lifecycle
+            ?.currentState
+            ?.takeIf { it.isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED) }
+            ?.let {
+                navController.navigate("start") {
+                    popUpTo("splash") { inclusive = true }
+                }
+            }
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(brush = Brush.horizontalGradient(listOf(Color(0xFF67CAD9), Color(0xFF9ADCE7)))))
-    {
+            .background(
+                brush = Brush.horizontalGradient(
+                    listOf(Color(0xFF67CAD9), Color(0xFF9ADCE7))
+                )
+            )
+    ) {
+        // Логотип
         Box(
-            modifier = Modifier
-                .align(Alignment.Center)
+            modifier = Modifier.align(Alignment.Center)
         ) {
             AnimatedVisibility(
                 visible = isLogoVisible,
-                enter = fadeIn(animationSpec = tween(1000)) + scaleIn(animationSpec = tween(1000, easing = FastOutSlowInEasing)),
-                exit = fadeOut(animationSpec = tween(500))
+                enter = fadeIn(tween(1000)) + scaleIn(
+                    animationSpec = tween(1000, easing = FastOutSlowInEasing)
+                ),
+                exit = fadeOut(tween(500))
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.logo),
@@ -86,6 +86,7 @@ fun SplashScreen(navController: NavController) {
             }
         }
 
+        // Прогресс-бар
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -93,17 +94,16 @@ fun SplashScreen(navController: NavController) {
         ) {
             AnimatedVisibility(
                 visible = isProgressVisible,
-                enter = fadeIn(animationSpec = tween(500)),
+                enter = fadeIn(tween(500)),
                 exit = fadeOut()
             ) {
                 Box(
                     modifier = Modifier
-                        .size(300.dp, 10.dp)
+                        .size(width = 300.dp, height = 10.dp)
                         .background(Color.Gray.copy(alpha = 0.5f), shape = RoundedCornerShape(5.dp))
                 ) {
                     Box(
                         modifier = Modifier
-                            .height(10.dp)
                             .fillMaxHeight()
                             .width(300.dp * progressAnim)
                             .background(Color(0xFF239EDE), shape = RoundedCornerShape(5.dp))
@@ -122,4 +122,3 @@ fun SplashScreen(navController: NavController) {
         }
     }
 }
-
