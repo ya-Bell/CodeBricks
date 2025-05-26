@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -43,7 +42,6 @@ fun ConsoleSection(viewModel: VariableViewModel) {
     val consoleHeight = screenHeight * 0.15f
 
     val scrollStateVertical = rememberScrollState()
-    val scrollStateHorizontal = rememberScrollState()
 
     val consoleText = viewModel.consoleOutput.value
 
@@ -64,7 +62,7 @@ fun ConsoleSection(viewModel: VariableViewModel) {
                     Color.Gray,
                     RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
                 )
-                .padding(horizontal = 12.dp, vertical = 8.dp)
+                .padding(horizontal = 12.dp, vertical = 2.dp)
         ) {
             Text(
                 text = stringResource(id = R.string.console_header),
@@ -76,14 +74,12 @@ fun ConsoleSection(viewModel: VariableViewModel) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(60.dp)
                 .padding(4.dp)
         ) {
             Box(
                 modifier = Modifier
                     .matchParentSize()
                     .verticalScroll(scrollStateVertical)
-                    .horizontalScroll(scrollStateHorizontal)
             ) {
                 Column {
                     Text(
@@ -98,8 +94,8 @@ fun ConsoleSection(viewModel: VariableViewModel) {
                 scrollStateVertical.value.toFloat() / it.toFloat()
             } ?: 0f
 
-            val thumbHeight = 60f * (60f / (scrollStateVertical.maxValue + 60f))
-            val thumbOffset = (60f - thumbHeight) * proportion
+            val thumbHeight = 70f * (70f / (scrollStateVertical.maxValue + 70f))
+            val thumbOffset = (70f - thumbHeight) * proportion
 
             Box(
                 modifier = Modifier
