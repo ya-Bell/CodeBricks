@@ -6,16 +6,18 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -49,6 +51,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.codebricks.blocks.common.limitPosition
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
@@ -102,7 +105,10 @@ fun DraggableChangeVariableBlock(
 
     Box(
         modifier = Modifier
-            .offset { IntOffset(offset.x.roundToInt(), offset.y.roundToInt()) }
+            .offset {
+                val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 44f)
+                IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
+            }
             .height(44.dp)
             .clip(RoundedCornerShape(12.dp))
             .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
@@ -123,7 +129,17 @@ fun DraggableChangeVariableBlock(
                     }
                 }
             }
-            .padding(horizontal = 4.dp)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = {
+                        isPressed = false
+                        showDeleteIcon = false
+                    }
+                )
+            }
+            .padding(horizontal = 4.dp, vertical = 2.dp),
+        contentAlignment = Alignment.Center
+
     ) {
         if (showDeleteIcon) {
             Box(
@@ -143,7 +159,8 @@ fun DraggableChangeVariableBlock(
         }
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxSize()
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.wrapContentSize(Alignment.Center)
         ) {
             Text(
                 text = "Change",
@@ -165,7 +182,7 @@ fun DraggableChangeVariableBlock(
                         .height(24.dp)
                         .height(24.dp)
                         .background(Color.White, RoundedCornerShape(4.dp))
-                        .border(1.dp, Color.Black, RoundedCornerShape(4.dp))
+                        .border(2.dp, Color.Black, RoundedCornerShape(4.dp))
                         .clickable { expandedVar.value = true }
                         .padding(horizontal = 8.dp),
                     contentAlignment = Alignment.CenterStart
@@ -209,7 +226,7 @@ fun DraggableChangeVariableBlock(
                         .width(24.dp)
                         .height(24.dp)
                         .background(Color.White, RoundedCornerShape(4.dp))
-                        .border(1.dp, Color.Black, RoundedCornerShape(4.dp))
+                        .border(2.dp, Color.Black, RoundedCornerShape(4.dp))
                         .clickable { expandedSign.value = true },
                     contentAlignment = Alignment.Center
                 ) {
@@ -268,8 +285,8 @@ fun DraggableChangeVariableBlock(
                 ),
                 decorationBox = { innerTextField ->
                     Box(
-                        modifier = Modifier.padding(horizontal = 4.dp),
-                        contentAlignment = Alignment.CenterStart
+                        modifier = Modifier.padding(horizontal = 2.dp),
+                        contentAlignment = Alignment.Center
                     ) {
                         innerTextField()
                     }
@@ -279,13 +296,14 @@ fun DraggableChangeVariableBlock(
                     .height(24.dp)
                     .background(Color.White, RoundedCornerShape(12.dp))
                     .border(
-                        width = 1.dp,
+                        width = 2.dp,
                         color = if (isError.value) Color.Red else Color.Black,
                         shape = RoundedCornerShape(12.dp)
                     )
-                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                    .padding(horizontal = 2.dp)
                     .focusRequester(focusRequester)
             )
+            Spacer(modifier = Modifier.width(10.dp))
         }
     }
 }

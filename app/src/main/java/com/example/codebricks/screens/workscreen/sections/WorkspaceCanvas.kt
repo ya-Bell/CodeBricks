@@ -5,8 +5,19 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -28,31 +39,34 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.control.DraggableControlBlock
 import com.example.codebricks.blocks.print.DraggablePrintBlock
+import com.example.codebricks.blocks.variables.DraggableChangeVariableBlock
 import com.example.codebricks.blocks.variables.DraggableDeclareBlock
 import com.example.codebricks.blocks.variables.DraggableReferenceBlock
 import com.example.codebricks.blocks.variables.DraggableSetVariableBlock
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.codebricks.blocks.variables.DraggableChangeVariableBlock
 
-@SuppressLint("UnusedTransitionTargetStateParameter")
+@SuppressLint("UnusedTransitionTargetStateParameter", "ConfigurationScreenWidthHeight")
 @Composable
 fun WorkspaceCanvas(
     viewModel: VariableViewModel,
     onSizeChanged: (Float, Float) -> Unit
 ) {
+    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
+
+    val adaptiveHeight = screenHeight.value * 0.4f
+
+
     val canvasSize = remember { mutableStateOf(IntSize(0, 0)) }
     val contentSize = 3000f // холст 4000x4000
     var scale by remember { mutableFloatStateOf(1f) }
@@ -103,7 +117,7 @@ fun WorkspaceCanvas(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(330.dp)
+            .height(adaptiveHeight.dp)
             .background(Color(0xFFF0F0F0))
             .border(1.dp, Color.Gray)
             .clipToBounds()
