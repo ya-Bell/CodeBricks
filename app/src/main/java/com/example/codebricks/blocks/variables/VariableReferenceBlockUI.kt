@@ -3,7 +3,10 @@ package com.example.codebricks.blocks.variables
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,7 +23,7 @@ fun VariableReferenceBlock(variable: Variable, viewModel: VariableViewModel) {
     Box(
         modifier = Modifier
             .padding(4.dp)
-            .width(80.dp)
+            .widthIn(min = 70.dp)
             .height(36.dp)
             .background(Color(0xFFFFA500), RoundedCornerShape(8.dp))
             .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
@@ -32,7 +35,8 @@ fun VariableReferenceBlock(variable: Variable, viewModel: VariableViewModel) {
         Text(
             text = variable.name,
             fontSize = 12.sp,
-            color = Color.Black
+            color = Color.Black,
+            modifier = Modifier.padding(horizontal = 4.dp)
         )
     }
 }

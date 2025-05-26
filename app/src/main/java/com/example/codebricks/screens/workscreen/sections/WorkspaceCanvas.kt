@@ -14,7 +14,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -25,11 +24,11 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.control.DraggableControlBlock
 import com.example.codebricks.blocks.print.DraggablePrintBlock
+import com.example.codebricks.blocks.variables.DraggableChangeVariableBlock
 import com.example.codebricks.blocks.variables.DraggableDeclareBlock
 import com.example.codebricks.blocks.variables.DraggableReferenceBlock
 import com.example.codebricks.blocks.variables.DraggableSetVariableBlock
@@ -37,14 +36,13 @@ import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
 
-
-
+@SuppressLint("ViewModelConstructorInComposable", "ConfigurationScreenWidthHeight")
 @Composable
 fun WorkspaceCanvas(
     viewModel: VariableViewModel,
     onSizeChanged: (Float, Float) -> Unit
 ) {
-    var scale by remember { mutableFloatStateOf(1f) }
+    var scale by remember { mutableStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
 
     var containerWidth by remember { mutableStateOf(0f) }
@@ -89,8 +87,8 @@ fun WorkspaceCanvas(
             it.type == BlockType.CONTROL_START || it.type == BlockType.CONTROL_STOP
         }
         val printBlocks = viewModel.programBlocks.filter { it.type == BlockType.IO_PRINT }
-
         val setVariableBlocks = viewModel.programBlocks.filter { it.type == BlockType.VARIABLE_SET }
+        val changeVariableBlocks = viewModel.programBlocks.filter { it.type == BlockType.VARIABLE_CHANGE }
 
         controlBlocks.forEach { block ->
             DraggableControlBlock(
@@ -98,9 +96,7 @@ fun WorkspaceCanvas(
                 type = block.type.name,
                 containerWidth = containerWidth,
                 containerHeight = containerHeight,
-                onDelete = { blockId ->
-                    viewModel.removeBlockById(blockId)
-                }
+                onDelete = { blockId -> viewModel.removeBlockById(blockId) }
             )
         }
 
@@ -110,19 +106,35 @@ fun WorkspaceCanvas(
                 id = block.id,
                 variable = variable,
                 containerWidth = containerWidth,
-                containerHeight = containerHeight
+                containerHeight = containerHeight,
+                onDelete = { blockId -> viewModel.removeBlockById(blockId) }
             )
         }
+
         setVariableBlocks.forEach { block ->
             DraggableSetVariableBlock(
                 id = block.id,
                 containerWidth = containerWidth,
                 containerHeight = containerHeight,
+                onDelete = { blockId -> viewModel.removeBlockById(blockId) },
                 inputBlocks = block.inputBlocks,
                 viewModel = viewModel
             )
         }
 
+        changeVariableBlocks.forEach { block ->
+            val variable = block.inputBlocks.getOrNull(0)?.value as? Variable
+            DraggableChangeVariableBlock(
+                id = block.id,
+                variable = variable,
+                changeSign = block.changeSign,
+                changeAmount = block.changeAmount,
+                containerWidth = containerWidth,
+                containerHeight = containerHeight,
+                onDelete = { blockId -> viewModel.removeBlockById(blockId) },
+                viewModel = viewModel
+            )
+        }
 
         val declareBlocks = viewModel.programBlocks.filter {
             it.type == BlockType.VARIABLE_DECLARE
@@ -130,6 +142,7 @@ fun WorkspaceCanvas(
         val referenceBlocks = viewModel.programBlocks.filter {
             it.type == BlockType.VARIABLE_REFERENCE
         }
+
         declareBlocks.forEach { block ->
             val variable = block.value as? Variable
             if (variable != null) {
@@ -137,7 +150,8 @@ fun WorkspaceCanvas(
                     id = block.id,
                     variable = variable,
                     containerWidth = containerWidth,
-                    containerHeight = containerHeight
+                    containerHeight = containerHeight,
+                    onDelete = { blockId -> viewModel.removeBlockById(blockId) }
                 )
             }
         }
@@ -155,7 +169,6 @@ fun WorkspaceCanvas(
 
         if (viewModel.shouldDrawConnections.value) {
             Canvas(modifier = Modifier.fillMaxSize()) {
-                //  redrawTrigger, чтобы Canvas знал об изменении
                 redrawTrigger
 
                 for (block in viewModel.programBlocks) {
@@ -176,23 +189,5 @@ fun WorkspaceCanvas(
                 }
             }
         }
-
     }
-}
-
-
-@SuppressLint("ViewModelConstructorInComposable")
-@Preview(showBackground = true)
-@Composable
-fun WorkspaceCanvasPreview() {
-    val mockViewModel = VariableViewModel().apply {
-        declareVariable("score", 42, "int")
-        declareControlBlock("Start")
-        declareControlBlock("Stop")
-    }
-
-    WorkspaceCanvas(
-        viewModel = mockViewModel,
-        onSizeChanged = { _, _ -> }
-    )
 }

@@ -1,5 +1,6 @@
 package com.example.codebricks.screens.workscreen.sections
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -31,6 +32,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.codebricks.R
 import com.example.codebricks.viewmodel.VariableViewModel
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun BottomBlockBar(
     selectedClass: String,
@@ -116,6 +118,7 @@ fun BottomBlockBar(
     }
 }
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @Preview(showBackground = true)
 @Composable
 fun BottomBlockBarPreview() {

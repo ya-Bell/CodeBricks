@@ -156,6 +156,7 @@
     <string name="select_variable_and_set_value">Select Variable and Set Value</string>
     <string name="new_value_for">New Value for %1$s</string>
     <string name="set_value">Set Value</string>
+    <string name="change_variable_button">Change Variable</string>
 
 
 </resources>

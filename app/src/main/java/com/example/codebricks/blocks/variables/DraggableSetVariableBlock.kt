@@ -4,14 +4,30 @@ import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -25,25 +41,21 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
-import com.example.codebricks.viewmodel.Variable
-import androidx.compose.material3.*
-import androidx.compose.foundation.text.*
-import androidx.compose.foundation.*
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
-import com.example.codebricks.viewmodel.VariableViewModel
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.unit.Dp
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
+import com.example.codebricks.viewmodel.Variable
+import com.example.codebricks.viewmodel.VariableViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,6 +64,7 @@ fun DraggableSetVariableBlock(
     id: String,
     containerWidth: Float,
     containerHeight: Float,
+    onDelete: (String) -> Unit,
     inputBlocks: List<Block> = emptyList(),
     viewModel: VariableViewModel
 ) {
@@ -66,6 +79,9 @@ fun DraggableSetVariableBlock(
     val isEditing = remember { mutableStateOf(false) }
     val isError = remember { mutableStateOf(false) }
 
+    var showDeleteIcon by remember { mutableStateOf(false) }
+    var dragStartTime by remember { mutableStateOf<Long>(0L) }
+    var isPressed by remember { mutableStateOf(false) }
 
     val redrawTrigger = BlockPositionTracker.redrawTrigger.value
 
@@ -87,15 +103,46 @@ fun DraggableSetVariableBlock(
             .background(Color(0xFFFB8C00))
             .pointerInput(Unit) {
                 detectDragGestures { change, dragAmount ->
-                    offset = Offset(
-                        (offset.x + dragAmount.x).coerceIn(0f, containerWidth - 160.dp.toPx()),
-                        (offset.y + dragAmount.y).coerceIn(0f, containerHeight - 44.dp.toPx())
-                    )
+                    if (!isPressed) {
+                        isPressed = true
+                        dragStartTime = System.currentTimeMillis()
+                    }
+
+                    offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
                     BlockPositionTracker.updateBlockPosition(id, offset)
                     change.consume()
+
+                    if (System.currentTimeMillis() - dragStartTime >= 2500) {
+                        showDeleteIcon = true
+                    }
                 }
             }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = {
+                        isPressed = false
+                        showDeleteIcon = false
+                    }
+                )
+            }
     ) {
+        if (showDeleteIcon) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(4.dp)
+                    .clickable {
+                        onDelete(id)
+                    }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = "Delete Block",
+                    modifier = Modifier.size(12.dp),
+                    tint = Color.Black
+                )
+            }
+        }
         Row(
             modifier = Modifier
                 .align(Alignment.Center)

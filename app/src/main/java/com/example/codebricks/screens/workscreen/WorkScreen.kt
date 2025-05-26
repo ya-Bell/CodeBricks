@@ -1,5 +1,6 @@
 package com.example.codebricks.screens.workscreen
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,6 +35,7 @@ import com.example.codebricks.screens.workscreen.sections.ConsoleSection
 import com.example.codebricks.screens.workscreen.sections.WorkSpaceSection
 import com.example.codebricks.viewmodel.VariableViewModel
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun WorkScreen(onBackClick: () -> Unit) {
     val viewModel: VariableViewModel = viewModel()

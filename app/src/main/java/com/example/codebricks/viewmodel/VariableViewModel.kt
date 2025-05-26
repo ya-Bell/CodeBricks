@@ -1,5 +1,6 @@
 package com.example.codebricks.viewmodel
 
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
@@ -7,7 +8,6 @@ import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
-import androidx.compose.runtime.State
 
 data class Variable(val name: String, var value: Any, val type: String)
 
@@ -63,6 +63,59 @@ class VariableViewModel : ViewModel() {
     }
     fun isVariableAlreadyDeclared(name: String): Boolean {
         return variables.any { it.name == name }
+    }
+
+    fun declareEmptyChangeVariableBlock() {
+        val firstVar = variables.firstOrNull()
+        val referenceBlock = firstVar?.let {
+            Block(type = BlockType.VARIABLE_REFERENCE, value = it)
+        }
+
+        val changeBlock = Block(
+            type = BlockType.VARIABLE_CHANGE,
+            inputBlocks = referenceBlock?.let { mutableListOf(it) } ?: mutableListOf()
+        ).apply {
+            changeSign = "+"
+            changeAmount = 0
+        }
+
+        BlockPositionTracker.redrawTrigger.value++
+        addBlock(changeBlock)
+    }
+
+    fun updateChangeBlockVariable(blockId: String, variable: Variable) {
+        _programBlocks.value = _programBlocks.value.map { block ->
+            if (block.id == blockId && block.type == BlockType.VARIABLE_CHANGE) {
+                val refBlock = Block(type = BlockType.VARIABLE_REFERENCE, value = variable)
+                if (block.inputBlocks.isEmpty()) {
+                    block.inputBlocks.add(refBlock)
+                } else {
+                    block.inputBlocks[0] = refBlock
+                }
+            }
+            block
+        }
+        BlockPositionTracker.redrawTrigger.value++
+    }
+
+    fun updateChangeBlockSign(blockId: String, sign: String) {
+        _programBlocks.value = _programBlocks.value.map { block ->
+            if (block.id == blockId && block.type == BlockType.VARIABLE_CHANGE) {
+                block.changeSign = sign
+            }
+            block
+        }
+        BlockPositionTracker.redrawTrigger.value++
+    }
+
+    fun updateChangeBlockAmount(blockId: String, amount: Int) {
+        _programBlocks.value = _programBlocks.value.map { block ->
+            if (block.id == blockId && block.type == BlockType.VARIABLE_CHANGE) {
+                block.changeAmount = amount
+            }
+            block
+        }
+        BlockPositionTracker.redrawTrigger.value++
     }
 
     // Создание блока Print(variable)
@@ -271,6 +324,21 @@ class VariableViewModel : ViewModel() {
                             }
                         }
 
+                    }
+                }
+
+                BlockType.VARIABLE_CHANGE -> {
+                    val refVar = current.inputBlocks.getOrNull(0)?.value as? Variable
+                    if (refVar != null) {
+                        val target = declaredVariables[refVar.name]
+                        if (target != null) {
+                            val sign = current.changeSign
+                            val amount = current.changeAmount
+                            val delta = if (sign == "-") -amount else amount
+                            val oldValue = target.value as? Int ?: 0
+                            target.value = oldValue + delta
+                            logToConsole("🔄 Changed ${target.name} by $sign$amount to ${target.value}")
+                        }
                     }
                 }
 
