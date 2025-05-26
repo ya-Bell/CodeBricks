@@ -2,6 +2,7 @@ package com.example.codebricks.screens.workscreen.sections
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -15,10 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.FavoriteBorder
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,10 +38,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.codebricks.R
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.control.DraggableControlBlock
 import com.example.codebricks.blocks.print.DraggablePrintBlock
@@ -64,7 +63,7 @@ fun WorkspaceCanvas(
 ) {
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
 
-    val adaptiveHeight = screenHeight.value * 0.4f
+    val adaptiveHeight = screenHeight.value * 0.42f
 
 
     val canvasSize = remember { mutableStateOf(IntSize(0, 0)) }
@@ -304,21 +303,23 @@ fun WorkspaceCanvas(
             IconButton(
                 onClick = { zoomIn() },
                 enabled = zoomCount < maxZoom,
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier.size(20.dp),
             ) {
-                Icon(
-                    imageVector = Icons.Filled.Favorite,
-                    contentDescription = "Zoom in"
+                Image(
+                    painter = painterResource(id = R.drawable.baseline_add_24),
+                    contentDescription = "Zoom in",
+                    modifier = Modifier.fillMaxSize()
                 )
             }
             IconButton(
                 onClick = { zoomOut() },
                 enabled = zoomCount > 0,
-                modifier = Modifier.size(24.dp),
+                modifier = Modifier.size(20.dp),
             ) {
-                Icon(
-                    imageVector = Icons.Filled.FavoriteBorder,
-                    contentDescription = "Zoom out"
+                Image(
+                    painter = painterResource(id = R.drawable.baseline_remove_24),
+                    contentDescription = "Zoom out",
+                    modifier = Modifier.fillMaxSize()
                 )
             }
         }

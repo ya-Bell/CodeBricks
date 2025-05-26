@@ -54,6 +54,8 @@ fun WorkScreen(onBackClick: () -> Unit) {
             .background(Color(0xFFB7EFFF))
             .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
     ) {
+        Spacer(modifier = Modifier.height(2.dp))
+
         Header(onBackClick = onBackClick)
 
         Spacer(modifier = Modifier.height(6.dp))
@@ -98,6 +100,7 @@ fun Header(onBackClick: () -> Unit) {
                 contentDescription = stringResource(id = R.string.code_bricks_logo),
                 modifier = Modifier.size(30.dp)
             )
+
 
             Text(
                 text = stringResource(id = R.string.app_name),
