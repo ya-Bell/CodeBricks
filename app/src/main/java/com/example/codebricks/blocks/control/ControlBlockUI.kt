@@ -31,7 +31,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.codebricks.blocks.common.limitPosition
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
+import kotlin.math.roundToInt
 
 @Composable
 fun DraggableControlBlock(
@@ -52,7 +54,10 @@ fun DraggableControlBlock(
 
     Box(
         modifier = Modifier
-            .offset { IntOffset(offset.x.toInt(), offset.y.toInt()) }
+            .offset {
+                val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 44f)
+                IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
+            }
             .requiredSize(140.dp, 40.dp)
             .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
             .clip(RoundedCornerShape(12.dp))
