@@ -8,6 +8,7 @@ import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
+import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker.MAGNETIC_PADDING
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -236,7 +237,7 @@ class VariableViewModel : ViewModel() {
         val draggedBlock = programBlocks.find { it.id == blockId } ?: return
 
         val matchedSlot = BlockSlotTracker.getAllSlots().find { (_, _, bounds) ->
-            bounds.contains(position)
+            bounds.inflate(MAGNETIC_PADDING).contains(position)
         } ?: return
         if (blockId == matchedSlot.blockId) {
             println("🚫 Can't insert block into itself")

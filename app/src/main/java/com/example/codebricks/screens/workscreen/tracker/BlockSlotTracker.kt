@@ -4,6 +4,8 @@ package com.example.codebricks.screens.workscreen.tracker
 import androidx.compose.ui.geometry.Rect
 
 object BlockSlotTracker {
+    const val MAGNETIC_PADDING = 30f
+
     private val slotBounds = mutableMapOf<Pair<String, Int>, Rect>()
 
     fun setSlotBounds(blockId: String, slotIndex: Int, bounds: Rect) {
@@ -36,4 +38,5 @@ object BlockSlotTracker {
             SlotInfo(blockId, slotIndex, rect)
         }
     }
+
 }

@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
+import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker.MAGNETIC_PADDING
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
 import kotlinx.coroutines.launch
@@ -136,7 +137,7 @@ fun DraggableReferenceBlock(
                     val windowCenter = coords.localToWindow(center)
 
                     val matchedSlot = BlockSlotTracker.getAllSlots().find {
-                        it.bounds.inflate(20f).contains(windowCenter)
+                        it.bounds.inflate(MAGNETIC_PADDING).contains(windowCenter)
                     }
 
                     if (matchedSlot != null) {
