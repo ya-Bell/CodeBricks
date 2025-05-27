@@ -1,5 +1,7 @@
 package com.example.codebricks.blocks.variables
 
+//import androidx.compose.ui.platform.LocalDensity
+//import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -46,12 +48,10 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
-//import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
-//import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -100,41 +100,43 @@ fun DraggableSetVariableBlock(
     }
     LaunchedEffect(redrawTrigger, valueVar) {}
 
+    Box(
+        modifier = Modifier
+            .wrapContentWidth()
+            .height(40.dp)
+            .offset {
+                val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 44f)
+                IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
+            }
+            .widthIn(max = 500.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
+            .background(Color(0xFFFB8C00))
+            .pointerInput(Unit) {
+                detectDragGestures { change, dragAmount ->
+                    if (!isPressed) {
+                        isPressed = true
+                        dragStartTime = System.currentTimeMillis()
+                    }
 
-    Box(modifier = Modifier
-        .wrapContentWidth()
-        .height(40.dp)
-        .offset {
-            val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 44f)
-            IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
-        }
-        .widthIn(max = 500.dp)
-        .clip(RoundedCornerShape(12.dp))
-        .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
-        .background(Color(0xFFFB8C00))
-        .pointerInput(Unit) {
-            detectDragGestures { change, dragAmount ->
-                if (!isPressed) {
-                    isPressed = true
-                    dragStartTime = System.currentTimeMillis()
-                }
+                    offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
+                    BlockPositionTracker.updateBlockPosition(id, offset)
+                    change.consume()
 
-                offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
-                BlockPositionTracker.updateBlockPosition(id, offset)
-                change.consume()
-
-                if (System.currentTimeMillis() - dragStartTime >= 2500) {
-                    showDeleteIcon = true
+                    if (System.currentTimeMillis() - dragStartTime >= 2500) {
+                        showDeleteIcon = true
+                    }
                 }
             }
-        }
-        .pointerInput(Unit) {
-            detectTapGestures(
-                onPress = {
-                    isPressed = false
-                    showDeleteIcon = false
-                })
-        }) {
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = {
+                        isPressed = false
+                        showDeleteIcon = false
+                    }
+                )
+            }
+    ) {
         if (showDeleteIcon) {
             Box(
                 modifier = Modifier
@@ -142,7 +144,8 @@ fun DraggableSetVariableBlock(
                     .padding(4.dp)
                     .clickable {
                         onDelete(id)
-                    }) {
+                    }
+            ) {
                 Icon(
                     imageVector = Icons.Filled.Close,
                     contentDescription = "Delete Block",
@@ -171,17 +174,17 @@ fun DraggableSetVariableBlock(
 
             ExposedDropdownMenuBox(
                 expanded = expanded.value,
-                onExpandedChange = { expanded.value = !expanded.value }) {
+                onExpandedChange = { expanded.value = !expanded.value }
+            ) {
                 Box(
                     modifier = Modifier
-                        .menuAnchor(
-                            type = MenuAnchorType.PrimaryEditable, enabled = true
-                        )
+                        .menuAnchor(type = MenuAnchorType.PrimaryEditable, enabled = true)
                         .widthIn(min = 48.dp, max = 300.dp)
                         .height(24.dp)
                         .background(Color.White, RoundedCornerShape(4.dp))
                         .border(1.dp, Color.Black, RoundedCornerShape(4.dp))
-                        .clickable { expanded.value = true }, contentAlignment = Alignment.Center
+                        .clickable { expanded.value = true },
+                    contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = selectedVar.value,
@@ -192,13 +195,18 @@ fun DraggableSetVariableBlock(
                 }
 
                 ExposedDropdownMenu(
-                    expanded = expanded.value, onDismissRequest = { expanded.value = false }) {
+                    expanded = expanded.value,
+                    onDismissRequest = { expanded.value = false }
+                ) {
                     viewModel.variables.forEach { variable ->
-                        DropdownMenuItem(text = { Text(variable.name) }, onClick = {
-                            selectedVar.value = variable.name
-                            viewModel.updateSetBlockTarget(id, variable)
-                            expanded.value = false
-                        })
+                        DropdownMenuItem(
+                            text = { Text(variable.name) },
+                            onClick = {
+                                selectedVar.value = variable.name
+                                viewModel.updateSetBlockTarget(id, variable)
+                                expanded.value = false
+                            }
+                        )
                     }
                 }
             }
@@ -207,27 +215,15 @@ fun DraggableSetVariableBlock(
 
             val isHighlighted = viewModel.highlightedSlot.value == (id to 1)
             val valueBlock = inputBlocks.getOrNull(1)
-//            val blockId = valueBlock?.id
-
-//            val blockWidth = blockId?.let { BlockPositionTracker.getBlockWidth(it) }
-//            val textLength =
-//                if (isEditing.value) inputText.value.length else valueVar?.name?.length ?: 1
-
-//            val targetWidth: Dp = when {
-//                blockWidth != null && valueVar != null && !isEditing.value -> {
-//                    with(LocalDensity.current) { blockWidth.toDp() }.coerceIn(30.dp, 240.dp)
-//                }
-//
-//                else -> (textLength * 7 + 20).dp.coerceIn(32.dp, 240.dp)
-//            }
 
             val hasBlock = valueBlock != null
+            val isBlockEmpty = valueBlock == null || (valueBlock.value as? Variable)?.name.isNullOrEmpty()
 
             Box(
                 modifier = Modifier
                     .height(32.dp)
                     .wrapContentWidth()
-                    .defaultMinSize(minWidth = 30.dp)
+                    .defaultMinSize(minWidth = 10.dp)
                     .background(Color.White, RoundedCornerShape(8.dp))
                     .onGloballyPositioned {
                         layoutCoordinates.value = it
@@ -239,22 +235,11 @@ fun DraggableSetVariableBlock(
                         if (isError.value) Color.Red else if (isHighlighted) Color(0xFF4CAF50) else Color.Black,
                         RoundedCornerShape(8.dp)
                     )
-                    .pointerInput(id) {
-                        detectDragGestures(onDragStart = {
-                            viewModel.removeReferenceFromParent(id)
-                        }, onDrag = { _, _ -> }, onDragEnd = {
-                            val coords = layoutCoordinates.value ?: return@detectDragGestures
-                            val width = coords.size.width.toFloat()
-                            val height = coords.size.height.toFloat()
-                            val center = coords.localToWindow(Offset(width / 2f, height / 2f))
-                            viewModel.tryInsertIntoSlot(center, id)
-                            viewModel.setRecentlyInsertedSlot(id, 1)
-                        })
-                    }, contentAlignment = Alignment.Center
             ) {
                 when {
+
                     hasBlock -> {
-                        when (valueBlock?.type) {
+                        when (valueBlock.type) {
                             BlockType.VARIABLE_REFERENCE -> {
                                 val variable = valueBlock.value as? Variable
                                 if (variable != null) {
@@ -265,8 +250,8 @@ fun DraggableSetVariableBlock(
                                     )
                                 }
                             }
-
-                            BlockType.MATH_ADD, BlockType.MATH_SUBTRACT, BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE -> {
+                            BlockType.MATH_ADD, BlockType.MATH_SUBTRACT,
+                            BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE -> {
                                 DraggableMathBlock(
                                     id = valueBlock.id,
                                     type = valueBlock.type,
@@ -279,46 +264,42 @@ fun DraggableSetVariableBlock(
                             }
 
                             else -> {
-                                Text(text = "?", fontSize = 12.sp)
+                                Text(text = "", fontSize = 12.sp)
                             }
                         }
                     }
 
-                    isEditing.value -> {
+                    isBlockEmpty -> {
                         BasicTextField(
                             value = inputText.value,
                             onValueChange = {
-                                inputText.value = it
+
+                                val newValue = it.filter { char -> char.isDigit() || char == '.' }
+                                inputText.value = newValue
                                 isEditing.value = true
-                                isError.value = when (variableType) {
-                                    "int" -> it.any { c -> !c.isDigit() }
-                                    "double" -> it.replace(",", ".").toDoubleOrNull() == null
-                                    else -> false
-                                }
+                                isError.value = false
                             },
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(
                                 onDone = {
                                     if (!isError.value) {
-                                        val cleanedValue = if (variableType == "double") {
-                                            inputText.value.replace(",", ".").toDoubleOrNull()
-                                                ?.toString() ?: "0.0"
-                                        } else inputText.value
-
-                                        viewModel.updateSetBlockValue(id, cleanedValue)
+                                        viewModel.updateSetBlockValue(id, inputText.value)
                                         isEditing.value = false
                                     }
-                                }),
+                                }
+                            ),
                             singleLine = true,
                             textStyle = TextStyle(fontSize = 12.sp, color = Color.Black),
+                            modifier = Modifier.widthIn(10.dp, 32.dp),
                             decorationBox = { innerTextField ->
                                 Box(
-                                    modifier = Modifier.padding(horizontal = 4.dp),
+                                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 9.dp),
                                     contentAlignment = Alignment.CenterStart
                                 ) {
                                     innerTextField()
                                 }
-                            })
+                            }
+                        )
                     }
 
                     else -> {
@@ -332,20 +313,18 @@ fun DraggableSetVariableBlock(
     }
 }
 
+
 @Preview(showBackground = true)
 @Composable
 fun DraggableSetVariableBlockPreview() {
     val mockViewModel = remember { VariableViewModel() }
 
-    // Создаём переменные
     val variableX = Variable(name = "x", value = 0, type = "int")
     val variableY = Variable(name = "y", value = 123, type = "int")
 
-    // Засовываем их во viewModel (будто они уже объявлены)
     mockViewModel.declareVariable(variableX.name, variableX.value, variableX.type)
     mockViewModel.declareVariable(variableY.name, variableY.value, variableY.type)
 
-    // Создаём input-блоки
     val targetBlock = Block(
         type = BlockType.VARIABLE_REFERENCE, value = variableX
     )
@@ -353,14 +332,12 @@ fun DraggableSetVariableBlockPreview() {
         type = BlockType.VARIABLE_REFERENCE, value = variableY
     )
 
-    // Финальный set-блок
     val setBlock = Block(
         type = BlockType.VARIABLE_SET, inputBlocks = mutableListOf(targetBlock, valueBlock)
     )
 
     DraggableSetVariableBlock(
         id = setBlock.id, containerWidth = 1000f, containerHeight = 1000f, onDelete = {},
-//        inputBlocks = setBlock.inputBlocks,
         viewModel = mockViewModel
     )
 }
