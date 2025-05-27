@@ -253,7 +253,7 @@ fun WorkspaceCanvas(
                     BlockType.MATH_SUBTRACT,
                     BlockType.MATH_MULTIPLY,
                     BlockType.MATH_DIVIDE
-                )
+                ) && viewModel.findBlockContaining(it.id) == null
             }
 
             mathBlocks.forEach { block ->

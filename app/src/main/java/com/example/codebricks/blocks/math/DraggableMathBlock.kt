@@ -149,7 +149,7 @@ fun DraggableMathBlock(
                     val blockW = coords.size.width.toFloat()
                     val blockH = coords.size.height.toFloat()
                     val center = animOffset.value + Offset(blockW / 2f, blockH / 2f)
-                    val windowCenter = coords.localToWindow(center)
+                    val windowCenter = coords.localToWindow(center) + BlockPositionTracker.canvasOffset
 
                     val matchedSlot = BlockSlotTracker.getAllSlots().find {
                         it.bounds.inflate(MAGNETIC_PADDING).contains(windowCenter)
@@ -168,7 +168,7 @@ fun DraggableMathBlock(
                     val blockW = coords.size.width.toFloat()
                     val blockH = coords.size.height.toFloat()
                     val localCenter = animOffset.value + Offset(blockW / 2f, blockH / 2f)
-                    val windowCenter = coords.localToWindow(localCenter)
+                    val windowCenter = coords.localToWindow(localCenter) + BlockPositionTracker.canvasOffset
 
                     val matchedSlot = BlockSlotTracker.getAllSlots().find {
                         it.bounds.inflate(MAGNETIC_PADDING).contains(windowCenter)
@@ -249,7 +249,7 @@ fun MathInputSlot(
             .heightIn(min = 32.dp)
             .defaultMinSize(minWidth = 30.dp)
             .onGloballyPositioned {
-                val bounds = it.boundsInWindow()
+                val bounds = it.boundsInWindow().translate(BlockPositionTracker.canvasOffset)
                 BlockSlotTracker.setSlotBounds(parentId, slotIndex, bounds)
             }
             .border(
