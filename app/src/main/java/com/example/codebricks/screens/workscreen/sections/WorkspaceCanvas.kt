@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
@@ -46,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import com.example.codebricks.R
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.control.DraggableControlBlock
+import com.example.codebricks.blocks.math.DraggableMathBlock
 import com.example.codebricks.blocks.print.DraggablePrintBlock
 import com.example.codebricks.blocks.variables.DraggableChangeVariableBlock
 import com.example.codebricks.blocks.variables.DraggableDeclareBlock
@@ -152,6 +154,11 @@ fun WorkspaceCanvas(
                     translationX = offset.x
                     translationY = offset.y
                 }
+                .onGloballyPositioned {
+                    // фиксируем scale и offset
+                    BlockPositionTracker.canvasScale = scale
+                    BlockPositionTracker.canvasOffset = offset
+                }
         ) {
             Canvas(modifier = Modifier.matchParentSize()) {
                 // красная рамка
@@ -231,9 +238,11 @@ fun WorkspaceCanvas(
             val declareBlocks = viewModel.programBlocks.filter {
                 it.type == BlockType.VARIABLE_DECLARE
             }
-            val referenceBlocks = viewModel.programBlocks.filter {
-                it.type == BlockType.VARIABLE_REFERENCE
+            val referenceBlocks = viewModel.programBlocks.filter { block ->
+                block.type == BlockType.VARIABLE_REFERENCE &&
+                        viewModel.findBlockContaining(block.id) == null // ❗ не вложен
             }
+
 
             declareBlocks.forEach { block ->
                 val variable = block.value as? Variable
@@ -246,6 +255,25 @@ fun WorkspaceCanvas(
                         onDelete = { blockId -> viewModel.removeBlockById(blockId) }
                     )
                 }
+            }
+
+            val mathBlocks = viewModel.programBlocks.filter {
+                it.type in listOf(
+                    BlockType.MATH_ADD, BlockType.MATH_SUBTRACT,
+                    BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE
+                )
+            }
+
+            mathBlocks.forEach { block ->
+                DraggableMathBlock(
+                    id = block.id,
+                    type = block.type,
+                    inputBlocks = block.inputBlocks,
+                    containerWidth = contentSize,
+                    containerHeight = contentSize,
+                    onDelete = { viewModel.removeBlockById(block.id) },
+                    viewModel = viewModel
+                )
             }
 
             referenceBlocks.forEach { block ->

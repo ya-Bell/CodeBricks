@@ -4,6 +4,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 
 object BlockPositionTracker {
+    var canvasScale = 1f
+    var canvasOffset = Offset.Zero
     private val blockPositions = mutableMapOf<String, Offset>()
     val redrawTrigger = mutableStateOf(0)
 

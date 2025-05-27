@@ -15,7 +15,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.codebricks.R
+import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.control.CreateControlBlock
+import com.example.codebricks.blocks.math.MathBlockButton
 import com.example.codebricks.blocks.print.CreatePrintBlock
 import com.example.codebricks.blocks.variables.ChangeVariableButton
 import com.example.codebricks.blocks.variables.DeclareVariable
@@ -65,7 +67,23 @@ fun BlockSection(selectedClass: String, viewModel: VariableViewModel) {
                 }
             }
             "Math" -> {
-                Text(stringResource(id = R.string.math_blocks))
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    item {
+                        MathBlockButton("Add") { viewModel.declareMathBlock(BlockType.MATH_ADD) }
+                    }
+                    item {
+                        MathBlockButton("Subtract") { viewModel.declareMathBlock(BlockType.MATH_SUBTRACT) }
+                    }
+                    item {
+                        MathBlockButton("Multiply") { viewModel.declareMathBlock(BlockType.MATH_MULTIPLY) }
+                    }
+                    item {
+                        MathBlockButton("Divide") { viewModel.declareMathBlock(BlockType.MATH_DIVIDE) }
+                    }
+                }
             }
             "Comparison" -> {
                 Text(stringResource(id = R.string.comparison_blocks))

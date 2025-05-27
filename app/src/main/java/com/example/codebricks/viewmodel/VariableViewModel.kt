@@ -4,10 +4,13 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 data class Variable(val name: String, var value: Any, val type: String)
 
@@ -231,6 +234,70 @@ class VariableViewModel : ViewModel() {
         BlockPositionTracker.redrawTrigger.value++
         _programBlocks.value += block
     }
+
+    fun tryInsertIntoSlot(position: Offset, blockId: String) {
+        val draggedBlock = programBlocks.find { it.id == blockId } ?: return
+
+        val matchedSlot = BlockSlotTracker.getAllSlots().find { (_, _, bounds) ->
+            bounds.contains(position)
+        } ?: return
+
+        println("➡️ Inserting $blockId into ${matchedSlot.blockId} at index ${matchedSlot.slotIndex}")
+
+        val targetBlock = programBlocks.find { it.id == matchedSlot.blockId } ?: return
+        val slotIndex = matchedSlot.slotIndex
+
+        // Только в определённых блоках поддерживается вставка
+        if (targetBlock.type !in listOf(
+                BlockType.VARIABLE_SET,
+                BlockType.MATH_ADD,
+                BlockType.MATH_SUBTRACT,
+                BlockType.MATH_MULTIPLY,
+                BlockType.MATH_DIVIDE
+            )
+        ) return
+
+        // Удостоверимся, что inputBlocks имеет нужный размер
+        while (targetBlock.inputBlocks.size <= slotIndex) {
+            targetBlock.inputBlocks.add(Block(type = BlockType.VARIABLE_REFERENCE)) // dummy
+        }
+
+        // Вставляем draggedBlock внутрь
+        targetBlock.inputBlocks[slotIndex] = draggedBlock
+
+        // Обновим список, чтобы Jetpack отреагировал
+        _programBlocks.value = _programBlocks.value.toList()
+        BlockPositionTracker.redrawTrigger.value++
+    }
+
+
+    fun declareMathBlock(type: BlockType) {
+        if (type !in listOf(
+                BlockType.MATH_ADD, BlockType.MATH_SUBTRACT,
+                BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE
+            )
+        ) return
+
+        val block = Block(
+            type = type,
+            inputBlocks = mutableListOf(null, null).map {
+                Block(type = BlockType.VARIABLE_REFERENCE)
+            }.toMutableList()
+        )
+
+        addBlock(block)
+        BlockPositionTracker.redrawTrigger.value++
+    }
+    val recentlyInsertedSlot = mutableStateOf<Pair<String,Int>?>(null)
+
+    fun setRecentlyInsertedSlot(blockId: String, slotIndex: Int) {
+        recentlyInsertedSlot.value = blockId to slotIndex
+        viewModelScope.launch {
+            delay(300)
+            recentlyInsertedSlot.value = null
+        }
+    }
+
 
     fun tryInsertReferenceBlock(position: Offset, referenceBlockId: String) {
         val refBlock = programBlocks.find { it.id == referenceBlockId } ?: return

@@ -48,12 +48,15 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.codebricks.blocks.common.Block
+import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.common.limitPosition
+import com.example.codebricks.blocks.math.DraggableMathBlock
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
 import com.example.codebricks.viewmodel.Variable
@@ -236,98 +239,117 @@ fun DraggableSetVariableBlock(
                     ),
                 contentAlignment = Alignment.Center
             ) {
-                if (valueVar != null && !isEditing.value) {
-                    Text(
-                        text = valueVar.name,
-                        fontSize = 11.sp,
-                        color = Color.Black,
-                        modifier = Modifier
-                            .clickable {
-                                inputText.value = valueVar.name
-                                isEditing.value = true
+                if (!isEditing.value) {
+                    when {
+                        valueBlock?.type == BlockType.VARIABLE_REFERENCE -> {
+                            val variable = valueBlock.value as? Variable
+                            if (variable != null) {
+                                DraggableReferenceBlock(
+                                    id = valueBlock.id,
+                                    variable = variable,
+                                    viewModel = viewModel
+                                )
                             }
-                            .padding(horizontal = 8.dp)
-                    )
-                } else {
-                    when (variableType) {
-                        "bool" -> {
-                            val boolOptions = listOf("true", "false")
-                            val selectedBool = remember { mutableStateOf("true") }
-                            val boolExpanded = remember { mutableStateOf(false) }
+                        }
 
-                            ExposedDropdownMenuBox(
-                                expanded = boolExpanded.value,
-                                onExpandedChange = { boolExpanded.value = !boolExpanded.value }
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .menuAnchor(type = MenuAnchorType.PrimaryEditable, enabled = true)
-                                        .width(80.dp)
-                                        .height(24.dp)
-                                        .background(Color.White, RoundedCornerShape(12.dp))
-                                        .border(1.dp, Color.Black, RoundedCornerShape(12.dp))
-                                        .clickable { boolExpanded.value = true },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(selectedBool.value, fontSize = 11.sp, color = Color.Black)
-                                }
-
-                                ExposedDropdownMenu(
-                                    expanded = boolExpanded.value,
-                                    onDismissRequest = { boolExpanded.value = false }
-                                ) {
-                                    boolOptions.forEach { option ->
-                                        DropdownMenuItem(
-                                            text = { Text(option) },
-                                            onClick = {
-                                                selectedBool.value = option
-                                                boolExpanded.value = false
-                                                viewModel.updateSetBlockValue(id, option)
-                                                isEditing.value = false
-                                            }
-                                        )
-                                    }
-                                }
+                        valueBlock?.type in listOf(
+                            BlockType.MATH_ADD, BlockType.MATH_SUBTRACT,
+                            BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE
+                        ) -> {
+                            if (valueBlock != null) {
+                                DraggableMathBlock(
+                                    id = valueBlock.id,
+                                    type = valueBlock.type,
+                                    inputBlocks = valueBlock.inputBlocks,
+                                    containerWidth = 0f,
+                                    containerHeight = 0f,
+                                    onDelete = { viewModel.removeBlockById(valueBlock.id) },
+                                    viewModel = viewModel
+                                )
                             }
                         }
 
                         else -> {
-                            BasicTextField(
-                                value = inputText.value,
-                                onValueChange = {
-                                    inputText.value = it
-                                    isEditing.value = true
-                                    /* showApply.value = it.isNotBlank() */
-                                    isError.value = when (variableType) {
-                                        "int" -> it.any { c -> !c.isDigit() }
-                                        "double" -> it.replace(",", ".").toDoubleOrNull() == null
-                                        else -> false
-                                    }
-                                },
-                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                keyboardActions = KeyboardActions(
-                                    onDone = {
-                                        if (!isError.value) {
-                                            val cleanedValue = if (variableType == "double") {
-                                                inputText.value.replace(",", ".").toDoubleOrNull()?.toString() ?: "0.0"
-                                            } else inputText.value
+                            when (variableType) {
+                                "bool" -> {
+                                    val boolOptions = listOf("true", "false")
+                                    val selectedBool = remember { mutableStateOf("true") }
+                                    val boolExpanded = remember { mutableStateOf(false) }
 
-                                            viewModel.updateSetBlockValue(id, cleanedValue)
-                                            isEditing.value = false
+                                    ExposedDropdownMenuBox(
+                                        expanded = boolExpanded.value,
+                                        onExpandedChange = { boolExpanded.value = !boolExpanded.value }
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .menuAnchor(type = MenuAnchorType.PrimaryEditable, enabled = true)
+                                                .width(80.dp)
+                                                .height(24.dp)
+                                                .background(Color.White, RoundedCornerShape(12.dp))
+                                                .border(1.dp, Color.Black, RoundedCornerShape(12.dp))
+                                                .clickable { boolExpanded.value = true },
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(selectedBool.value, fontSize = 11.sp, color = Color.Black)
+                                        }
+
+                                        ExposedDropdownMenu(
+                                            expanded = boolExpanded.value,
+                                            onDismissRequest = { boolExpanded.value = false }
+                                        ) {
+                                            boolOptions.forEach { option ->
+                                                DropdownMenuItem(
+                                                    text = { Text(option) },
+                                                    onClick = {
+                                                        selectedBool.value = option
+                                                        boolExpanded.value = false
+                                                        viewModel.updateSetBlockValue(id, option)
+                                                        isEditing.value = false
+                                                    }
+                                                )
+                                            }
                                         }
                                     }
-                                ),
-                                singleLine = true,
-                                textStyle = TextStyle(fontSize = 12.sp, color = Color.Black),
-                                decorationBox = { innerTextField ->
-                                    Box(
-                                        modifier = Modifier.padding(horizontal = 4.dp),
-                                        contentAlignment = Alignment.CenterStart
-                                    ) {
-                                        innerTextField()
-                                    }
                                 }
-                            )
+
+                                else -> {
+                                    BasicTextField(
+                                        value = inputText.value,
+                                        onValueChange = {
+                                            inputText.value = it
+                                            isEditing.value = true
+                                            isError.value = when (variableType) {
+                                                "int" -> it.any { c -> !c.isDigit() }
+                                                "double" -> it.replace(",", ".").toDoubleOrNull() == null
+                                                else -> false
+                                            }
+                                        },
+                                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                                        keyboardActions = KeyboardActions(
+                                            onDone = {
+                                                if (!isError.value) {
+                                                    val cleanedValue = if (variableType == "double") {
+                                                        inputText.value.replace(",", ".").toDoubleOrNull()?.toString() ?: "0.0"
+                                                    } else inputText.value
+
+                                                    viewModel.updateSetBlockValue(id, cleanedValue)
+                                                    isEditing.value = false
+                                                }
+                                            }
+                                        ),
+                                        singleLine = true,
+                                        textStyle = TextStyle(fontSize = 12.sp, color = Color.Black),
+                                        decorationBox = { innerTextField ->
+                                            Box(
+                                                modifier = Modifier.padding(horizontal = 4.dp),
+                                                contentAlignment = Alignment.CenterStart
+                                            ) {
+                                                innerTextField()
+                                            }
+                                        }
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -336,4 +358,44 @@ fun DraggableSetVariableBlock(
         }
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+fun DraggableSetVariableBlockPreview() {
+    val viewModel = VariableViewModel()
+
+    // Создаём переменные
+    val variableX = Variable(name = "x", value = 0, type = "int")
+    val variableY = Variable(name = "y", value = 123, type = "int")
+
+    // Засовываем их во viewModel (будто они уже объявлены)
+    viewModel.declareVariable(variableX.name, variableX.value, variableX.type)
+    viewModel.declareVariable(variableY.name, variableY.value, variableY.type)
+
+    // Создаём input-блоки
+    val targetBlock = Block(
+        type = BlockType.VARIABLE_REFERENCE,
+        value = variableX
+    )
+    val valueBlock = Block(
+        type = BlockType.VARIABLE_REFERENCE,
+        value = variableY
+    )
+
+    // Финальный set-блок
+    val setBlock = Block(
+        type = BlockType.VARIABLE_SET,
+        inputBlocks = mutableListOf(targetBlock, valueBlock)
+    )
+
+    DraggableSetVariableBlock(
+        id = setBlock.id,
+        containerWidth = 1000f,
+        containerHeight = 1000f,
+        onDelete = {},
+        inputBlocks = setBlock.inputBlocks,
+        viewModel = viewModel
+    )
+}
+
 
