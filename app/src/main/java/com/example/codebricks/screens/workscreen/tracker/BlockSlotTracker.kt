@@ -4,7 +4,7 @@ package com.example.codebricks.screens.workscreen.tracker
 import androidx.compose.ui.geometry.Rect
 
 object BlockSlotTracker {
-    private val slotBounds = mutableMapOf<Pair<String,Int>, Rect>()
+    private val slotBounds = mutableMapOf<Pair<String, Int>, Rect>()
 
     fun setSlotBounds(blockId: String, slotIndex: Int, bounds: Rect) {
         slotBounds[blockId to slotIndex] = bounds
@@ -27,9 +27,7 @@ object BlockSlotTracker {
 //    }
 
     data class SlotInfo(
-        val blockId: String,
-        val slotIndex: Int,
-        val bounds: Rect
+        val blockId: String, val slotIndex: Int, val bounds: Rect
     )
 
     fun getAllSlots(): List<SlotInfo> {

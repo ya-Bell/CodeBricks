@@ -1,5 +1,3 @@
-@file:Suppress("NAME_SHADOWING")
-
 package com.example.codebricks.blocks.variables
 
 import androidx.compose.animation.core.Animatable
@@ -10,13 +8,9 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.defaultMinSize
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.requiredSize
-import androidx.compose.foundation.layout.requiredSizeIn
-import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -53,8 +47,7 @@ import kotlin.math.roundToInt
 
 @Composable
 fun DraggableReferenceBlock(
-    id: String,
-    variable: Variable,
+    id: String, variable: Variable,
 //    containerWidth: Float,
 //    containerHeight: Float,
     viewModel: VariableViewModel
@@ -78,9 +71,8 @@ fun DraggableReferenceBlock(
     }
 
 
-    val redrawTrigger = BlockPositionTracker.redrawTrigger.value
+    val redrawTrigger = BlockPositionTracker.redrawTrigger.intValue
 
-    val parent = viewModel.findBlockContaining(id)
     val localOffset = remember { mutableStateOf(Offset.Zero) }
 
 
@@ -89,8 +81,7 @@ fun DraggableReferenceBlock(
         if (isInserted && layoutCoordinates != null) {
             val parent = viewModel.findBlockContaining(id)
             val slot = BlockSlotTracker.getAllSlots().find {
-                it.blockId == parent?.id &&
-                        parent?.inputBlocks?.getOrNull(it.slotIndex)?.id == id
+                it.blockId == parent?.id && parent.inputBlocks.getOrNull(it.slotIndex)?.id == id
             }
             val windowOffset = slot?.bounds?.let { Offset(it.left, it.top) } ?: Offset.Zero
             localOffset.value = layoutCoordinates!!.windowToLocal(windowOffset)
@@ -110,8 +101,7 @@ fun DraggableReferenceBlock(
                 if (isInserted) {
                     val parent = viewModel.findBlockContaining(id)
                     val slot = BlockSlotTracker.getAllSlots().find {
-                        it.blockId == parent?.id &&
-                                parent?.inputBlocks?.getOrNull(it.slotIndex)?.id == id
+                        it.blockId == parent?.id && parent.inputBlocks.getOrNull(it.slotIndex)?.id == id
                     }
                     val windowOffset = slot?.bounds?.let { Offset(it.left, it.top) } ?: Offset.Zero
                     localOffset.value = coords.windowToLocal(windowOffset)
@@ -130,59 +120,69 @@ fun DraggableReferenceBlock(
             .background(Color(0xFFEEEEEE))
             .zIndex(if (isInserted) 0f else 1f)
             .pointerInput(id, isInserted) {
-                detectDragGestures(
-                    onDragStart = {
-                        if (isInserted) {
-                            viewModel.removeReferenceFromParent(id)
-                        }
-                    },
-                    onDrag = { change, dragAmount ->
-                        change.consume()
+                detectDragGestures(onDragStart = {
+                    if (isInserted) {
+                        viewModel.removeReferenceFromParent(id)
+                    }
+                }, onDrag = { change, dragAmount ->
+                    change.consume()
+                    scope.launch {
+                        animOffset.snapTo(animOffset.value + dragAmount)
+                    }
+                    val coords = layoutCoordinates ?: return@detectDragGestures
+                    val blockW = coords.size.width.toFloat()
+                    val blockH = coords.size.height.toFloat()
+                    val center = animOffset.value + Offset(blockW / 2f, blockH / 2f)
+                    val windowCenter = coords.localToWindow(center)
+
+                    val matchedSlot = BlockSlotTracker.getAllSlots().find {
+                        it.bounds.inflate(20f).contains(windowCenter)
+                    }
+
+                    if (matchedSlot != null) {
+                        viewModel.setHighlightedSlot(matchedSlot.blockId, matchedSlot.slotIndex)
+                    } else {
+                        viewModel.setHighlightedSlot(null, null)
+                    }
+                }, onDragEnd = {
+                    viewModel.setHighlightedSlot(null, null)
+                    val coords = layoutCoordinates ?: return@detectDragGestures
+
+                    val halfW = with(density) { 60.dp.toPx() } / 2f
+                    val halfH = with(density) { 24.dp.toPx() } / 2f
+                    val localCenter = animOffset.value + Offset(halfW, halfH)
+                    val windowCenter = coords.localToWindow(localCenter)
+
+                    val matchedSlot = BlockSlotTracker.getAllSlots().find { (_, _, bounds) ->
+                        val magneticPadding = 20f
+                        val expandedBounds = Rect(
+                            left = bounds.left - magneticPadding,
+                            top = bounds.top - magneticPadding,
+                            right = bounds.right + magneticPadding,
+                            bottom = bounds.bottom + magneticPadding
+                        )
+                        expandedBounds.contains(windowCenter)
+                    }
+
+                    if (matchedSlot != null) {
+                        val slotCenter = Offset(
+                            (matchedSlot.bounds.left + matchedSlot.bounds.right) / 2f,
+                            (matchedSlot.bounds.top + matchedSlot.bounds.bottom) / 2f
+                        )
+                        val snappedLocal = coords.windowToLocal(slotCenter) - Offset(halfW, halfH)
+
                         scope.launch {
-                            animOffset.snapTo(animOffset.value + dragAmount)
-                        }
-                    },
-                    onDragEnd = {
-                        val coords = layoutCoordinates ?: return@detectDragGestures
-
-                        val halfW = with(density) { 60.dp.toPx() } / 2f
-                        val halfH = with(density) { 24.dp.toPx() } / 2f
-                        val localCenter = animOffset.value + Offset(halfW, halfH)
-                        val windowCenter = coords.localToWindow(localCenter)
-
-                        val matchedSlot = BlockSlotTracker.getAllSlots().find { (_, _, bounds) ->
-                            val magneticPadding = 20f
-                            val expandedBounds = Rect(
-                                left = bounds.left - magneticPadding,
-                                top = bounds.top - magneticPadding,
-                                right = bounds.right + magneticPadding,
-                                bottom = bounds.bottom + magneticPadding
+                            animOffset.animateTo(
+                                targetValue = snappedLocal,
+                                animationSpec = tween(durationMillis = 200)
                             )
-                            expandedBounds.contains(windowCenter)
-                        }
-
-                        if (matchedSlot != null) {
-                            val slotCenter = Offset(
-                                (matchedSlot.bounds.left + matchedSlot.bounds.right) / 2f,
-                                (matchedSlot.bounds.top + matchedSlot.bounds.bottom) / 2f
-                            )
-                            val snappedLocal =
-                                coords.windowToLocal(slotCenter) - Offset(halfW, halfH)
-
-                            scope.launch {
-                                animOffset.animateTo(
-                                    targetValue = snappedLocal,
-                                    animationSpec = tween(durationMillis = 200)
-                                )
-                                viewModel.tryInsertIntoSlot(windowCenter, id)
-                            }
-                        } else {
                             viewModel.tryInsertIntoSlot(windowCenter, id)
                         }
+                    } else {
+                        viewModel.tryInsertIntoSlot(windowCenter, id)
                     }
-                )
-            },
-        contentAlignment = Alignment.Center
+                })
+            }, contentAlignment = Alignment.Center
     ) {
         Text(
             text = variable.name,
@@ -198,12 +198,10 @@ fun DraggableReferenceBlock(
 @Preview(showBackground = true)
 @Composable
 fun DraggableReferenceBlockPreview() {
-    val viewModel = VariableViewModel()
+    val mockViewModel = remember { VariableViewModel() }
     val variable = Variable(name = "e", value = 10, type = "int")
 
     DraggableReferenceBlock(
-        id = "ref-preview-id",
-        variable = variable,
-        viewModel = viewModel
+        id = "ref-preview-id", variable = variable, viewModel = mockViewModel
     )
 }

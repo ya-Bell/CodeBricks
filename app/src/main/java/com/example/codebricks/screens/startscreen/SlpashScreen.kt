@@ -47,10 +47,7 @@ fun SplashScreen(navController: NavController) {
         }
 
         delay(500)
-        navController.currentBackStackEntry
-            ?.lifecycle
-            ?.currentState
-            ?.takeIf { it.isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED) }
+        navController.currentBackStackEntry?.lifecycle?.currentState?.takeIf { it.isAtLeast(androidx.lifecycle.Lifecycle.State.STARTED) }
             ?.let {
                 navController.navigate("start") {
                     popUpTo("splash") { inclusive = true }
@@ -72,11 +69,9 @@ fun SplashScreen(navController: NavController) {
             modifier = Modifier.align(Alignment.Center)
         ) {
             AnimatedVisibility(
-                visible = isLogoVisible,
-                enter = fadeIn(tween(1000)) + scaleIn(
+                visible = isLogoVisible, enter = fadeIn(tween(1000)) + scaleIn(
                     animationSpec = tween(1000, easing = FastOutSlowInEasing)
-                ),
-                exit = fadeOut(tween(500))
+                ), exit = fadeOut(tween(500))
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.logo),
@@ -93,9 +88,7 @@ fun SplashScreen(navController: NavController) {
                 .padding(bottom = 150.dp)
         ) {
             AnimatedVisibility(
-                visible = isProgressVisible,
-                enter = fadeIn(tween(500)),
-                exit = fadeOut()
+                visible = isProgressVisible, enter = fadeIn(tween(500)), exit = fadeOut()
             ) {
                 Box(
                     modifier = Modifier

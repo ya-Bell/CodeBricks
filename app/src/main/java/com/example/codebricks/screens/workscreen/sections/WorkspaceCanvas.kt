@@ -60,8 +60,7 @@ import com.example.codebricks.viewmodel.VariableViewModel
 @SuppressLint("UnusedTransitionTargetStateParameter", "ConfigurationScreenWidthHeight")
 @Composable
 fun WorkspaceCanvas(
-    viewModel: VariableViewModel,
-    onSizeChanged: (Float, Float) -> Unit
+    viewModel: VariableViewModel, onSizeChanged: (Float, Float) -> Unit
 ) {
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
 
@@ -85,10 +84,8 @@ fun WorkspaceCanvas(
             zoomCount++
             offset = Offset(
                 x = offset.x.coerceIn(
-                    (canvasSize.value.width - contentSize * scale).coerceAtMost(0f),
-                    0f
-                ),
-                y = offset.y.coerceIn(
+                    (canvasSize.value.width - contentSize * scale).coerceAtMost(0f), 0f
+                ), y = offset.y.coerceIn(
                     (canvasSize.value.height - contentSize * scale).coerceAtMost(
                         0f
                     ), 0f
@@ -103,10 +100,8 @@ fun WorkspaceCanvas(
             zoomCount--
             offset = Offset(
                 x = offset.x.coerceIn(
-                    (canvasSize.value.width - contentSize * scale).coerceAtMost(0f),
-                    0f
-                ),
-                y = offset.y.coerceIn(
+                    (canvasSize.value.width - contentSize * scale).coerceAtMost(0f), 0f
+                ), y = offset.y.coerceIn(
                     (canvasSize.value.height - contentSize * scale).coerceAtMost(
                         0f
                     ), 0f
@@ -130,8 +125,7 @@ fun WorkspaceCanvas(
                     val minY = (canvasSize.value.height - scaledH).coerceAtMost(0f)
                     val newOffset = offset + dragAmount
                     offset = Offset(
-                        x = newOffset.x.coerceIn(minX, 0f),
-                        y = newOffset.y.coerceIn(minY, 0f)
+                        x = newOffset.x.coerceIn(minX, 0f), y = newOffset.y.coerceIn(minY, 0f)
                     )
                     change.consume()
                 }
@@ -139,8 +133,7 @@ fun WorkspaceCanvas(
             .onSizeChanged {
                 canvasSize.value = it
                 onSizeChanged(it.width.toFloat(), it.height.toFloat())
-            }
-    ) {
+            }) {
         val density = LocalDensity.current
 
         Box(
@@ -158,8 +151,7 @@ fun WorkspaceCanvas(
                     // фиксируем scale и offset
                     BlockPositionTracker.canvasScale = scale
                     BlockPositionTracker.canvasOffset = offset
-                }
-        ) {
+                }) {
             Canvas(modifier = Modifier.matchParentSize()) {
                 // красная рамка
                 drawRect(
@@ -186,17 +178,18 @@ fun WorkspaceCanvas(
                 it.type == BlockType.CONTROL_START || it.type == BlockType.CONTROL_STOP
             }
             val printBlocks = viewModel.programBlocks.filter { it.type == BlockType.IO_PRINT }
-            val setVariableBlocks = viewModel.programBlocks.filter { it.type == BlockType.VARIABLE_SET }
-            val changeVariableBlocks = viewModel.programBlocks.filter { it.type == BlockType.VARIABLE_CHANGE }
+            val setVariableBlocks =
+                viewModel.programBlocks.filter { it.type == BlockType.VARIABLE_SET }
+            val changeVariableBlocks =
+                viewModel.programBlocks.filter { it.type == BlockType.VARIABLE_CHANGE }
 
             controlBlocks.forEach { block ->
                 DraggableControlBlock(
                     id = block.id,
                     type = block.type.name,
-                    containerWidth  = contentSize,
+                    containerWidth = contentSize,
                     containerHeight = contentSize,
-                    onDelete = { blockId -> viewModel.removeBlockById(blockId) }
-                )
+                    onDelete = { blockId -> viewModel.removeBlockById(blockId) })
             }
 
             printBlocks.forEach { block ->
@@ -204,16 +197,15 @@ fun WorkspaceCanvas(
                 DraggablePrintBlock(
                     id = block.id,
                     variable = variable,
-                    containerWidth  = contentSize,
+                    containerWidth = contentSize,
                     containerHeight = contentSize,
-                    onDelete = { blockId -> viewModel.removeBlockById(blockId) }
-                )
+                    onDelete = { blockId -> viewModel.removeBlockById(blockId) })
             }
 
             setVariableBlocks.forEach { block ->
                 DraggableSetVariableBlock(
                     id = block.id,
-                    containerWidth  = contentSize,
+                    containerWidth = contentSize,
                     containerHeight = contentSize,
                     onDelete = { blockId -> viewModel.removeBlockById(blockId) },
                     inputBlocks = block.inputBlocks,
@@ -228,7 +220,7 @@ fun WorkspaceCanvas(
                     variable = variable,
                     changeSign = block.changeSign,
                     changeAmount = block.changeAmount,
-                    containerWidth  = contentSize,
+                    containerWidth = contentSize,
                     containerHeight = contentSize,
                     onDelete = { blockId -> viewModel.removeBlockById(blockId) },
                     viewModel = viewModel
@@ -239,8 +231,7 @@ fun WorkspaceCanvas(
                 it.type == BlockType.VARIABLE_DECLARE
             }
             val referenceBlocks = viewModel.programBlocks.filter { block ->
-                block.type == BlockType.VARIABLE_REFERENCE &&
-                        viewModel.findBlockContaining(block.id) == null // ❗ не вложен
+                block.type == BlockType.VARIABLE_REFERENCE && viewModel.findBlockContaining(block.id) == null // ❗ не вложен
             }
 
 
@@ -250,17 +241,18 @@ fun WorkspaceCanvas(
                     DraggableDeclareBlock(
                         id = block.id,
                         variable = variable,
-                        containerWidth  = contentSize,
+                        containerWidth = contentSize,
                         containerHeight = contentSize,
-                        onDelete = { blockId -> viewModel.removeBlockById(blockId) }
-                    )
+                        onDelete = { blockId -> viewModel.removeBlockById(blockId) })
                 }
             }
 
             val mathBlocks = viewModel.programBlocks.filter {
                 it.type in listOf(
-                    BlockType.MATH_ADD, BlockType.MATH_SUBTRACT,
-                    BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE
+                    BlockType.MATH_ADD,
+                    BlockType.MATH_SUBTRACT,
+                    BlockType.MATH_MULTIPLY,
+                    BlockType.MATH_DIVIDE
                 )
             }
 
@@ -280,9 +272,7 @@ fun WorkspaceCanvas(
                 val variable = block.value as? Variable
                 if (variable != null) {
                     DraggableReferenceBlock(
-                        id = block.id,
-                        variable = variable,
-                        viewModel = viewModel
+                        id = block.id, variable = variable, viewModel = viewModel
                     )
                 }
             }
@@ -316,8 +306,7 @@ fun WorkspaceCanvas(
                 .align(Alignment.TopStart)
                 .padding(4.dp)
                 .background(
-                    Color.White.copy(alpha = 0.7f),
-                    shape = RoundedCornerShape(4.dp)
+                    Color.White.copy(alpha = 0.7f), shape = RoundedCornerShape(4.dp)
                 )
                 .padding(horizontal = 4.dp, vertical = 2.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -357,16 +346,11 @@ fun WorkspaceCanvas(
 
 @SuppressLint("ViewModelConstructorInComposable")
 @Preview(
-    showBackground = true,
-    widthDp = 360,
-    heightDp = 330,
-    name = "WorkspaceCanvas Preview"
+    showBackground = true, widthDp = 360, heightDp = 330, name = "WorkspaceCanvas Preview"
 )
 @Composable
 fun WorkspaceCanvasPreview() {
     val mockViewModel = VariableViewModel()
     WorkspaceCanvas(
-        viewModel = mockViewModel,
-        onSizeChanged = { _, _ -> }
-    )
+        viewModel = mockViewModel, onSizeChanged = { _, _ -> })
 }

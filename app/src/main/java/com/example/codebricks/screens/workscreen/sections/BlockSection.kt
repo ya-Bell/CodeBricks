@@ -40,6 +40,7 @@ fun BlockSection(selectedClass: String, viewModel: VariableViewModel) {
                     }
                 }
             }
+
             "Variables" -> {
                 LazyRow(
                     modifier = Modifier.fillMaxWidth(),
@@ -66,6 +67,7 @@ fun BlockSection(selectedClass: String, viewModel: VariableViewModel) {
                     }
                 }
             }
+
             "Math" -> {
                 LazyRow(
                     modifier = Modifier.fillMaxWidth(),
@@ -85,18 +87,23 @@ fun BlockSection(selectedClass: String, viewModel: VariableViewModel) {
                     }
                 }
             }
+
             "Comparison" -> {
                 Text(stringResource(id = R.string.comparison_blocks))
             }
+
             "Logic" -> {
                 Text(stringResource(id = R.string.logic_blocks))
             }
+
             "Input/Output" -> {
                 CreatePrintBlock(viewModel)
             }
+
             "Loops" -> {
                 Text(stringResource(id = R.string.loops_blocks))
             }
+
             "Functions" -> {
                 Text(stringResource(id = R.string.functions_blocks))
             }
@@ -114,8 +121,7 @@ fun BlockSectionPreview() {
 
     CodeBricksTheme {
         BlockSection(
-            selectedClass = "Variables",
-            viewModel = mockViewModel
+            selectedClass = "Variables", viewModel = mockViewModel
         )
     }
 }

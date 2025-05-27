@@ -26,8 +26,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
 
                 NavHost(
-                    navController = navController,
-                    startDestination = "splash"
+                    navController = navController, startDestination = "splash"
                 ) {
                     composable("splash") {
                         SplashScreen(navController = navController)
@@ -40,14 +39,12 @@ class MainActivity : ComponentActivity() {
                             isThemeDark = isDark,
                             onThemeToggle = { isDark = it },
                             isEnglish = isEnglish,
-                            onLanguageToggle = { isEnglish = it }
-                        )
+                            onLanguageToggle = { isEnglish = it })
                     }
 
                     composable("work") {
                         WorkScreen(
-                            onBackClick = { navController.popBackStack() }
-                        )
+                            onBackClick = { navController.popBackStack() })
                     }
                 }
             }

@@ -20,12 +20,27 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -36,19 +51,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.codebricks.ui.theme.CodeBricksTheme
-import androidx.compose.ui.graphics.graphicsLayer
 import com.example.codebricks.R
+import com.example.codebricks.ui.theme.CodeBricksTheme
 
 
 @Composable
@@ -70,9 +85,7 @@ fun StartScreen(
     ) {
         // Кнопка настроек
         SettingsButton(
-            modifier = Modifier.align(Alignment.TopEnd),
-            onClick = { isSettingsVisible = true }
-        )
+            modifier = Modifier.align(Alignment.TopEnd), onClick = { isSettingsVisible = true })
 
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -83,8 +96,7 @@ fun StartScreen(
             Image(
                 painter = painterResource(id = R.drawable.logo),
                 contentDescription = stringResource(R.string.logo_description),
-                modifier = Modifier
-                    .size(282.dp)
+                modifier = Modifier.size(282.dp)
             )
 
 
@@ -94,8 +106,7 @@ fun StartScreen(
             Text(
                 text = stringResource(R.string.app_name),
                 style = MaterialTheme.typography.displayLarge.copy(
-                    color = Color.Black,
-                    shadow = Shadow(
+                    color = Color.Black, shadow = Shadow(
                         color = Color.Black.copy(alpha = 0.25f),
                         offset = Offset(0f, 4f),
                         blurRadius = 4f
@@ -111,17 +122,17 @@ fun StartScreen(
             // Кнопка About App
             AboutAppButton(onClick = onAboutClick)
         }
-            // Версия внизу
-            Text(
-                text = stringResource(R.string.version),
-                fontSize = 12.sp,
-                color = Color.Gray,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 8.dp),
-                textAlign = TextAlign.Center
-            )
-        }
+        // Версия внизу
+        Text(
+            text = stringResource(R.string.version),
+            fontSize = 12.sp,
+            color = Color.Gray,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 8.dp),
+            textAlign = TextAlign.Center
+        )
+    }
 
     AnimatedVisibility(
         visible = isSettingsVisible,
@@ -166,11 +177,9 @@ fun SettingsOverlay(
                 .background(Color.Black.copy(alpha = 0.25f))
                 .clickable(
                     indication = null,
-                    interactionSource = remember { MutableInteractionSource() }
-                ) {
+                    interactionSource = remember { MutableInteractionSource() }) {
                     visibleState.targetState = false
-                },
-            contentAlignment = Alignment.Center
+                }, contentAlignment = Alignment.Center
         ) {
             Surface(
                 modifier = Modifier
@@ -229,14 +238,12 @@ fun SettingsOverlay(
                                 text = "English",
                                 isSelected = isEnglish,
                                 modifier = Modifier.size(width = 90.dp, height = 31.dp),
-                                onClick = { onLanguageToggle(true) }
-                            )
+                                onClick = { onLanguageToggle(true) })
                             LanguageOption(
                                 text = "Русский",
                                 isSelected = !isEnglish,
                                 modifier = Modifier.size(width = 90.dp, height = 31.dp),
-                                onClick = { onLanguageToggle(false) }
-                            )
+                                onClick = { onLanguageToggle(false) })
                         }
 
                         Spacer(modifier = Modifier.height(7.dp))
@@ -272,9 +279,7 @@ fun SettingsOverlay(
 @SuppressLint("UseOfNonLambdaOffsetOverload")
 @Composable
 fun CustomSwitch(
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    checked: Boolean, onCheckedChange: (Boolean) -> Unit, modifier: Modifier = Modifier
 ) {
     val transition = updateTransition(checked, label = "switchTransition")
 
@@ -308,10 +313,7 @@ fun CustomSwitch(
 
 @Composable
 fun LanguageOption(
-    text: String,
-    isSelected: Boolean,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
+    text: String, isSelected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit
 ) {
     val background = if (isSelected) Color(0xFF00D651) else Color.White
     val border = if (isSelected) Color.Transparent else Color(0xFFCCCCCC)
@@ -325,9 +327,7 @@ fun LanguageOption(
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = text,
-            color = textColor,
-            style = MaterialTheme.typography.bodyMedium
+            text = text, color = textColor, style = MaterialTheme.typography.bodyMedium
         )
     }
 }
@@ -335,22 +335,17 @@ fun LanguageOption(
 
 @Composable
 fun StartWorkButton(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
+    modifier: Modifier = Modifier, onClick: () -> Unit
 ) {
     var isPressed by remember { mutableStateOf(false) }
 
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.96f else 1f,
-        animationSpec = tween(durationMillis = 120)
+        targetValue = if (isPressed) 0.96f else 1f, animationSpec = tween(durationMillis = 120)
     )
 
     val backgroundColor by animateColorAsState(
-        targetValue = if (isPressed)
-            Color.Black.copy(alpha = 0.85f)
-        else
-            Color.Black,
-        animationSpec = tween(durationMillis = 120)
+        targetValue = if (isPressed) Color.Black.copy(alpha = 0.85f)
+        else Color.Black, animationSpec = tween(durationMillis = 120)
     )
 
     Box(
@@ -361,9 +356,7 @@ fun StartWorkButton(
                 scaleY = scale
             }
             .shadow(
-                elevation = 4.dp,
-                shape = RoundedCornerShape(100.dp),
-                clip = false
+                elevation = 4.dp, shape = RoundedCornerShape(100.dp), clip = false
             )
             .background(color = backgroundColor, shape = RoundedCornerShape(100.dp))
             .pointerInput(Unit) {
@@ -376,10 +369,8 @@ fun StartWorkButton(
                             isPressed = false
                             onClick()
                         }
-                    }
-                )
-            },
-        contentAlignment = Alignment.Center
+                    })
+            }, contentAlignment = Alignment.Center
     ) {
         Text(
             text = stringResource(R.string.start_work),
@@ -392,27 +383,21 @@ fun StartWorkButton(
 
 @Composable
 fun AboutAppButton(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
+    modifier: Modifier = Modifier, onClick: () -> Unit
 ) {
     var isPressed by remember { mutableStateOf(false) }
 
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.96f else 1f,
-        animationSpec = tween(durationMillis = 120)
+        targetValue = if (isPressed) 0.96f else 1f, animationSpec = tween(durationMillis = 120)
     )
 
     val backgroundColor by animateColorAsState(
-        targetValue = if (isPressed)
-            Color(0xFFEEEEEE)
-        else
-            Color.White,
-        animationSpec = tween(120)
+        targetValue = if (isPressed) Color(0xFFEEEEEE)
+        else Color.White, animationSpec = tween(120)
     )
 
     val textColor by animateColorAsState(
-        targetValue = if (isPressed) Color(0xFF222222) else Color.Black,
-        animationSpec = tween(120)
+        targetValue = if (isPressed) Color(0xFF222222) else Color.Black, animationSpec = tween(120)
     )
 
     Box(
@@ -423,9 +408,7 @@ fun AboutAppButton(
                 scaleY = scale
             }
             .shadow(
-                elevation = 4.dp,
-                shape = RoundedCornerShape(100.dp),
-                clip = false
+                elevation = 4.dp, shape = RoundedCornerShape(100.dp), clip = false
             )
             .background(color = backgroundColor, shape = RoundedCornerShape(100.dp))
             .pointerInput(Unit) {
@@ -438,10 +421,8 @@ fun AboutAppButton(
                             isPressed = false
                             onClick()
                         }
-                    }
-                )
-            },
-        contentAlignment = Alignment.Center
+                    })
+            }, contentAlignment = Alignment.Center
     ) {
         Text(
             text = stringResource(R.string.about_app),
@@ -454,14 +435,12 @@ fun AboutAppButton(
 
 @Composable
 fun SettingsButton(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
+    modifier: Modifier = Modifier, onClick: () -> Unit
 ) {
     var isPressed by remember { mutableStateOf(false) }
 
     val scale by animateFloatAsState(
-        targetValue = if (isPressed) 0.96f else 1f,
-        animationSpec = tween(durationMillis = 120)
+        targetValue = if (isPressed) 0.96f else 1f, animationSpec = tween(durationMillis = 120)
     )
 
     Box(
@@ -472,9 +451,7 @@ fun SettingsButton(
                 scaleY = scale
             }
             .shadow(
-                elevation = 4.dp,
-                shape = CircleShape,
-                clip = false
+                elevation = 4.dp, shape = CircleShape, clip = false
             )
             .background(color = Color.White, shape = CircleShape)
             .pointerInput(Unit) {
@@ -487,10 +464,8 @@ fun SettingsButton(
                             isPressed = false
                             onClick()
                         }
-                    }
-                )
-            },
-        contentAlignment = Alignment.Center
+                    })
+            }, contentAlignment = Alignment.Center
     ) {
         Icon(
             painter = painterResource(id = R.drawable.ic_settings),
@@ -499,8 +474,6 @@ fun SettingsButton(
         )
     }
 }
-
-
 
 
 @Preview(showBackground = true, device = "spec:width=239dp,height=176dp")
@@ -512,8 +485,7 @@ fun SettingsOverlayPreview() {
             isThemeDark = false,
             onThemeToggle = {},
             isEnglish = true,
-            onLanguageToggle = {}
-        )
+            onLanguageToggle = {})
     }
 }
 

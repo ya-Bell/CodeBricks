@@ -1,3 +1,5 @@
+@file:Suppress("NAME_SHADOWING")
+
 package com.example.codebricks.screens.workscreen.sections
 
 import android.annotation.SuppressLint
@@ -54,24 +56,22 @@ fun BottomBlockBar(
                 .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
                 .background(Color(0xFFD9D9D9))
                 .border(
-                    1.dp,
-                    Color.Gray,
-                    RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+                    1.dp, Color.Gray, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
                 )
                 .padding(8.dp)
                 .height(20.dp)
         ) {
             LazyRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start
+                modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start
             ) {
                 item {
-                    val buttonModifier = Modifier
-                        .padding(end = 8.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .border(1.5.dp, Color.Black, RoundedCornerShape(10.dp))
-                        .height(26.dp)
-                        .width(100.dp)
+                    val buttonModifier =
+                        Modifier
+                            .padding(end = 8.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .border(1.5.dp, Color.Black, RoundedCornerShape(10.dp))
+                            .height(26.dp)
+                            .width(100.dp)
 
                     val categories = listOf(
                         stringResource(id = R.string.control) to Color(0xFF3F51B5),
@@ -111,7 +111,9 @@ fun BottomBlockBar(
                 .height(adaptiveHeight.dp)
                 .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
                 .background(Color.White)
-                .border(1.dp, Color.Gray, RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
+                .border(
+                    1.dp, Color.Gray, RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
+                )
         ) {
             BlockSection(selectedClass, viewModel)
         }
