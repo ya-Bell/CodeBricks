@@ -99,7 +99,6 @@ fun DraggableReferenceBlock(
 
     Box(
         modifier = blockModifier
-            .padding(horizontal = 8.dp)
             .defaultMinSize(minWidth = 30.dp)
             .onGloballyPositioned { coords ->
                 layoutCoordinates = coords

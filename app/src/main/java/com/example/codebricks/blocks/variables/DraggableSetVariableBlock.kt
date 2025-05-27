@@ -11,12 +11,14 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -42,6 +44,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -80,7 +83,6 @@ fun DraggableSetVariableBlock(
     val variableType = targetVar?.type ?: "string"
 
     val inputText = remember(id) { mutableStateOf("") }
-    /* val showApply = remember { mutableStateOf(false) } */
     val isEditing = remember { mutableStateOf(false) }
     val isError = remember { mutableStateOf(false) }
 
@@ -90,7 +92,9 @@ fun DraggableSetVariableBlock(
 
     val redrawTrigger = BlockPositionTracker.redrawTrigger.value
 
-    LaunchedEffect(valueVar?.name, isEditing.value){
+    val layoutCoordinates = remember { mutableStateOf<LayoutCoordinates?>(null) }
+
+    LaunchedEffect(valueVar?.name, isEditing.value) {
         if (valueVar != null && !isEditing.value && inputText.value.isNotEmpty()) {
             inputText.value = ""
         }
@@ -98,13 +102,15 @@ fun DraggableSetVariableBlock(
     LaunchedEffect(redrawTrigger, valueVar) {
     }
 
+
     Box(
         modifier = Modifier
+            .wrapContentWidth()
+            .height(40.dp)
             .offset {
                 val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 44f)
                 IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
             }
-            .height(44.dp)
             .widthIn(max = 500.dp)
             .clip(RoundedCornerShape(12.dp))
             .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
@@ -158,7 +164,13 @@ fun DraggableSetVariableBlock(
                 .horizontalScroll(rememberScrollState()),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Set", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White, modifier = Modifier.padding(end = 4.dp))
+            Text(
+                "Set",
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                modifier = Modifier.padding(end = 4.dp)
+            )
 
             val expanded = remember { mutableStateOf(false) }
             val selectedVar = remember { mutableStateOf(targetVar?.name ?: "") }
@@ -182,7 +194,8 @@ fun DraggableSetVariableBlock(
                         fontSize = 11.sp,
                         color = Color.Black,
                         modifier = Modifier.padding(horizontal = 8.dp)
-                    )                }
+                    )
+                }
 
                 ExposedDropdownMenu(
                     expanded = expanded.value,
@@ -208,55 +221,69 @@ fun DraggableSetVariableBlock(
             val blockId = valueBlock?.id
 
             val blockWidth = blockId?.let { BlockPositionTracker.getBlockWidth(it) }
-            val textLength = if (isEditing.value) inputText.value.length else valueVar?.name?.length ?: 1
+            val textLength =
+                if (isEditing.value) inputText.value.length else valueVar?.name?.length ?: 1
 
             val targetWidth: Dp = when {
                 blockWidth != null && valueVar != null && !isEditing.value -> {
-                    with(LocalDensity.current) { blockWidth.toDp() }.coerceIn(32.dp, 240.dp)
+                    with(LocalDensity.current) { blockWidth.toDp() }.coerceIn(30.dp, 240.dp)
                 }
+
                 else -> (textLength * 7 + 20).dp.coerceIn(32.dp, 240.dp)
             }
 
-            val animatedWidth by animateDpAsState(
-                targetValue = targetWidth,
-                animationSpec = tween(200)
-            )
-
+            val hasBlock = valueBlock != null
 
             Box(
                 modifier = Modifier
-                    .height(24.dp)
-                    .width(animatedWidth)
-                    .background(Color.White, RoundedCornerShape(12.dp))
+                    .height(32.dp)
+                    .wrapContentWidth()
+                    .defaultMinSize(minWidth = 30.dp)
+                    .background(Color.White, RoundedCornerShape(8.dp))
                     .onGloballyPositioned {
-                        val globalBounds = it.boundsInWindow()
-                        BlockSlotTracker.setSlotBounds(id, 1, globalBounds)
+                        layoutCoordinates.value = it
+                        val bounds = it.boundsInWindow()
+                        BlockSlotTracker.setSlotBounds(id, 1, bounds)
                     }
                     .border(
-                        2.dp,
+                        1.dp,
                         if (isError.value) Color.Red else if (isHighlighted) Color(0xFF4CAF50) else Color.Black,
-                        RoundedCornerShape(12.dp)
-                    ),
+                        RoundedCornerShape(8.dp)
+                    )
+                    .pointerInput(id) {
+                        detectDragGestures(
+                            onDragStart = {
+                                viewModel.removeReferenceFromParent(id)
+                            },
+                            onDrag = { _, _ -> },
+                            onDragEnd = {
+                                val coords = layoutCoordinates.value ?: return@detectDragGestures
+                                val width = coords.size.width.toFloat()
+                                val height = coords.size.height.toFloat()
+                                val center = coords.localToWindow(Offset(width / 2f, height / 2f))
+                                viewModel.tryInsertIntoSlot(center, id)
+                                viewModel.setRecentlyInsertedSlot(id, 1)
+                            }
+                        )
+                    },
                 contentAlignment = Alignment.Center
             ) {
-                if (!isEditing.value) {
-                    when {
-                        valueBlock?.type == BlockType.VARIABLE_REFERENCE -> {
-                            val variable = valueBlock.value as? Variable
-                            if (variable != null) {
-                                DraggableReferenceBlock(
-                                    id = valueBlock.id,
-                                    variable = variable,
-                                    viewModel = viewModel
-                                )
+                when {
+                    hasBlock -> {
+                        when (valueBlock?.type) {
+                            BlockType.VARIABLE_REFERENCE -> {
+                                val variable = valueBlock.value as? Variable
+                                if (variable != null) {
+                                    DraggableReferenceBlock(
+                                        id = valueBlock.id,
+                                        variable = variable,
+                                        viewModel = viewModel
+                                    )
+                                }
                             }
-                        }
 
-                        valueBlock?.type in listOf(
                             BlockType.MATH_ADD, BlockType.MATH_SUBTRACT,
-                            BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE
-                        ) -> {
-                            if (valueBlock != null) {
+                            BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE -> {
                                 DraggableMathBlock(
                                     id = valueBlock.id,
                                     type = valueBlock.type,
@@ -267,93 +294,58 @@ fun DraggableSetVariableBlock(
                                     viewModel = viewModel
                                 )
                             }
-                        }
 
-                        else -> {
-                            when (variableType) {
-                                "bool" -> {
-                                    val boolOptions = listOf("true", "false")
-                                    val selectedBool = remember { mutableStateOf("true") }
-                                    val boolExpanded = remember { mutableStateOf(false) }
-
-                                    ExposedDropdownMenuBox(
-                                        expanded = boolExpanded.value,
-                                        onExpandedChange = { boolExpanded.value = !boolExpanded.value }
-                                    ) {
-                                        Box(
-                                            modifier = Modifier
-                                                .menuAnchor(type = MenuAnchorType.PrimaryEditable, enabled = true)
-                                                .width(80.dp)
-                                                .height(24.dp)
-                                                .background(Color.White, RoundedCornerShape(12.dp))
-                                                .border(1.dp, Color.Black, RoundedCornerShape(12.dp))
-                                                .clickable { boolExpanded.value = true },
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text(selectedBool.value, fontSize = 11.sp, color = Color.Black)
-                                        }
-
-                                        ExposedDropdownMenu(
-                                            expanded = boolExpanded.value,
-                                            onDismissRequest = { boolExpanded.value = false }
-                                        ) {
-                                            boolOptions.forEach { option ->
-                                                DropdownMenuItem(
-                                                    text = { Text(option) },
-                                                    onClick = {
-                                                        selectedBool.value = option
-                                                        boolExpanded.value = false
-                                                        viewModel.updateSetBlockValue(id, option)
-                                                        isEditing.value = false
-                                                    }
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-
-                                else -> {
-                                    BasicTextField(
-                                        value = inputText.value,
-                                        onValueChange = {
-                                            inputText.value = it
-                                            isEditing.value = true
-                                            isError.value = when (variableType) {
-                                                "int" -> it.any { c -> !c.isDigit() }
-                                                "double" -> it.replace(",", ".").toDoubleOrNull() == null
-                                                else -> false
-                                            }
-                                        },
-                                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                                        keyboardActions = KeyboardActions(
-                                            onDone = {
-                                                if (!isError.value) {
-                                                    val cleanedValue = if (variableType == "double") {
-                                                        inputText.value.replace(",", ".").toDoubleOrNull()?.toString() ?: "0.0"
-                                                    } else inputText.value
-
-                                                    viewModel.updateSetBlockValue(id, cleanedValue)
-                                                    isEditing.value = false
-                                                }
-                                            }
-                                        ),
-                                        singleLine = true,
-                                        textStyle = TextStyle(fontSize = 12.sp, color = Color.Black),
-                                        decorationBox = { innerTextField ->
-                                            Box(
-                                                modifier = Modifier.padding(horizontal = 4.dp),
-                                                contentAlignment = Alignment.CenterStart
-                                            ) {
-                                                innerTextField()
-                                            }
-                                        }
-                                    )
-                                }
+                            else -> {
+                                Text(text = "?", fontSize = 12.sp)
                             }
                         }
                     }
+
+                    isEditing.value -> {
+                        BasicTextField(
+                            value = inputText.value,
+                            onValueChange = {
+                                inputText.value = it
+                                isEditing.value = true
+                                isError.value = when (variableType) {
+                                    "int" -> it.any { c -> !c.isDigit() }
+                                    "double" -> it.replace(",", ".").toDoubleOrNull() == null
+                                    else -> false
+                                }
+                            },
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    if (!isError.value) {
+                                        val cleanedValue = if (variableType == "double") {
+                                            inputText.value.replace(",", ".").toDoubleOrNull()
+                                                ?.toString() ?: "0.0"
+                                        } else inputText.value
+
+                                        viewModel.updateSetBlockValue(id, cleanedValue)
+                                        isEditing.value = false
+                                    }
+                                }
+                            ),
+                            singleLine = true,
+                            textStyle = TextStyle(fontSize = 12.sp, color = Color.Black),
+                            decorationBox = { innerTextField ->
+                                Box(
+                                    modifier = Modifier.padding(horizontal = 4.dp),
+                                    contentAlignment = Alignment.CenterStart
+                                ) {
+                                    innerTextField()
+                                }
+                            }
+                        )
+                    }
+
+                    else -> {
+                        Text("...", fontSize = 12.sp, color = Color.LightGray)
+                    }
                 }
             }
+
             Spacer(modifier = Modifier.width(8.dp))
         }
     }
@@ -393,7 +385,7 @@ fun DraggableSetVariableBlockPreview() {
         containerWidth = 1000f,
         containerHeight = 1000f,
         onDelete = {},
-        inputBlocks = setBlock.inputBlocks,
+//        inputBlocks = setBlock.inputBlocks,
         viewModel = viewModel
     )
 }
