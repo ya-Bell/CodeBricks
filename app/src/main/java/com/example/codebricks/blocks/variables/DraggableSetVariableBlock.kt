@@ -65,6 +65,7 @@ import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
 import kotlin.math.roundToInt
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DraggableSetVariableBlock(
@@ -100,43 +101,41 @@ fun DraggableSetVariableBlock(
     }
     LaunchedEffect(redrawTrigger, valueVar) {}
 
-    Box(
-        modifier = Modifier
-            .wrapContentWidth()
-            .height(40.dp)
-            .offset {
-                val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 44f)
-                IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
-            }
-            .widthIn(max = 500.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
-            .background(Color(0xFFFB8C00))
-            .pointerInput(Unit) {
-                detectDragGestures { change, dragAmount ->
-                    if (!isPressed) {
-                        isPressed = true
-                        dragStartTime = System.currentTimeMillis()
-                    }
 
-                    offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
-                    BlockPositionTracker.updateBlockPosition(id, offset)
-                    change.consume()
+    Box(modifier = Modifier
+        .wrapContentWidth()
+        .height(40.dp)
+        .offset {
+            val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 44f)
+            IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
+        }
+        .widthIn(max = 500.dp)
+        .clip(RoundedCornerShape(12.dp))
+        .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
+        .background(Color(0xFFFB8C00))
+        .pointerInput(Unit) {
+            detectDragGestures { change, dragAmount ->
+                if (!isPressed) {
+                    isPressed = true
+                    dragStartTime = System.currentTimeMillis()
+                }
 
-                    if (System.currentTimeMillis() - dragStartTime >= 2500) {
-                        showDeleteIcon = true
-                    }
+                offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
+                BlockPositionTracker.updateBlockPosition(id, offset)
+                change.consume()
+
+                if (System.currentTimeMillis() - dragStartTime >= 2500) {
+                    showDeleteIcon = true
                 }
             }
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onPress = {
-                        isPressed = false
-                        showDeleteIcon = false
-                    }
-                )
-            }
-    ) {
+        }
+        .pointerInput(Unit) {
+            detectTapGestures(
+                onPress = {
+                    isPressed = false
+                    showDeleteIcon = false
+                })
+        }) {
         if (showDeleteIcon) {
             Box(
                 modifier = Modifier
@@ -144,8 +143,7 @@ fun DraggableSetVariableBlock(
                     .padding(4.dp)
                     .clickable {
                         onDelete(id)
-                    }
-            ) {
+                    }) {
                 Icon(
                     imageVector = Icons.Filled.Close,
                     contentDescription = "Delete Block",
@@ -174,17 +172,17 @@ fun DraggableSetVariableBlock(
 
             ExposedDropdownMenuBox(
                 expanded = expanded.value,
-                onExpandedChange = { expanded.value = !expanded.value }
-            ) {
+                onExpandedChange = { expanded.value = !expanded.value }) {
                 Box(
                     modifier = Modifier
-                        .menuAnchor(type = MenuAnchorType.PrimaryEditable, enabled = true)
+                        .menuAnchor(
+                            type = MenuAnchorType.PrimaryEditable, enabled = true
+                        )
                         .widthIn(min = 48.dp, max = 300.dp)
                         .height(24.dp)
                         .background(Color.White, RoundedCornerShape(4.dp))
                         .border(1.dp, Color.Black, RoundedCornerShape(4.dp))
-                        .clickable { expanded.value = true },
-                    contentAlignment = Alignment.Center
+                        .clickable { expanded.value = true }, contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = selectedVar.value,
@@ -195,21 +193,17 @@ fun DraggableSetVariableBlock(
                 }
 
                 ExposedDropdownMenu(
-                    expanded = expanded.value,
-                    onDismissRequest = { expanded.value = false }
-                ) {
+                    expanded = expanded.value, onDismissRequest = { expanded.value = false }) {
                     viewModel.variables.forEach { variable ->
-                        DropdownMenuItem(
-                            text = { Text(variable.name) },
-                            onClick = {
-                                selectedVar.value = variable.name
-                                viewModel.updateSetBlockTarget(id, variable)
-                                expanded.value = false
-                            }
-                        )
+                        DropdownMenuItem(text = { Text(variable.name) }, onClick = {
+                            selectedVar.value = variable.name
+                            viewModel.updateSetBlockTarget(id, variable)
+                            expanded.value = false
+                        })
                     }
                 }
             }
+
 
             Text(" to ", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
 
@@ -237,34 +231,36 @@ fun DraggableSetVariableBlock(
                     )
             ) {
                 when {
-
                     hasBlock -> {
-                        when (valueBlock.type) {
-                            BlockType.VARIABLE_REFERENCE -> {
-                                val variable = valueBlock.value as? Variable
-                                if (variable != null) {
-                                    DraggableReferenceBlock(
+                        if (valueBlock != null) {
+                            when (valueBlock.type) {
+                                BlockType.VARIABLE_REFERENCE -> {
+                                    val variable = valueBlock.value as? Variable
+                                    if (variable != null) {
+                                        DraggableReferenceBlock(
+                                            id = valueBlock.id,
+                                            variable = variable,
+                                            viewModel = viewModel
+                                        )
+                                    }
+                                }
+
+                                BlockType.MATH_ADD, BlockType.MATH_SUBTRACT,
+                                BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE -> {
+                                    DraggableMathBlock(
                                         id = valueBlock.id,
-                                        variable = variable,
+                                        type = valueBlock.type,
+                                        inputBlocks = valueBlock.inputBlocks,
+                                        containerWidth = 0f,
+                                        containerHeight = 0f,
+                                        onDelete = { viewModel.removeBlockById(valueBlock.id) },
                                         viewModel = viewModel
                                     )
                                 }
-                            }
-                            BlockType.MATH_ADD, BlockType.MATH_SUBTRACT,
-                            BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE -> {
-                                DraggableMathBlock(
-                                    id = valueBlock.id,
-                                    type = valueBlock.type,
-                                    inputBlocks = valueBlock.inputBlocks,
-                                    containerWidth = 0f,
-                                    containerHeight = 0f,
-                                    onDelete = { viewModel.removeBlockById(valueBlock.id) },
-                                    viewModel = viewModel
-                                )
-                            }
 
-                            else -> {
-                                Text(text = "", fontSize = 12.sp)
+                                else -> {
+                                    Text(text = "", fontSize = 12.sp)
+                                }
                             }
                         }
                     }
@@ -314,17 +310,21 @@ fun DraggableSetVariableBlock(
 }
 
 
+
 @Preview(showBackground = true)
 @Composable
 fun DraggableSetVariableBlockPreview() {
     val mockViewModel = remember { VariableViewModel() }
 
+    // Создаём переменные
     val variableX = Variable(name = "x", value = 0, type = "int")
     val variableY = Variable(name = "y", value = 123, type = "int")
 
+    // Засовываем их во viewModel (будто они уже объявлены)
     mockViewModel.declareVariable(variableX.name, variableX.value, variableX.type)
     mockViewModel.declareVariable(variableY.name, variableY.value, variableY.type)
 
+    // Создаём input-блоки
     val targetBlock = Block(
         type = BlockType.VARIABLE_REFERENCE, value = variableX
     )
@@ -332,12 +332,14 @@ fun DraggableSetVariableBlockPreview() {
         type = BlockType.VARIABLE_REFERENCE, value = variableY
     )
 
+    // Финальный set-блок
     val setBlock = Block(
         type = BlockType.VARIABLE_SET, inputBlocks = mutableListOf(targetBlock, valueBlock)
     )
 
     DraggableSetVariableBlock(
         id = setBlock.id, containerWidth = 1000f, containerHeight = 1000f, onDelete = {},
+//        inputBlocks = setBlock.inputBlocks,
         viewModel = mockViewModel
     )
 }

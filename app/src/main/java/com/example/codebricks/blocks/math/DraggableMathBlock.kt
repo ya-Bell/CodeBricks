@@ -139,7 +139,7 @@ fun DraggableMathBlock(
             } else Modifier)
             .then(if (!isInserted) Modifier.pointerInput(id) {
                 detectDragGestures(onDragStart = {
-                    viewModel.removeReferenceFromParent(id)
+                    viewModel.removeBlockFromParent(id)
                 }, onDrag = { change, dragAmount ->
                     change.consume()
                     scope.launch {

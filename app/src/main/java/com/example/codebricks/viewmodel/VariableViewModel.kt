@@ -232,23 +232,20 @@ class VariableViewModel : ViewModel() {
         highlightedSlot.value =
             if (blockId != null && slotIndex != null) blockId to slotIndex else null
     }
-
     fun tryInsertIntoSlot(position: Offset, blockId: String) {
         val draggedBlock = programBlocks.find { it.id == blockId } ?: return
 
         val matchedSlot = BlockSlotTracker.getAllSlots().find { (_, _, bounds) ->
             bounds.inflate(MAGNETIC_PADDING).contains(position)
         } ?: return
+
         if (blockId == matchedSlot.blockId) {
-            println("🚫 Can't insert block into itself")
-            return
+            println("⚠️ Warning: inserting into self, possible recursive structure — allowing for now")
         }
-        println("➡️ Inserting $blockId into ${matchedSlot.blockId} at index ${matchedSlot.slotIndex}")
 
         val targetBlock = programBlocks.find { it.id == matchedSlot.blockId } ?: return
         val slotIndex = matchedSlot.slotIndex
 
-        // Только в определённых блоках поддерживается вставка
         if (targetBlock.type !in listOf(
                 BlockType.VARIABLE_SET,
                 BlockType.MATH_ADD,
@@ -256,19 +253,26 @@ class VariableViewModel : ViewModel() {
                 BlockType.MATH_MULTIPLY,
                 BlockType.MATH_DIVIDE
             )
-        ) return
-
-        // Удостоверимся, что inputBlocks имеет нужный размер
-        while (targetBlock.inputBlocks.size <= slotIndex) {
-            targetBlock.inputBlocks.add(Block(type = BlockType.VARIABLE_REFERENCE)) // dummy
+        ) {
+            println("🚫 Target block ${targetBlock.type} doesn't support slot insertion")
+            return
         }
 
-        // Вставляем draggedBlock внутрь
+        // Гарантируем размер inputBlocks
+        while (targetBlock.inputBlocks.size <= slotIndex) {
+            targetBlock.inputBlocks.add(
+                Block(type = BlockType.VARIABLE_REFERENCE)
+            )
+        }
+
+        // Вставляем перетаскиваемый блок
         targetBlock.inputBlocks[slotIndex] = draggedBlock
 
-        // Обновим список, чтобы Jetpack отреагировал
+        // Лог
+        println("✅ Inserted ${draggedBlock.type} (${draggedBlock.id}) into slot $slotIndex of ${targetBlock.type} (${targetBlock.id})")
+
         _programBlocks.value = _programBlocks.value.toList()
-        BlockPositionTracker.redrawTrigger.intValue++
+        BlockPositionTracker.redrawTrigger.value++
     }
 
 
@@ -302,15 +306,29 @@ class VariableViewModel : ViewModel() {
     }
 
 
-    fun removeReferenceFromParent(referenceId: String) {
+    fun removeBlockFromParent(childId: String) {
         _programBlocks.value.forEach { block ->
-            val index = block.inputBlocks.indexOfFirst { it.id == referenceId }
+            val index = block.inputBlocks.indexOfFirst { it.id == childId }
             if (index != -1) {
-                block.inputBlocks.removeAt(index)
+                block.inputBlocks[index] = Block(type = BlockType.VARIABLE_REFERENCE) // dummy-заглушка
             }
         }
         _programBlocks.value = _programBlocks.value.toList()
         BlockPositionTracker.redrawTrigger.intValue++
+    }
+
+    fun isRecursiveInsertion(childId: String, targetId: String): Boolean {
+        if (childId == targetId) return true
+
+        val target = programBlocks.find { it.id == targetId } ?: return false
+
+        // Рекурсивно ищем childId внутри inputBlocks
+        fun containsRecursively(block: Block): Boolean {
+            if (block.inputBlocks.any { it.id == childId }) return true
+            return block.inputBlocks.any { containsRecursively(it) }
+        }
+
+        return containsRecursively(target)
     }
 
     fun executeProgram(onFinish: () -> Unit) {

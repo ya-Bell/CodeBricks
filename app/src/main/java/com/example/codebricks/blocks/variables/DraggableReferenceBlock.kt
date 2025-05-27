@@ -108,10 +108,12 @@ fun DraggableReferenceBlock(
                     localOffset.value = coords.windowToLocal(windowOffset)
                 }
             }
-            .offset {
-                val offsetToUse = if (isInserted) localOffset.value else animOffset.value
-                IntOffset(offsetToUse.x.roundToInt(), offsetToUse.y.roundToInt())
-            }
+            .then(
+                if (isInserted) Modifier
+                else Modifier.offset {
+                    IntOffset(animOffset.value.x.roundToInt(), animOffset.value.y.roundToInt())
+                }
+            )
             .clip(RoundedCornerShape(8.dp))
             .border(
                 width = if (isInserted) 0.dp else 2.dp,
@@ -123,7 +125,7 @@ fun DraggableReferenceBlock(
             .pointerInput(id, isInserted) {
                 detectDragGestures(onDragStart = {
                     if (isInserted) {
-                        viewModel.removeReferenceFromParent(id)
+                        viewModel.removeBlockFromParent(id)
                     }
                 }, onDrag = { change, dragAmount ->
                     change.consume()
@@ -154,15 +156,8 @@ fun DraggableReferenceBlock(
                     val localCenter = animOffset.value + Offset(halfW, halfH)
                     val windowCenter = coords.localToWindow(localCenter)
 
-                    val matchedSlot = BlockSlotTracker.getAllSlots().find { (_, _, bounds) ->
-                        val magneticPadding = 20f
-                        val expandedBounds = Rect(
-                            left = bounds.left - magneticPadding,
-                            top = bounds.top - magneticPadding,
-                            right = bounds.right + magneticPadding,
-                            bottom = bounds.bottom + magneticPadding
-                        )
-                        expandedBounds.contains(windowCenter)
+                    val matchedSlot = BlockSlotTracker.getAllSlots().find {
+                        it.bounds.inflate(MAGNETIC_PADDING).contains(windowCenter)
                     }
 
                     if (matchedSlot != null) {
