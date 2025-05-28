@@ -38,7 +38,22 @@ import com.example.codebricks.blocks.common.limitPosition
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.viewmodel.Variable
 import kotlin.math.roundToInt
-
+@Composable
+private fun formatVariableValue(variable: Variable): String {
+    return when (variable.type) {
+        "int" -> variable.value.toString()
+        "double" -> {
+            val doubleValue = when (variable.value) {
+                is Number -> (variable.value as Number).toDouble()
+                else -> (variable.value as? Number)?.toDouble() ?: 0.0
+            }
+            "%.1f".format(doubleValue)
+        }
+        "bool" -> variable.value.toString()
+        "string" -> "\"${variable.value}\""
+        else -> variable.value.toString()
+    }
+}
 @Composable
 fun DraggableDeclareBlock(
     id: String,
@@ -106,12 +121,13 @@ fun DraggableDeclareBlock(
             }
         }
         Text(
-            text = "Declare ${variable.type} ${variable.name} = ${variable.value}",
+            text = "Declare ${variable.type} ${variable.name} = ${formatVariableValue(variable)}",
             modifier = Modifier.align(Alignment.Center),
             fontWeight = FontWeight.Bold,
             fontSize = 12.sp,
             color = Color.Black
         )
+
     }
 }
 

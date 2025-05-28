@@ -217,7 +217,7 @@ fun DraggableSetVariableBlock(
                 modifier = Modifier
                     .height(32.dp)
                     .wrapContentWidth()
-                    .defaultMinSize(minWidth = 10.dp)
+                    .defaultMinSize(minWidth = 28.dp)
                     .background(Color.White, RoundedCornerShape(8.dp))
                     .onGloballyPositioned {
                         layoutCoordinates.value = it

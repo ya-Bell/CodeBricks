@@ -12,7 +12,7 @@ import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker.MAGNET
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-data class Variable(val name: String, var value: Any, val type: String)
+data class Variable(val name: String, var value: Any, var type: String)
 
 class VariableViewModel : ViewModel() {
 
@@ -84,7 +84,79 @@ class VariableViewModel : ViewModel() {
         BlockPositionTracker.redrawTrigger.intValue++
         addBlock(changeBlock)
     }
+    private fun formatValueForOutput(value: Any, type: String): String {
+        return when (type) {
+            "double" -> {
+                val doubleValue = when (value) {
+                    is Number -> value.toDouble()
+                    else -> value.toString().toDoubleOrNull() ?: 0.0
+                }
+                if (doubleValue % 1 == 0.0) "%.1f".format(doubleValue)
+                else doubleValue.toString()
+            }
+            "string" -> "\"$value\""
+            else -> value.toString()
+        }
+    }
 
+    fun convertVariableType(variableName: String, newType: String) {
+        _variables.value = _variables.value.map { variable ->
+            if (variable.name == variableName) {
+                val newValue = when {
+                    variable.type == newType -> variable.value
+
+                    newType == "double" -> when {
+                        variable.value is Int -> (variable.value as Int).toDouble()
+                        variable.value is Double -> variable.value
+                            //variable.value is Boolean -> if (variable.value) 1.0 else 0.0
+                        variable.value is String -> (variable.value as String).toDoubleOrNull() ?: 0.0
+                        else -> (variable.value as? Number)?.toDouble() ?: 0.0
+                    }
+
+                    newType == "int" -> when {
+                        variable.value is Double -> (variable.value as Double).toInt()
+                        variable.value is Int -> variable.value
+                        //variable.value is Boolean -> if (variable.value) 1 else 0
+                        variable.value is String -> (variable.value as String).toIntOrNull() ?: 0
+                        else -> (variable.value as? Number)?.toInt() ?: 0
+                    }
+
+                    newType == "bool" -> when {
+                        variable.value is Number -> (variable.value as Number).toInt() != 0
+                        variable.value is Boolean -> variable.value
+                        variable.value is String -> (variable.value as String).toBooleanStrictOrNull() ?: false
+                        else -> false
+                    }
+
+                    newType == "string" -> variable.value.toString()
+
+                    else -> variable.value
+                }
+
+                variable.copy(type = newType, value = newValue)
+            } else {
+                variable
+            }
+        }
+
+        _programBlocks.value = _programBlocks.value.map { block ->
+            when (block.type) {
+                BlockType.VARIABLE_DECLARE -> {
+                    val varValue = block.value as? Variable
+                    if (varValue?.name == variableName) {
+                        _variables.value.find { it.name == variableName }?.let { newVar ->
+                            block.copy(value = newVar)
+                        } ?: block
+                    } else {
+                        block
+                    }
+                }
+                else -> block
+            }
+        }
+
+        BlockPositionTracker.redrawTrigger.intValue++
+    }
     fun updateChangeBlockVariable(blockId: String, variable: Variable) {
         _programBlocks.value = _programBlocks.value.map { block ->
             if (block.id == blockId && block.type == BlockType.VARIABLE_CHANGE) {
@@ -171,17 +243,30 @@ class VariableViewModel : ViewModel() {
 
         _programBlocks.value = _programBlocks.value.map { block ->
             if (block.id == blockId && block.type == BlockType.VARIABLE_SET) {
-                val type = (block.inputBlocks.getOrNull(0)?.value as? Variable)?.type ?: "string"
+                val targetVar = block.inputBlocks.getOrNull(0)?.value as? Variable
+                val type = targetVar?.type ?: "string"
 
                 val parsed: Any = when (type) {
                     "int" -> rawValue.toIntOrNull() ?: 0
-                    "double" -> rawValue.replace(",", ".").toDoubleOrNull() ?: 0.0
+                    "double" -> {
+                        val doubleValue = rawValue.replace(",", ".").toDoubleOrNull() ?: 0.0
+                        if (doubleValue % 1 == 0.0) doubleValue.toInt().toDouble()
+                        else doubleValue
+                    }
                     "bool" -> rawValue.toBooleanStrictOrNull() ?: false
                     else -> rawValue
                 }
 
-                val fakeVariable = Variable(name = rawValue, value = parsed, type = type)
-                val ref = Block(type = BlockType.VARIABLE_REFERENCE, value = fakeVariable)
+                val fakeVariable = Variable(
+                    name = rawValue,
+                    value = parsed,
+                    type = type
+                )
+
+                val ref = Block(
+                    type = BlockType.VARIABLE_REFERENCE,
+                    value = fakeVariable
+                )
 
                 if (block.inputBlocks.size < 2) {
                     block.inputBlocks.add(ref)
@@ -363,18 +448,26 @@ class VariableViewModel : ViewModel() {
                         val memoryVar = declaredVariables[targetVar.name]
 
                         if (memoryVar != null) {
-                            val refName = valueBlock.name
-                            val referenced = declaredVariables[refName]
-
-                            if (referenced != null) {
-                                memoryVar.value = referenced.value
-                                logToConsole("📝 Set ${memoryVar.name} to ${referenced.value} (from ${refName})")
-                            } else {
-                                memoryVar.value = valueBlock.value
-                                logToConsole("📝 Set ${memoryVar.name} to ${valueBlock.value}")
+                            // Преобразуем значение к нужному типу
+                            val newValue = when (memoryVar.type) {
+                                "int" -> when (valueBlock.value) {
+                                    is Number -> (valueBlock.value as Number).toInt()
+                                    else -> (valueBlock.value.toString().toIntOrNull() ?: 0)
+                                }
+                                "double" -> when (valueBlock.value) {
+                                    is Number -> (valueBlock.value as Number).toDouble()
+                                    else -> (valueBlock.value.toString().toDoubleOrNull() ?: 0.0)
+                                }
+                                "bool" -> when (valueBlock.value) {
+                                    is Boolean -> valueBlock.value
+                                    else -> (valueBlock.value.toString().toBooleanStrictOrNull() ?: false)
+                                }
+                                else -> valueBlock.value.toString()
                             }
-                        }
 
+                            memoryVar.value = newValue
+                            logToConsole("📝 Set ${memoryVar.name} = ${formatValueForOutput(newValue, memoryVar.type)}")
+                        }
                     }
                 }
 
