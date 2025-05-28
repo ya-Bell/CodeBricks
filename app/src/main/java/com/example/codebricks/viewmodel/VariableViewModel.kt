@@ -331,6 +331,7 @@ class VariableViewModel : ViewModel() {
         val targetBlock = programBlocks.find { it.id == matchedSlot.blockId } ?: return
         val slotIndex = matchedSlot.slotIndex
 
+        // Разрешаем вставку математических блоков в другие математические блоки
         if (targetBlock.type !in listOf(
                 BlockType.VARIABLE_SET,
                 BlockType.MATH_ADD,
@@ -340,6 +341,12 @@ class VariableViewModel : ViewModel() {
             )
         ) {
             println("🚫 Target block ${targetBlock.type} doesn't support slot insertion")
+            return
+        }
+
+        // Проверяем рекурсивную вставку
+        if (isRecursiveInsertion(blockId, targetBlock.id)) {
+            println("🚫 Recursive insertion detected")
             return
         }
 
@@ -353,7 +360,6 @@ class VariableViewModel : ViewModel() {
         // Вставляем перетаскиваемый блок
         targetBlock.inputBlocks[slotIndex] = draggedBlock
 
-        // Лог
         println("✅ Inserted ${draggedBlock.type} (${draggedBlock.id}) into slot $slotIndex of ${targetBlock.type} (${targetBlock.id})")
 
         _programBlocks.value = _programBlocks.value.toList()
@@ -428,18 +434,15 @@ class VariableViewModel : ViewModel() {
     fun executeProgram(onFinish: () -> Unit) {
         val blocksById = programBlocks.associateBy { it.id }
         val declaredVariables = mutableMapOf<String, Variable>()
-
         var current = programBlocks.find { it.type == BlockType.CONTROL_START }
 
         while (current != null) {
             when (current.type) {
-                BlockType.CONTROL_START -> {
-                    logToConsole("🟢 Program started")
-                }
+                BlockType.CONTROL_START -> logToConsole("🟢 Program started")
+                BlockType.CONTROL_STOP -> logToConsole("🔴 Program stopped")
 
                 BlockType.VARIABLE_DECLARE -> {
-                    val variable = current.value as? Variable
-                    if (variable != null) {
+                    (current.value as? Variable)?.let { variable ->
                         declaredVariables[variable.name] = variable.copy()
                         logToConsole("✅ Declared ${variable.name} = ${variable.value}")
                     }
@@ -454,10 +457,7 @@ class VariableViewModel : ViewModel() {
                     } else if (valueBlock == null) {
                         logToConsole("❌ Error: No value provided for ${targetVar.name}")
                     } else {
-                        val memoryVar = declaredVariables[targetVar.name]
-
-                        if (memoryVar != null) {
-                            // Преобразуем значение к нужному типу
+                        declaredVariables[targetVar.name]?.let { memoryVar ->
                             val newValue = when (memoryVar.type) {
                                 "int" -> when (valueBlock.value) {
                                     is Number -> (valueBlock.value as Number).toInt()
@@ -473,7 +473,6 @@ class VariableViewModel : ViewModel() {
                                 }
                                 else -> valueBlock.value.toString()
                             }
-
                             memoryVar.value = newValue
                             logToConsole("📝 Set ${memoryVar.name} = ${formatValueForOutput(newValue, memoryVar.type)}")
                         }
@@ -481,29 +480,15 @@ class VariableViewModel : ViewModel() {
                 }
 
                 BlockType.VARIABLE_CHANGE -> {
-                    val refVar = current.inputBlocks.getOrNull(0)?.value as? Variable
-                    if (refVar != null) {
-                        val target = declaredVariables[refVar.name]
-                        if (target != null) {
+                    (current.inputBlocks.getOrNull(0)?.value as? Variable)?.let { refVar ->
+                        declaredVariables[refVar.name]?.let { target ->
                             val sign = current.changeSign
                             val amount = current.changeAmount
                             val delta = if (sign == "-") -amount else amount
 
                             val newValue = when (target.type) {
-                                "double" -> {
-                                    val currentValue = when (target.value) {
-                                        is Number -> (target.value as Number).toDouble()
-                                        else -> target.value.toString().toDoubleOrNull() ?: 0.0
-                                    }
-                                    currentValue + delta
-                                }
-                                else -> {
-                                    val currentValue = when (target.value) {
-                                        is Number -> (target.value as Number).toInt()
-                                        else -> target.value.toString().toIntOrNull() ?: 0
-                                    }
-                                    currentValue + delta
-                                }
+                                "double" -> (target.value.toString().toDoubleOrNull() ?: 0.0) + delta
+                                else -> (target.value.toString().toIntOrNull() ?: 0) + delta
                             }
 
                             target.value = newValue
@@ -512,34 +497,53 @@ class VariableViewModel : ViewModel() {
                     }
                 }
 
-
                 BlockType.IO_PRINT -> {
-                    val input = current.inputBlocks.firstOrNull()
-                    val variable = input?.value as? Variable
-                    val target = variable?.name?.let { declaredVariables[it] }
-
-                    if (target != null) {
-                        logToConsole("📤 Output: ${target.name} = ${target.value}")
-                    } else {
-                        logToConsole("❌ Error: variable '${variable?.name}' not declared")
+                    (current.inputBlocks.firstOrNull()?.value as? Variable)?.let { variable ->
+                        declaredVariables[variable.name]?.let { target ->
+                            logToConsole("📤 Output: ${target.name} = ${target.value}")
+                        } ?: logToConsole("❌ Error: variable '${variable.name}' not declared")
                     }
                 }
 
-                BlockType.CONTROL_STOP -> {
-                    logToConsole("🔴 Program stopped")
+                BlockType.MATH_ADD, BlockType.MATH_SUBTRACT,
+                BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE -> {
+                    val left = current.inputBlocks.getOrNull(0)?.value as? Variable
+                    val right = current.inputBlocks.getOrNull(1)?.value as? Variable
+
+                    if (left != null && right != null) {
+                        val leftValue = left.value.toString().toDoubleOrNull() ?: 0.0
+                        val rightValue = right.value.toString().toDoubleOrNull() ?: 0.0
+                        val result = when (current.type) {
+                            BlockType.MATH_ADD -> leftValue + rightValue
+                            BlockType.MATH_SUBTRACT -> leftValue - rightValue
+                            BlockType.MATH_MULTIPLY -> leftValue * rightValue
+                            BlockType.MATH_DIVIDE -> if (rightValue != 0.0) leftValue / rightValue else 0.0
+                            else -> 0.0
+                        }
+                        logToConsole("🧮 ${left.name} ${current.type} ${right.name} = $result")
+                    } else {
+                        logToConsole("❌ Math operation requires two operands")
+                    }
                 }
 
-                BlockType.VARIABLE_REFERENCE -> {
-                }
-
-                else -> {
-                    logToConsole("⚠️ Block '${current.type}' not implemented")
-                }
+                BlockType.VARIABLE_REFERENCE -> TODO()
+                BlockType.COMPARISON_EQUAL -> TODO()
+                BlockType.COMPARISON_GREATER -> TODO()
+                BlockType.COMPARISON_LESS -> TODO()
+                BlockType.LOGIC_AND -> TODO()
+                BlockType.LOGIC_OR -> TODO()
+                BlockType.LOGIC_NOT -> TODO()
+                BlockType.LOOP_REPEAT -> TODO()
+                BlockType.LOOP_WHILE -> TODO()
+                BlockType.LOOP_FOR -> TODO()
+                BlockType.FUNCTION_DEFINE -> TODO()
+                BlockType.FUNCTION_CALL -> TODO()
+                BlockType.IF -> TODO()
+                BlockType.ELSE -> TODO()
+                BlockType.WHILE -> TODO()
             }
-
             current = current.nextBlockId?.let { blocksById[it] }
         }
-
         onFinish()
     }
 

@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -66,7 +67,6 @@ fun DraggableMathBlock(
     viewModel: VariableViewModel
 ) {
     val isInserted = viewModel.findBlockContaining(id) != null
-
     val scope = rememberCoroutineScope()
     val animOffset = remember { Animatable(Offset.Zero, Offset.VectorConverter) }
     val localOffset = remember { mutableStateOf(Offset.Zero) }
@@ -75,7 +75,6 @@ fun DraggableMathBlock(
     var showDeleteIcon by remember { mutableStateOf(false) }
     var dragStartTime by remember { mutableLongStateOf(0L) }
     var isPressed by remember { mutableStateOf(false) }
-
     val density = LocalDensity.current
 
     val symbol = when (type) {
@@ -96,6 +95,17 @@ fun DraggableMathBlock(
             .height(40.dp)
     }
 
+    LaunchedEffect(id, isInserted, redrawTrigger) {
+        if (isInserted && layoutCoordinates != null) {
+            val parent = viewModel.findBlockContaining(id)
+            val slot = BlockSlotTracker.getAllSlots().find {
+                it.blockId == parent?.id && parent.inputBlocks.getOrNull(it.slotIndex)?.id == id
+            }
+            val windowOffset = slot?.bounds?.let { Offset(it.left, it.top) } ?: Offset.Zero
+            localOffset.value = layoutCoordinates!!.windowToLocal(windowOffset)
+        }
+    }
+
     Box(
         modifier = blockModifier
             .offset {
@@ -108,7 +118,7 @@ fun DraggableMathBlock(
                     id, coords.size.width.toFloat(), coords.size.height.toFloat()
                 )
 
-                if (viewModel.findBlockContaining(id) != null) {
+                if (isInserted) {
                     val parent = viewModel.findBlockContaining(id)
                     val slot = BlockSlotTracker.getAllSlots().find {
                         it.blockId == parent?.id && parent.inputBlocks.getOrNull(it.slotIndex)?.id == id
@@ -117,11 +127,10 @@ fun DraggableMathBlock(
                     localOffset.value = coords.windowToLocal(windowOffset)
                 }
             }
-
             .clip(RoundedCornerShape(12.dp))
             .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
             .background(Color(0xFF4FC3F7))
-            .then(if (!isInserted) Modifier.pointerInput(Unit) {
+            .pointerInput(Unit) {
                 detectDragGestures { change, dragAmount ->
                     if (!isPressed) {
                         isPressed = true
@@ -136,10 +145,18 @@ fun DraggableMathBlock(
                         showDeleteIcon = true
                     }
                 }
-            } else Modifier)
-            .then(if (!isInserted) Modifier.pointerInput(id) {
+            }
+            .pointerInput(id) {
+                detectTapGestures(onPress = {
+                    isPressed = false
+                    showDeleteIcon = false
+                })
+            }
+            .pointerInput(id, isInserted) {
                 detectDragGestures(onDragStart = {
-                    viewModel.removeBlockFromParent(id)
+                    if (isInserted) {
+                        viewModel.removeBlockFromParent(id)
+                    }
                 }, onDrag = { change, dragAmount ->
                     change.consume()
                     scope.launch {
@@ -156,9 +173,7 @@ fun DraggableMathBlock(
                     }
 
                     if (matchedSlot != null) {
-                        viewModel.setHighlightedSlot(
-                            matchedSlot.blockId, matchedSlot.slotIndex
-                        )
+                        viewModel.setHighlightedSlot(matchedSlot.blockId, matchedSlot.slotIndex)
                     } else {
                         viewModel.setHighlightedSlot(null, null)
                     }
@@ -191,19 +206,16 @@ fun DraggableMathBlock(
                         }
                     }
                 })
-            } else Modifier)
-            .pointerInput(Unit) {
-                detectTapGestures(onPress = {
-                    isPressed = false
-                    showDeleteIcon = false
-                })
-            }, contentAlignment = Alignment.Center
+            },
+        contentAlignment = Alignment.Center
     ) {
         if (showDeleteIcon) {
-            Box(modifier = Modifier
-                .align(Alignment.TopEnd)
-                .clickable { onDelete(id) }
-                .padding(4.dp)) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .clickable { onDelete(id) }
+                    .padding(4.dp)
+            ) {
                 Icon(
                     imageVector = Icons.Default.Close,
                     contentDescription = "Delete",
@@ -217,11 +229,11 @@ fun DraggableMathBlock(
             modifier = Modifier.padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-
             MathInputSlot(id, 0, inputBlocks.getOrNull(0), viewModel)
 
             Box(
-                modifier = Modifier.width(20.dp), contentAlignment = Alignment.Center
+                modifier = Modifier.width(20.dp),
+                contentAlignment = Alignment.Center
             ) {
                 Text(
                     symbol,
@@ -238,7 +250,10 @@ fun DraggableMathBlock(
 
 @Composable
 fun MathInputSlot(
-    parentId: String, slotIndex: Int, block: Block?, viewModel: VariableViewModel
+    parentId: String,
+    slotIndex: Int,
+    block: Block?,
+    viewModel: VariableViewModel
 ) {
     val isHighlighted = viewModel.highlightedSlot.value == (parentId to slotIndex)
 
@@ -253,132 +268,119 @@ fun MathInputSlot(
                 BlockSlotTracker.setSlotBounds(parentId, slotIndex, bounds)
             }
             .border(
-                1.dp, when {
-                    isHighlighted -> Color.Green
-                    else -> Color.Gray
-                }, RoundedCornerShape(8.dp)
+                1.dp,
+                if (isHighlighted) Color.Green else Color.Gray,
+                RoundedCornerShape(8.dp)
             )
-            .background(Color.White, RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
-        if (block != null) {
-            when (block.type) {
-                BlockType.MATH_ADD, BlockType.MATH_SUBTRACT, BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE -> {
-                    DraggableMathBlock(
+            .background(Color.White, RoundedCornerShape(8.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        when {
+            block == null -> Text("...", color = Color.LightGray, fontSize = 12.sp)
+            block.type in listOf(
+                BlockType.MATH_ADD,
+                BlockType.MATH_SUBTRACT,
+                BlockType.MATH_MULTIPLY,
+                BlockType.MATH_DIVIDE
+            ) -> {
+                DraggableMathBlock(
+                    id = block.id,
+                    type = block.type,
+                    inputBlocks = block.inputBlocks,
+                    containerWidth = 0f,
+                    containerHeight = 0f,
+                    onDelete = { viewModel.removeBlockById(block.id) },
+                    viewModel = viewModel
+                )
+            }
+            block.type == BlockType.VARIABLE_REFERENCE -> {
+                val variable = block.value as? Variable
+                if (variable != null) {
+                    DraggableReferenceBlock(
                         id = block.id,
-                        type = block.type,
-                        inputBlocks = block.inputBlocks,
-                        containerWidth = 0f,
-                        containerHeight = 0f,
-                        onDelete = { viewModel.removeBlockById(block.id) },
+                        variable = variable,
                         viewModel = viewModel
                     )
-                }
-
-                BlockType.VARIABLE_REFERENCE -> {
-                    val variable = block.value as? Variable
-                    if (variable != null) {
-                        DraggableReferenceBlock(
-                            id = block.id, variable = variable, viewModel = viewModel
-                        )
-                    } else {
-                        Text(text = "?", fontSize = 12.sp)
-                    }
-                }
-
-                else -> {
-                    //            modifier = Modifier.padding(horizontal = 6.dp)
-                    Text(text = block.value?.toString() ?: "?", fontSize = 12.sp)
+                } else {
+                    Text("?", fontSize = 12.sp)
                 }
             }
-        } else {
-            Text("...", color = Color.LightGray, fontSize = 12.sp)
+            else -> Text(block.value?.toString() ?: "?", fontSize = 12.sp)
         }
     }
 }
 
-
+@Preview(showBackground = true)
 @Composable
 fun MathBlockPreview() {
     Box(
         modifier = Modifier
             .wrapContentWidth()
-            .heightIn(min = 40.dp)
+            .height(40.dp)
             .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
             .background(Color(0xFF4FC3F7), RoundedCornerShape(12.dp))
-            .padding(horizontal = 4.dp, vertical = 4.dp), contentAlignment = Alignment.Center
+            .padding(horizontal = 8.dp),
+        contentAlignment = Alignment.Center
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier
-                    .wrapContentWidth()
-                    .defaultMinSize(minWidth = 45.dp)
-                    .heightIn(min = 32.dp)
-                    .padding(horizontal = 8.dp)
+                    .width(60.dp)
+                    .height(32.dp)
                     .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
                     .background(Color.White, RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    "",
-                    fontSize = 14.sp,
-                    color = Color.Black,
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                )
+                Text("...", color = Color.LightGray, fontSize = 12.sp)
             }
 
-            Box(
-                modifier = Modifier.width(20.dp), contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    "+",
-                    fontSize = 16.sp,
-                    color = Color.White,
-                    modifier = Modifier.padding(horizontal = 3.dp, vertical = 6.dp)
-                )
-            }
+            Text(
+                "+",
+                fontSize = 16.sp,
+                color = Color.White,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            )
 
             Box(
                 modifier = Modifier
-                    .wrapContentWidth()
-                    .defaultMinSize(minWidth = 45.dp)
-                    .heightIn(min = 32.dp)
-                    .padding(horizontal = 8.dp)
+                    .width(60.dp)
+                    .height(32.dp)
                     .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
                     .background(Color.White, RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    "",
-                    fontSize = 14.sp,
-                    color = Color.Black,
-                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                )
+                Text("...", color = Color.LightGray, fontSize = 12.sp)
             }
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun MathBlockPreview_Show() {
-    MathBlockPreview()
-}
-
 @SuppressLint("ViewModelConstructorInComposable")
 @Preview(showBackground = true)
 @Composable
-fun EmptyDraggableMathBlockPreview() {
+fun NestedMathBlockPreview() {
     val viewModel = VariableViewModel()
 
-    val emptyBlock = Block(
-        type = BlockType.MATH_ADD, inputBlocks = mutableListOf(
-            Block(type = BlockType.VARIABLE_REFERENCE), Block(type = BlockType.VARIABLE_REFERENCE)
+    val innerBlock = Block(
+        type = BlockType.MATH_ADD,
+        inputBlocks = mutableListOf(
+            Block(type = BlockType.VARIABLE_REFERENCE, value = Variable("a", 5, "int")),
+            Block(type = BlockType.VARIABLE_REFERENCE, value = Variable("b", 3, "int"))
+        )
+    )
+
+    val outerBlock = Block(
+        type = BlockType.MATH_MULTIPLY,
+        inputBlocks = mutableListOf(
+            innerBlock,
+            Block(type = BlockType.VARIABLE_REFERENCE, value = Variable("c", 2, "int"))
         )
     )
 
     DraggableMathBlock(
-        id = emptyBlock.id,
-        type = BlockType.MATH_ADD,
-        inputBlocks = emptyBlock.inputBlocks,
+        id = outerBlock.id,
+        type = outerBlock.type,
+        inputBlocks = outerBlock.inputBlocks,
         containerWidth = 400f,
         containerHeight = 400f,
         onDelete = {},
