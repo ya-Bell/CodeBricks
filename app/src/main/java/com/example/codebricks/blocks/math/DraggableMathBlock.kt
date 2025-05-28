@@ -8,6 +8,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
@@ -17,7 +18,9 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -60,12 +63,14 @@ import kotlin.math.roundToInt
 fun DraggableMathBlock(
     id: String,
     type: BlockType,
-    inputBlocks: List<Block>,
+    inputBlocks: MutableList<Block>,
     containerWidth: Float,
     containerHeight: Float,
     onDelete: (String) -> Unit,
     viewModel: VariableViewModel
 ) {
+    val scrollState = rememberScrollState()
+
     val isInserted = viewModel.findBlockContaining(id) != null
     val scope = rememberCoroutineScope()
     val animOffset = remember { Animatable(Offset.Zero, Offset.VectorConverter) }
@@ -102,16 +107,21 @@ fun DraggableMathBlock(
                 it.blockId == parent?.id && parent.inputBlocks.getOrNull(it.slotIndex)?.id == id
             }
             val windowOffset = slot?.bounds?.let { Offset(it.left, it.top) } ?: Offset.Zero
-            localOffset.value = layoutCoordinates!!.windowToLocal(windowOffset)
+            val correctedOffset = layoutCoordinates!!.windowToLocal(windowOffset - BlockPositionTracker.canvasOffset)
+            if (!correctedOffset.x.isNaN() && !correctedOffset.y.isNaN() && correctedOffset != localOffset.value) {
+                localOffset.value = correctedOffset
+            }
         }
     }
 
     Box(
         modifier = blockModifier
-            .offset {
-                val offsetToUse = if (isInserted) localOffset.value else animOffset.value
-                IntOffset(offsetToUse.x.roundToInt(), offsetToUse.y.roundToInt())
-            }
+            .then(
+                if (isInserted) Modifier
+                else Modifier.offset {
+                    IntOffset(animOffset.value.x.roundToInt(), animOffset.value.y.roundToInt())
+                }
+            )
             .onGloballyPositioned { coords ->
                 layoutCoordinates = coords
                 BlockPositionTracker.setBlockSize(
@@ -124,7 +134,8 @@ fun DraggableMathBlock(
                         it.blockId == parent?.id && parent.inputBlocks.getOrNull(it.slotIndex)?.id == id
                     }
                     val windowOffset = slot?.bounds?.let { Offset(it.left, it.top) } ?: Offset.Zero
-                    localOffset.value = coords.windowToLocal(windowOffset)
+                    val local = coords.windowToLocal(windowOffset)
+                    localOffset.value = local
                 }
             }
             .clip(RoundedCornerShape(12.dp))
@@ -155,6 +166,14 @@ fun DraggableMathBlock(
             .pointerInput(id, isInserted) {
                 detectDragGestures(onDragStart = {
                     if (isInserted) {
+                        val coords = layoutCoordinates
+                        val windowPos = coords?.boundsInWindow()?.topLeft
+                        val canvasOffset = windowPos?.plus(BlockPositionTracker.canvasOffset)
+
+                        scope.launch {
+                            canvasOffset?.let { animOffset.snapTo(it) }
+                        }
+
                         viewModel.removeBlockFromParent(id)
                     }
                 }, onDrag = { change, dragAmount ->
@@ -162,15 +181,15 @@ fun DraggableMathBlock(
                     scope.launch {
                         animOffset.snapTo(animOffset.value + dragAmount)
                     }
+                    BlockPositionTracker.updateBlockPosition(id, animOffset.value)
+                    BlockPositionTracker.redrawTrigger.intValue++
                     val coords = layoutCoordinates ?: return@detectDragGestures
-                    val blockW = coords.size.width.toFloat()
-                    val blockH = coords.size.height.toFloat()
-                    val center = animOffset.value + Offset(blockW / 2f, blockH / 2f)
-                    val windowCenter = coords.localToWindow(center) + BlockPositionTracker.canvasOffset
+                    val windowCenter = coords.boundsInWindow().center
 
-                    val matchedSlot = BlockSlotTracker.getAllSlots().find {
-                        it.bounds.inflate(MAGNETIC_PADDING).contains(windowCenter)
-                    }
+                    val matchedSlot = BlockSlotTracker.getAllSlots()
+                        .map { it.copy(bounds = it.bounds.translate(BlockPositionTracker.canvasOffset)) }
+                        .filter { it.bounds.inflate(MAGNETIC_PADDING).contains(windowCenter) }
+                        .minByOrNull { it.bounds.width * it.bounds.height }
 
                     if (matchedSlot != null) {
                         viewModel.setHighlightedSlot(matchedSlot.blockId, matchedSlot.slotIndex)
@@ -182,12 +201,12 @@ fun DraggableMathBlock(
                     val coords = layoutCoordinates ?: return@detectDragGestures
                     val blockW = coords.size.width.toFloat()
                     val blockH = coords.size.height.toFloat()
-                    val localCenter = animOffset.value + Offset(blockW / 2f, blockH / 2f)
-                    val windowCenter = coords.localToWindow(localCenter) + BlockPositionTracker.canvasOffset
+                    val windowCenter = coords.boundsInWindow().center
 
-                    val matchedSlot = BlockSlotTracker.getAllSlots().find {
-                        it.bounds.inflate(MAGNETIC_PADDING).contains(windowCenter)
-                    }
+                    val matchedSlot = BlockSlotTracker.getAllSlots()
+                        .map { it.copy(bounds = it.bounds.translate(BlockPositionTracker.canvasOffset)) }
+                        .filter { it.bounds.inflate(MAGNETIC_PADDING).contains(windowCenter) }
+                        .minByOrNull { it.bounds.width * it.bounds.height }
 
                     if (matchedSlot != null) {
                         val slotCenter = Offset(
@@ -202,7 +221,6 @@ fun DraggableMathBlock(
                             viewModel.setRecentlyInsertedSlot(
                                 matchedSlot.blockId, matchedSlot.slotIndex
                             )
-                            animOffset.snapTo(snappedLocal)
                         }
                     }
                 })
@@ -226,7 +244,9 @@ fun DraggableMathBlock(
         }
 
         Row(
-            modifier = Modifier.padding(horizontal = 8.dp),
+            modifier = Modifier.padding(horizontal = 8.dp)
+                .widthIn(max = 2000.dp)
+                .horizontalScroll(scrollState), // ← добавлено
             verticalAlignment = Alignment.CenterVertically
         ) {
             MathInputSlot(id, 0, inputBlocks.getOrNull(0), viewModel)

@@ -108,7 +108,7 @@ class VariableViewModel : ViewModel() {
                     newType == "double" -> when {
                         variable.value is Int -> (variable.value as Int).toDouble()
                         variable.value is Double -> variable.value
-                            //variable.value is Boolean -> if (variable.value) 1.0 else 0.0
+                        //variable.value is Boolean -> if (variable.value) 1.0 else 0.0
                         variable.value is String -> (variable.value as String).toDoubleOrNull() ?: 0.0
                         else -> (variable.value as? Number)?.toDouble() ?: 0.0
                     }
@@ -422,7 +422,6 @@ class VariableViewModel : ViewModel() {
 
         val target = programBlocks.find { it.id == targetId } ?: return false
 
-        // Рекурсивно ищем childId внутри inputBlocks
         fun containsRecursively(block: Block): Boolean {
             if (block.inputBlocks.any { it.id == childId }) return true
             return block.inputBlocks.any { containsRecursively(it) }
@@ -482,8 +481,8 @@ class VariableViewModel : ViewModel() {
                 BlockType.VARIABLE_CHANGE -> {
                     (current.inputBlocks.getOrNull(0)?.value as? Variable)?.let { refVar ->
                         declaredVariables[refVar.name]?.let { target ->
-                            val sign = current.changeSign
-                            val amount = current.changeAmount
+                            val sign = current!!.changeSign
+                            val amount = current!!.changeAmount
                             val delta = if (sign == "-") -amount else amount
 
                             val newValue = when (target.type) {
@@ -569,7 +568,7 @@ class VariableViewModel : ViewModel() {
 
     fun findBlockContaining(childId: String): Block? {
         return programBlocks.find { block ->
-            block.inputBlocks.any { it.id == childId }
+            block.inputBlocks.any { it?.id == childId }
         }
     }
 
@@ -581,8 +580,8 @@ class VariableViewModel : ViewModel() {
         val declared = mutableSetOf<String>()
 
         val orderedBlocks = programBlocks.mapNotNull { block ->
-                BlockPositionTracker.getPosition(block.id)?.let { block to it }
-            }.sortedBy { it.second.y }.map { it.first }
+            BlockPositionTracker.getPosition(block.id)?.let { block to it }
+        }.sortedBy { it.second.y }.map { it.first }
 
         if (orderedBlocks.firstOrNull()?.type != BlockType.CONTROL_START) {
             return BlockOrderResult(
