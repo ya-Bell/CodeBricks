@@ -39,7 +39,7 @@ import com.example.codebricks.viewmodel.VariableViewModel
 fun ConsoleSection(viewModel: VariableViewModel) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp
-    val consoleHeight = screenHeight * 0.15f
+    val consoleHeight = screenHeight * 0.16f
 
     val scrollStateVertical = rememberScrollState()
 

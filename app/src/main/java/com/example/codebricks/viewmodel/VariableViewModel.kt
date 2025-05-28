@@ -91,8 +91,8 @@ class VariableViewModel : ViewModel() {
                     is Number -> value.toDouble()
                     else -> value.toString().toDoubleOrNull() ?: 0.0
                 }
-                if (doubleValue % 1 == 0.0) "%.1f".format(doubleValue)
-                else doubleValue.toString()
+                if (doubleValue % 1 == 0.0) "%.1f".format(doubleValue).replace(',', '.')
+                else doubleValue.toString().replace(',', '.')
             }
             "string" -> "\"$value\""
             else -> value.toString()
@@ -392,13 +392,22 @@ class VariableViewModel : ViewModel() {
 
 
     fun removeBlockFromParent(childId: String) {
-        _programBlocks.value.forEach { block ->
-            val index = block.inputBlocks.indexOfFirst { it.id == childId }
-            if (index != -1) {
-                block.inputBlocks[index] = Block(type = BlockType.VARIABLE_REFERENCE) // dummy-заглушка
+        _programBlocks.value = _programBlocks.value.map { block ->
+            when (block.type) {
+                BlockType.VARIABLE_SET, BlockType.MATH_ADD, BlockType.MATH_SUBTRACT,
+                BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE -> {
+                    val newInputBlocks = block.inputBlocks.map { inputBlock ->
+                        if (inputBlock.id == childId) {
+                            Block(type = BlockType.VARIABLE_REFERENCE) // dummy-заглушка
+                        } else {
+                            inputBlock
+                        }
+                    }.toMutableList()
+                    block.copy(inputBlocks = newInputBlocks)
+                }
+                else -> block
             }
         }
-        _programBlocks.value = _programBlocks.value.toList()
         BlockPositionTracker.redrawTrigger.intValue++
     }
 
@@ -479,9 +488,26 @@ class VariableViewModel : ViewModel() {
                             val sign = current.changeSign
                             val amount = current.changeAmount
                             val delta = if (sign == "-") -amount else amount
-                            val oldValue = target.value as? Int ?: 0
-                            target.value = oldValue + delta
-                            logToConsole("🔄 Changed ${target.name} by $sign$amount to ${target.value}")
+
+                            val newValue = when (target.type) {
+                                "double" -> {
+                                    val currentValue = when (target.value) {
+                                        is Number -> (target.value as Number).toDouble()
+                                        else -> target.value.toString().toDoubleOrNull() ?: 0.0
+                                    }
+                                    currentValue + delta
+                                }
+                                else -> {
+                                    val currentValue = when (target.value) {
+                                        is Number -> (target.value as Number).toInt()
+                                        else -> target.value.toString().toIntOrNull() ?: 0
+                                    }
+                                    currentValue + delta
+                                }
+                            }
+
+                            target.value = newValue
+                            logToConsole("🔄 Changed ${target.name} by $sign$amount to ${formatValueForOutput(newValue, target.type)}")
                         }
                     }
                 }

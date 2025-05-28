@@ -47,7 +47,7 @@ private fun formatVariableValue(variable: Variable): String {
                 is Number -> (variable.value as Number).toDouble()
                 else -> (variable.value as? Number)?.toDouble() ?: 0.0
             }
-            "%.1f".format(doubleValue)
+            "%.1f".format(doubleValue).replace(',', '.')
         }
         "bool" -> variable.value.toString()
         "string" -> "\"${variable.value}\""

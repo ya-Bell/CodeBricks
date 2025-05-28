@@ -64,7 +64,7 @@ fun WorkspaceCanvas(
 ) {
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
 
-    val adaptiveHeight = screenHeight.value * 0.42f
+    val adaptiveHeight = screenHeight.value * 0.44f
 
 
     val canvasSize = remember { mutableStateOf(IntSize(0, 0)) }

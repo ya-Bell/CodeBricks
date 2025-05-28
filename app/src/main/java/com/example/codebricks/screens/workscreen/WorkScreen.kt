@@ -54,7 +54,7 @@ fun WorkScreen(onBackClick: () -> Unit) {
             .background(Color(0xFFB7EFFF))
             .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
     ) {
-        Spacer(modifier = Modifier.height(2.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         Header(onBackClick = onBackClick)
 
