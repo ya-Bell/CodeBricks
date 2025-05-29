@@ -58,28 +58,25 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.codebricks.R
 import androidx.compose.ui.zIndex
+import com.example.codebricks.R
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.math.DraggableMathBlock
 import com.example.codebricks.blocks.variables.varreference.DraggableReferenceBlock
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
-import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker.MAGNETIC_PADDING
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.viewmodel.blocks.declareVariable
 import com.example.codebricks.viewmodel.blocks.updateSetBlockTarget
-import com.example.codebricks.viewmodel.slot.isRecursiveInsertion
-import com.example.codebricks.viewmodel.slot.setHighlightedSlot
 import com.example.codebricks.viewmodel.slot.tryInsertIntoSlot
 import com.example.codebricks.viewmodel.tree.findBlockById
 import com.example.codebricks.viewmodel.tree.findBlockContaining
 import com.example.codebricks.viewmodel.tree.removeBlockFromParent
 import com.example.codebricks.viewmodel.tree.removeBlockRecursively
-import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -135,14 +132,16 @@ fun DraggableSetVariableBlock(
                 it.blockId == parent?.id && parent.inputBlocks.getOrNull(it.slotIndex)?.id == id
             }
             val windowOffset = slot?.bounds?.let { Offset(it.left, it.top) } ?: Offset.Zero
-            val correctedOffset = layoutCoordinates!!.windowToLocal(windowOffset - BlockPositionTracker.canvasOffset)
+            val correctedOffset =
+                layoutCoordinates!!.windowToLocal(windowOffset - BlockPositionTracker.canvasOffset)
             if (!correctedOffset.x.isNaN() && !correctedOffset.y.isNaN() && correctedOffset != localOffset.value) {
                 localOffset.value = correctedOffset
             }
         }
     }
 
-    Box(modifier = Modifier
+    Box(
+        modifier = Modifier
         .wrapContentWidth()
         .height(40.dp)
         .then(
@@ -191,17 +190,17 @@ fun DraggableSetVariableBlock(
                             nestedBlocks.add(inputBlock)
                         }
 
-                        // Удаляем блок из родителя
                         viewModel.removeBlockFromParent(id)
 
-                        // Восстанавливаем вложенные блоки
                         block.inputBlocks.clear()
                         nestedBlocks.forEach { nestedBlock ->
                             block.inputBlocks.add(nestedBlock)
                         }
 
-                        // Обновляем позицию блока
-                        BlockPositionTracker.updateBlockPosition(id, canvasOffset ?: Offset.Zero)
+                        BlockPositionTracker.updateBlockPosition(
+                            id,
+                            canvasOffset ?: Offset.Zero
+                        )
                         BlockPositionTracker.redrawTrigger.intValue++
                     }
                 },
@@ -212,44 +211,13 @@ fun DraggableSetVariableBlock(
                     }
                     BlockPositionTracker.updateBlockPosition(id, animOffset.value)
 
-                    if (System.currentTimeMillis() - dragStartTime >= 2500) {
-                        showDeleteIcon = true
-                    }
-
-                    // Проверяем возможные слоты для вставки
-                    val coords = layoutCoordinates ?: return@detectDragGestures
-                    val windowCenter = coords.boundsInWindow().center
-
-                    val matchedSlot = BlockSlotTracker.getAllSlots()
-                        .filter { slot ->
-                            val slotParentBlock = viewModel.findBlockById(slot.blockId)
-                            val isValidTarget = slotParentBlock != null &&
-                                slot.blockId != id &&
-                                !viewModel.isRecursiveInsertion(id, slot.blockId) &&
-                                slotParentBlock.type in listOf(
-                                    BlockType.VARIABLE_SET,
-                                    BlockType.MATH_ADD,
-                                    BlockType.MATH_SUBTRACT,
-                                    BlockType.MATH_MULTIPLY,
-                                    BlockType.MATH_DIVIDE
-                                )
-                            isValidTarget
-                        }
-                        .map { it.copy(bounds = it.bounds.translate(BlockPositionTracker.canvasOffset)) }
-                        .filter { it.bounds.inflate(MAGNETIC_PADDING).contains(windowCenter) }
-                        .minByOrNull { it.bounds.width * it.bounds.height }
-
-                    if (matchedSlot != null) {
-                        viewModel.setHighlightedSlot(matchedSlot.blockId, matchedSlot.slotIndex)
-                    } else {
-                        viewModel.setHighlightedSlot(null, null)
-                    }
                 },
                 onDragEnd = {
                     isBeingDragged = false
-                    showDeleteIcon = false
                     scope.launch {
-                        viewModel.tryInsertIntoSlot(layoutCoordinates?.boundsInWindow()?.center ?: Offset.Zero, id)
+                        viewModel.tryInsertIntoSlot(
+                            layoutCoordinates?.boundsInWindow()?.center ?: Offset.Zero, id
+                        )
                     }
                 }
             )
@@ -258,25 +226,23 @@ fun DraggableSetVariableBlock(
             detectTapGestures(
                 onPress = {
                     isPressed = false
-                    showDeleteIcon = false
                 })
         }) {
-        if (showDeleteIcon) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(4.dp)
-                    .clickable {
-                        onDelete(id)
-                    }) {
-                Icon(
-                    imageVector = Icons.Filled.Close,
-                    contentDescription = stringResource(id = R.string.delete_icon_description),
-                    modifier = Modifier.size(12.dp),
-                    tint = Color.Black
-                )
-            }
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(4.dp)
+                .clickable {
+                    onDelete(id)
+                }) {
+            Icon(
+                imageVector = Icons.Filled.Close,
+                contentDescription = stringResource(id = R.string.delete_icon_description),
+                modifier = Modifier.size(12.dp),
+                tint = Color.Black
+            )
         }
+
         Row(
             modifier = Modifier
                 .align(Alignment.Center)
@@ -352,7 +318,8 @@ fun DraggableSetVariableBlock(
                     )
                     .onGloballyPositioned {
                         layoutCoordinates = it
-                        val bounds = it.boundsInWindow().translate(BlockPositionTracker.canvasOffset)
+                        val bounds =
+                            it.boundsInWindow().translate(BlockPositionTracker.canvasOffset)
                         BlockSlotTracker.setSlotBounds(id, 1, bounds)
                     }
                     .border(
@@ -376,6 +343,9 @@ fun DraggableSetVariableBlock(
                                     DraggableReferenceBlock(
                                         id = valueBlock.id,
                                         variable = variable,
+                                        onDelete = { id ->
+                                            viewModel.removeBlockById(id)
+                                        },
                                         viewModel = viewModel
                                     )
                                 }
@@ -418,8 +388,12 @@ fun DraggableSetVariableBlock(
                                     if (!isError.value && inputText.value.isNotEmpty()) {
                                         val value = inputText.value
                                         val number = value.toDoubleOrNull() ?: 0.0
-                                        val fakeVar = Variable(name = value, value = number, type = "double")
-                                        val newBlock = Block(type = BlockType.VARIABLE_REFERENCE, value = fakeVar)
+                                        val fakeVar =
+                                            Variable(name = value, value = number, type = "double")
+                                        val newBlock = Block(
+                                            type = BlockType.VARIABLE_REFERENCE,
+                                            value = fakeVar
+                                        )
                                         viewModel.addBlock(newBlock)
 
                                         // Вставляем новый блок
@@ -439,7 +413,10 @@ fun DraggableSetVariableBlock(
                                 }
                             ),
                             singleLine = true,
-                            textStyle = TextStyle(fontSize = 12.sp, color = if (isError.value) Color.Red else Color.Black),
+                            textStyle = TextStyle(
+                                fontSize = 12.sp,
+                                color = if (isError.value) Color.Red else Color.Black
+                            ),
                             modifier = Modifier
                                 .padding(horizontal = 4.dp, vertical = 8.dp)
                                 .widthIn(min = 32.dp)
@@ -452,7 +429,6 @@ fun DraggableSetVariableBlock(
         }
     }
 }
-
 
 
 @Preview(showBackground = true)

@@ -119,6 +119,9 @@ fun RenderBlockTree(
                 DraggableReferenceBlock(
                     id = block.id,
                     variable = variable,
+                    onDelete = { id ->
+                        viewModel.removeBlockById(id)
+                    },
                     viewModel = viewModel
                 )
             }

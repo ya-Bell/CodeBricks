@@ -76,7 +76,6 @@ fun DraggableChangeVariableBlock(
     viewModel: VariableViewModel
 ) {
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
-    var showDeleteIcon by remember { mutableStateOf(false) }
     var dragStartTime by remember { mutableLongStateOf(0L) }
     var isPressed by remember { mutableStateOf(false) }
 
@@ -125,37 +124,30 @@ fun DraggableChangeVariableBlock(
                 offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
                 BlockPositionTracker.updateBlockPosition(id, offset)
                 change.consume()
-
-                if (System.currentTimeMillis() - dragStartTime >= 2500) {
-                    showDeleteIcon = true
-                }
             }
         }
         .pointerInput(Unit) {
             detectTapGestures(
                 onPress = {
                     isPressed = false
-                    showDeleteIcon = false
                 })
         }
         .padding(horizontal = 4.dp, vertical = 2.dp), contentAlignment = Alignment.Center
-
     ) {
-        if (showDeleteIcon) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .clickable {
-                        onDelete(id)
-                    }) {
-                Icon(
-                    imageVector = Icons.Filled.Close,
-                    contentDescription = stringResource(id = R.string.delete_icon_description),
-                    modifier = Modifier.size(12.dp),
-                    tint = Color.Black
-                )
-            }
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .clickable {
+                    onDelete(id)
+                }) {
+            Icon(
+                imageVector = Icons.Filled.Close,
+                contentDescription = stringResource(id = R.string.delete_icon_description),
+                modifier = Modifier.size(12.dp),
+                tint = Color.Black
+            )
         }
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
@@ -180,7 +172,6 @@ fun DraggableChangeVariableBlock(
                             type = MenuAnchorType.PrimaryEditable, enabled = true
                         )
                         .widthIn(min = 48.dp, max = 300.dp)
-                        .height(24.dp)
                         .height(24.dp)
                         .background(Color.White, RoundedCornerShape(4.dp))
                         .border(2.dp, Color.Black, RoundedCornerShape(4.dp))

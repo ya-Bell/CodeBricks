@@ -224,6 +224,9 @@ fun BlockInputsSlot(
                     DraggableReferenceBlock(
                         id = block.id,
                         variable = variable,
+                        onDelete = { id ->
+                            viewModel.removeBlockById(id)  // Здесь вы удаляете блок через viewModel
+                        },
                         viewModel = viewModel
                     )
                 } else {
