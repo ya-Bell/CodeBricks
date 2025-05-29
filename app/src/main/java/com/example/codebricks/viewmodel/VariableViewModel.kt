@@ -9,6 +9,7 @@ import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker.re
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
 import com.example.codebricks.viewmodel.conversion.formatValueForOutput
 import com.example.codebricks.viewmodel.tree.findBlockById
+import com.example.codebricks.viewmodel.blocks.findUsedReferenceBlocks
 
 // Модель данных для переменной
 data class Variable(val name: String, var value: Any, var type: String)
@@ -40,6 +41,21 @@ class VariableViewModel : ViewModel() {
     val highlightedSlot = mutableStateOf<Pair<String, Int>?>(null)
 
 
+
+    //ОТКЛАДКА
+    fun logAllProgramBlocks() {
+        println("📦 Current program blocks:")
+        programBlocks.forEachIndexed { index, block ->
+            println("$index. ${block.type} (${block.id})")
+            block.inputBlocks.forEachIndexed { i, input ->
+                println("   ↳ input[$i]: ${input?.type} (${input?.id})")
+            }
+        }
+    }
+
+    //ОТКЛАДКА
+
+
     // Очистка консоли
     fun clearConsole() {
         consoleOutput.value = "Console cleared."
@@ -53,6 +69,8 @@ class VariableViewModel : ViewModel() {
     // Добавление блока в программу и перерисовка
     fun addBlock(block: Block) {
         _programBlocks.value += block
+        logAllProgramBlocks()
+        // Вызываем перерисовку только один раз после всех изменений
         redrawTrigger.intValue++
     }
 
@@ -70,6 +88,14 @@ class VariableViewModel : ViewModel() {
     // Удаление блока по ID (только верхнеуровневого)
     fun removeBlockById(blockId: String) {
         _programBlocks.value = _programBlocks.value.filterNot { it.id == blockId }
+
+        // После удаления блока, очищаем неиспользуемые reference блоки
+        val usedReferenceIds = findUsedReferenceBlocks(_programBlocks.value)
+        _programBlocks.value = _programBlocks.value.filterNot { block ->
+            block.type == BlockType.VARIABLE_REFERENCE && block.id !in usedReferenceIds
+        }
+
+        logAllProgramBlocks()
         redrawTrigger.intValue++
     }
 

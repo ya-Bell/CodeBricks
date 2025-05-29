@@ -8,15 +8,10 @@ import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker.re
 
 // Создание пустого блока Set(variable, value)
 fun VariableViewModel.declareEmptySetVariableBlock() {
-    val firstVar = variables.firstOrNull()
-
-    val setBlock = Block(type = BlockType.VARIABLE_SET, inputBlocks = firstVar?.let {
-        mutableListOf(
-            Block(
-                type = BlockType.VARIABLE_REFERENCE, value = it
-            )
-        )
-    } ?: mutableListOf())
+    val setBlock = Block(
+        type = BlockType.VARIABLE_SET,
+        inputBlocks = mutableListOf(null, null)
+    )
 
     addBlock(setBlock)
     redrawTrigger.intValue++

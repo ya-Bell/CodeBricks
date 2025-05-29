@@ -50,6 +50,7 @@ import com.example.codebricks.viewmodel.slot.setRecentlyInsertedSlot
 import com.example.codebricks.viewmodel.slot.tryInsertIntoSlot
 import com.example.codebricks.viewmodel.tree.findBlockById
 import com.example.codebricks.viewmodel.tree.findBlockContaining
+import com.example.codebricks.viewmodel.tree.removeBlockFromParent
 import com.example.codebricks.viewmodel.tree.removeBlockRecursively
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -122,16 +123,23 @@ fun DraggableReferenceBlock(
                         viewModel.findBlockContaining(id)?.id?.let { viewModel.bringBlockToFront(it) }
                         if (isInserted) {
                             val original = viewModel.findBlockById(currentId.value)
-                            val clone = original?.cloneWithNewId()
-                            if (clone != null) {
-                                viewModel.removeBlockRecursively(currentId.value)
-                                viewModel.addBlock(clone)
-                                currentId.value = clone.id
+                            val parentBlock = viewModel.findBlockContaining(currentId.value)
+                            
+                            viewModel.removeBlockFromParent(currentId.value)
+                            
+                            if (parentBlock != null) {
+                                val slotIndex = parentBlock.inputBlocks.indexOfFirst { it?.id == currentId.value }
+                                if (slotIndex != -1) {
+                                    parentBlock.inputBlocks[slotIndex] = null
+                                }
+                            }
+                            
+                            if (original != null) {
                                 layoutCoordinates?.boundsInWindow()?.topLeft?.let { windowPos ->
                                     val canvasOffset = windowPos + BlockPositionTracker.canvasOffset
                                     scope.launch {
                                         animOffset.snapTo(canvasOffset)
-                                        BlockPositionTracker.updateBlockPosition(clone.id, canvasOffset)
+                                        BlockPositionTracker.updateBlockPosition(original.id, canvasOffset)
                                         BlockPositionTracker.redrawTrigger.intValue++
                                     }
                                 }

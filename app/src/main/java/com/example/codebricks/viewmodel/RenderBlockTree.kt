@@ -11,6 +11,7 @@ import com.example.codebricks.blocks.variables.vardeclare.DraggableDeclareBlock
 import com.example.codebricks.blocks.variables.varreference.DraggableReferenceBlock
 import com.example.codebricks.blocks.variables.varset.DraggableSetVariableBlock
 
+
 @Composable
 fun RenderBlockTree(
     block: Block,
@@ -19,6 +20,17 @@ fun RenderBlockTree(
     containerHeight: Float,
     onDelete: (String) -> Unit
 ) {
+    // Проверяем, используется ли reference блок как input в других блоках
+    fun isUsedAsInput(blockId: String): Boolean {
+        return viewModel.programBlocks.any { parentBlock ->
+            parentBlock.inputBlocks.any { it?.id == blockId }
+        }
+    }
+
+    // Не рендерим reference блок, если он используется как input
+    if (block.type == BlockType.VARIABLE_REFERENCE && isUsedAsInput(block.id)) {
+        return
+    }
 
     when (block.type) {
         BlockType.MATH_ADD, BlockType.MATH_SUBTRACT, BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE -> {

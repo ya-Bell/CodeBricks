@@ -313,10 +313,18 @@ fun MathInputSlot(
 
     val inputText = remember { mutableStateOf("") }
     val isEditing = remember { mutableStateOf(false) }
+    val previousBlock = remember { mutableStateOf<Block?>(null) }
 
-    // Очистка текстового ввода, если пришёл вложенный блок
+    // Очистка текстового ввода и удаление предыдущего блока, если пришёл новый блок
     LaunchedEffect(block?.id) {
-        if (block != null && isEditing.value) {
+        if (block != null) {
+            // Если был предыдущий блок с числом, удаляем его
+            if (previousBlock.value != null && 
+                previousBlock.value?.type == BlockType.VARIABLE_REFERENCE && 
+                (previousBlock.value?.value as? Variable)?.name?.toDoubleOrNull() != null) {
+                viewModel.removeBlockRecursively(previousBlock.value!!.id)
+            }
+            previousBlock.value = block
             inputText.value = ""
             isEditing.value = false
         }
@@ -393,6 +401,7 @@ fun MathInputSlot(
                     viewModel.addBlock(newBlock)
                     BlockSlotTracker.getSlotBounds(parentId, slotIndex)?.center?.let { center ->
                         viewModel.replaceSlotBlock(parentId, slotIndex, newBlock)
+                        previousBlock.value = newBlock
                         inputText.value = ""
                         isEditing.value = false
                     }
