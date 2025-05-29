@@ -61,10 +61,7 @@ fun WorkspaceCanvas(
     viewModel: VariableViewModel, onSizeChanged: (Float, Float) -> Unit
 ) {
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
-
     val adaptiveHeight = screenHeight.value * 0.44f
-
-
     val canvasSize = remember { mutableStateOf(IntSize(0, 0)) }
     val contentSize = 3000f // холст 4000x4000
     var scale by remember { mutableFloatStateOf(1f) }
@@ -74,6 +71,12 @@ fun WorkspaceCanvas(
     val zoomFactor = 1.25f
     val redrawTrigger = BlockPositionTracker.redrawTrigger.value
 
+    // Обновляем BlockPositionTracker при изменении масштаба или смещения
+    LaunchedEffect(scale, offset) {
+        BlockPositionTracker.canvasScale = scale
+        BlockPositionTracker.canvasOffset = offset
+        BlockPositionTracker.redrawTrigger.intValue++
+    }
 
     // функции управления зумом
     fun zoomIn() {
@@ -83,10 +86,9 @@ fun WorkspaceCanvas(
             offset = Offset(
                 x = offset.x.coerceIn(
                     (canvasSize.value.width - contentSize * scale).coerceAtMost(0f), 0f
-                ), y = offset.y.coerceIn(
-                    (canvasSize.value.height - contentSize * scale).coerceAtMost(
-                        0f
-                    ), 0f
+                ),
+                y = offset.y.coerceIn(
+                    (canvasSize.value.height - contentSize * scale).coerceAtMost(0f), 0f
                 )
             )
         }
@@ -99,10 +101,9 @@ fun WorkspaceCanvas(
             offset = Offset(
                 x = offset.x.coerceIn(
                     (canvasSize.value.width - contentSize * scale).coerceAtMost(0f), 0f
-                ), y = offset.y.coerceIn(
-                    (canvasSize.value.height - contentSize * scale).coerceAtMost(
-                        0f
-                    ), 0f
+                ),
+                y = offset.y.coerceIn(
+                    (canvasSize.value.height - contentSize * scale).coerceAtMost(0f), 0f
                 )
             )
         }
@@ -123,7 +124,8 @@ fun WorkspaceCanvas(
                     val minY = (canvasSize.value.height - scaledH).coerceAtMost(0f)
                     val newOffset = offset + dragAmount
                     offset = Offset(
-                        x = newOffset.x.coerceIn(minX, 0f), y = newOffset.y.coerceIn(minY, 0f)
+                        x = newOffset.x.coerceIn(minX, 0f),
+                        y = newOffset.y.coerceIn(minY, 0f)
                     )
                     change.consume()
                 }
@@ -131,7 +133,8 @@ fun WorkspaceCanvas(
             .onSizeChanged {
                 canvasSize.value = it
                 onSizeChanged(it.width.toFloat(), it.height.toFloat())
-            }) {
+            }
+    ) {
         val density = LocalDensity.current
 
         Box(
@@ -145,11 +148,7 @@ fun WorkspaceCanvas(
                     translationX = offset.x
                     translationY = offset.y
                 }
-                .onGloballyPositioned {
-                    // фиксируем scale и offset
-                    BlockPositionTracker.canvasScale = scale
-                    BlockPositionTracker.canvasOffset = offset
-                }) {
+        ) {
             Canvas(modifier = Modifier.matchParentSize()) {
                 // красная рамка
                 drawRect(
@@ -213,7 +212,8 @@ fun WorkspaceCanvas(
                 .align(Alignment.BottomEnd)
                 .padding(4.dp)
                 .background(
-                    Color.White.copy(alpha = 0.7f), shape = RoundedCornerShape(4.dp)
+                    Color.White.copy(alpha = 0.7f),
+                    shape = RoundedCornerShape(4.dp)
                 )
                 .padding(horizontal = 4.dp, vertical = 2.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -248,9 +248,7 @@ fun WorkspaceCanvas(
             }
         }
     }
-
 }
-
 
 @SuppressLint("ViewModelConstructorInComposable")
 @Preview(

@@ -99,11 +99,13 @@ class VariableViewModel : ViewModel() {
         redrawTrigger.intValue++
     }
 
-    // Поднятие блока в самый верх визуально (перемещение в конец списка)
-    fun bringBlockToFront(id: String) {
-        val block = findBlockById(id) ?: return
-        _programBlocks.value = _programBlocks.value.filterNot { it.id == id } + block
-        redrawTrigger.intValue++
+    // Перемещает блок на передний план
+    fun bringBlockToFront(blockId: String) {
+        val block = findBlockById(blockId) ?: return
+        val updatedBlocks = _programBlocks.value.toMutableList()
+        updatedBlocks.removeAll { it.id == blockId }
+        updatedBlocks.add(block)
+        _programBlocks.value = updatedBlocks
     }
 
     // Исполнение блоков программы

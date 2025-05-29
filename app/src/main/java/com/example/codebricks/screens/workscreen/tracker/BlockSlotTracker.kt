@@ -9,7 +9,14 @@ object BlockSlotTracker {
     private val slotBounds = mutableMapOf<Pair<String, Int>, Rect>()
 
     fun setSlotBounds(blockId: String, slotIndex: Int, bounds: Rect) {
-        slotBounds[blockId to slotIndex] = bounds
+        // Учитываем масштаб канваса при сохранении границ
+        val scaledBounds = Rect(
+            left = bounds.left / BlockPositionTracker.canvasScale,
+            top = bounds.top / BlockPositionTracker.canvasScale,
+            right = bounds.right / BlockPositionTracker.canvasScale,
+            bottom = bounds.bottom / BlockPositionTracker.canvasScale
+        )
+        slotBounds[blockId to slotIndex] = scaledBounds
     }
 
 //    fun getSlotCenter(blockId: String, slotIndex: Int): Offset? =
@@ -21,7 +28,14 @@ object BlockSlotTracker {
 //        }
 
     fun getSlotBounds(blockId: String, slotIndex: Int): Rect? {
-        return slotBounds[blockId to slotIndex]
+        return slotBounds[blockId to slotIndex]?.let { bounds ->
+            Rect(
+                left = bounds.left * BlockPositionTracker.canvasScale,
+                top = bounds.top * BlockPositionTracker.canvasScale,
+                right = bounds.right * BlockPositionTracker.canvasScale,
+                bottom = bounds.bottom * BlockPositionTracker.canvasScale
+            )
+        }
     }
 
     fun clear() {
@@ -35,7 +49,14 @@ object BlockSlotTracker {
     fun getAllSlots(): List<SlotInfo> {
         return slotBounds.map { (key, rect) ->
             val (blockId, slotIndex) = key
-            SlotInfo(blockId, slotIndex, rect)
+            // Возвращаем слоты с масштабированными границами
+            val scaledRect = Rect(
+                left = rect.left * BlockPositionTracker.canvasScale,
+                top = rect.top * BlockPositionTracker.canvasScale,
+                right = rect.right * BlockPositionTracker.canvasScale,
+                bottom = rect.bottom * BlockPositionTracker.canvasScale
+            )
+            SlotInfo(blockId, slotIndex, scaledRect)
         }
     }
 

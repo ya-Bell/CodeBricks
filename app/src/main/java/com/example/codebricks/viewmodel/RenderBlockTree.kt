@@ -20,15 +20,25 @@ fun RenderBlockTree(
     containerHeight: Float,
     onDelete: (String) -> Unit
 ) {
-    // Проверяем, используется ли reference блок как input в других блоках
+    // Проверяем, используется ли блок как input в других блоках
     fun isUsedAsInput(blockId: String): Boolean {
         return viewModel.programBlocks.any { parentBlock ->
-            parentBlock.inputBlocks.any { it?.id == blockId }
+            if (parentBlock.id == blockId) return@any false
+            // Проверяем не только inputBlocks, но и все дерево блоков
+            fun checkInTree(block: Block): Boolean {
+                if (block.id == blockId) return true
+                return block.inputBlocks.any { it?.let { checkInTree(it) } ?: false }
+            }
+            parentBlock.inputBlocks.any { it?.let { checkInTree(it) } ?: false }
         }
     }
 
-    // Не рендерим reference блок, если он используется как input
-    if (block.type == BlockType.VARIABLE_REFERENCE && isUsedAsInput(block.id)) {
+    // Не рендерим блок, если он используется как input в другом блоке
+    // или если это SET блок, который уже отрендерен
+    if (isUsedAsInput(block.id) || 
+        (block.type == BlockType.VARIABLE_SET && 
+         viewModel.programBlocks.any { it.id != block.id && it.type == BlockType.VARIABLE_SET && 
+                                     it.inputBlocks.any { input -> input?.id == block.id } })) {
         return
     }
 
