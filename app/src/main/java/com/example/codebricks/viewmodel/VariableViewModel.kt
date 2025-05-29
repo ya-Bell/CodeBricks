@@ -7,9 +7,9 @@ import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker.redrawTrigger
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
+import com.example.codebricks.viewmodel.blocks.findUsedReferenceBlocks
 import com.example.codebricks.viewmodel.conversion.formatValueForOutput
 import com.example.codebricks.viewmodel.tree.findBlockById
-import com.example.codebricks.viewmodel.blocks.findUsedReferenceBlocks
 
 // Модель данных для переменной
 data class Variable(val name: String, var value: Any, var type: String)
@@ -39,6 +39,8 @@ class VariableViewModel : ViewModel() {
 
     // Слот, подсвеченный для вставки (используется во время drag'n'drop)
     val highlightedSlot = mutableStateOf<Pair<String, Int>?>(null)
+
+    var skipNextBlock = false
 
 
 
@@ -108,6 +110,48 @@ class VariableViewModel : ViewModel() {
         _programBlocks.value = updatedBlocks
     }
 
+    fun evaluateCondition(block: Block, declaredVariables: Map<String, Variable>): Boolean {
+        if (block.operator.isBlank()) {
+            logToConsole("❌ Condition operator not specified")
+            return false
+        }
+
+        val left = block.inputBlocks.getOrNull(0)?.value as? Variable
+        val right = block.inputBlocks.getOrNull(1)?.value as? Variable
+
+        if (left == null || right == null) {
+            logToConsole("❌ Condition operands not set")
+            return false
+        }
+
+        val leftValue = (declaredVariables[left.name]?.value ?: left.value)
+            .toString().toDoubleOrNull() ?: run {
+            logToConsole("❌ Left operand is not a number: ${left.value}")
+            return false
+        }
+
+        val rightValue = (declaredVariables[right.name]?.value ?: right.value)
+            .toString().toDoubleOrNull() ?: run {
+            logToConsole("❌ Right operand is not a number: ${right.value}")
+            return false
+        }
+
+        println("Evaluating condition: $leftValue ${block.operator} $rightValue")
+
+        return when (block.operator) {
+            "==" -> leftValue == rightValue
+            "!=" -> leftValue != rightValue
+            ">"  -> leftValue > rightValue
+            "<"  -> leftValue < rightValue
+            ">=" -> leftValue >= rightValue
+            "<=" -> leftValue <= rightValue
+            else -> {
+                println("❌ Unsupported operator: ${block.operator}")
+                false
+            }
+        }
+    }
+
     // Исполнение блоков программы
     fun executeProgram(onFinish: () -> Unit) {
         val blocksById = programBlocks.associateBy { it.id }
@@ -115,6 +159,12 @@ class VariableViewModel : ViewModel() {
         var current = programBlocks.find { it.type == BlockType.CONTROL_START }
 
         while (current != null) {
+            if (skipNextBlock) {
+                logToConsole("⏩ Skipping block: ${current.type}")
+                skipNextBlock = false
+                current = current.nextBlockId?.let { blocksById[it] }
+                continue
+            }
             when (current.type) {
                 BlockType.CONTROL_START -> logToConsole("🟢 Program started")
                 BlockType.CONTROL_STOP -> logToConsole("🔴 Program stopped")
@@ -192,6 +242,27 @@ class VariableViewModel : ViewModel() {
                     logToConsole("🧮 Result of math expression: $result")
                 }
 
+                BlockType.IF -> {
+                    // Валидация и выполнение блока IF
+                    if (evaluateCondition(current, declaredVariables)) {
+                        logToConsole("✅ IF block executed")
+                    }
+                }
+                BlockType.ELSE_IF -> {
+                    // Валидация и выполнение блока ELSE IF
+                    if (evaluateCondition(current, declaredVariables)) {
+                        logToConsole("✅ ELSE IF block executed")
+                    }
+                }
+                BlockType.ELSE -> {
+                    // Выполнение блока ELSE
+                    logToConsole("✅ ELSE block executed")
+                }
+                BlockType.END_IF -> {
+                    // Завершение обработки IF
+                    logToConsole("✅ END IF block reached")
+                }
+
                 BlockType.VARIABLE_REFERENCE -> {}
 
                 // Остальные блоки пока не реализованы
@@ -209,8 +280,11 @@ class VariableViewModel : ViewModel() {
                 BlockType.IF -> TODO()
                 BlockType.ELSE -> TODO()
                 BlockType.WHILE -> TODO()
+                BlockType.ELSE_IF -> TODO()
+                BlockType.END_IF -> TODO()
             }
             current = current.nextBlockId?.let { blocksById[it] }
+
         }
         onFinish()
     }

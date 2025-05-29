@@ -4,6 +4,10 @@ import androidx.compose.runtime.Composable
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.control.DraggableControlBlock
+import com.example.codebricks.blocks.logic.DraggableElseIfBlock
+import com.example.codebricks.blocks.logic.DraggableEndIfBlock
+import com.example.codebricks.blocks.logic.elseblocks.DraggableElseBlock
+import com.example.codebricks.blocks.logic.ifblocks.DraggableIfBlock
 import com.example.codebricks.blocks.math.DraggableMathBlock
 import com.example.codebricks.blocks.print.DraggablePrintBlock
 import com.example.codebricks.blocks.variables.varchangeby.DraggableChangeVariableBlock
@@ -118,6 +122,45 @@ fun RenderBlockTree(
                     viewModel = viewModel
                 )
             }
+        }
+        BlockType.IF -> {
+            DraggableIfBlock(
+                id = block.id,
+                inputBlocks = block.inputBlocks,
+                containerWidth = containerWidth,
+                containerHeight = containerHeight,
+                onDelete = onDelete,
+                viewModel = viewModel
+            )
+        }
+
+        BlockType.ELSE_IF -> {
+            DraggableElseIfBlock(
+                id = block.id,
+                inputBlocks = block.inputBlocks,
+                containerWidth = containerWidth,
+                containerHeight = containerHeight,
+                onDelete = onDelete,
+                viewModel = viewModel
+            )
+        }
+
+        BlockType.ELSE -> {
+            DraggableElseBlock(
+                id = block.id,
+                containerWidth = containerWidth,
+                containerHeight = containerHeight,
+                onDelete = onDelete
+            )
+        }
+
+        BlockType.END_IF -> {
+            DraggableEndIfBlock(
+                id = block.id,
+                containerWidth = containerWidth,
+                containerHeight = containerHeight,
+                onDelete = onDelete
+            )
         }
         else -> {}
     }

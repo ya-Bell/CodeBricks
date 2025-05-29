@@ -4,12 +4,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.viewModelScope
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
+import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker.redrawTrigger
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker.MAGNETIC_PADDING
 import com.example.codebricks.viewmodel.VariableViewModel
-import com.example.codebricks.viewmodel.tree.findBlockRecursivelyById
-import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker.redrawTrigger
 import com.example.codebricks.viewmodel.tree.findBlockById
+import com.example.codebricks.viewmodel.tree.findBlockRecursivelyById
 import com.example.codebricks.viewmodel.tree.removeBlockRecursively
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

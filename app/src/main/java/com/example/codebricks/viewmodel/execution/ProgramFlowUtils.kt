@@ -2,9 +2,9 @@ package com.example.codebricks.viewmodel.execution
 
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
+import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker.redrawTrigger
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
-import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker.redrawTrigger
 import com.example.codebricks.viewmodel.VariableViewModel.BlockOrderResult
 
 // Устанавливает nextBlockId между блоками в зависимости от их Y-положения

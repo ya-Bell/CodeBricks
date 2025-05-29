@@ -2,8 +2,8 @@ package com.example.codebricks.viewmodel.blocks
 
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
-import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker.redrawTrigger
+import com.example.codebricks.viewmodel.VariableViewModel
 
 // Создание управляющего блока Start или Stop
 fun VariableViewModel.declareControlBlock(type: String) {
