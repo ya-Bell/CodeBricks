@@ -32,7 +32,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.codebricks.R
-import com.example.codebricks.blocks.variables.DeclareVariable
+import com.example.codebricks.blocks.variables.vardeclare.DeclareVariable
 import com.example.codebricks.screens.workscreen.sections.BottomBlockBar
 import com.example.codebricks.screens.workscreen.sections.ConsoleSection
 import com.example.codebricks.screens.workscreen.sections.WorkSpaceSection

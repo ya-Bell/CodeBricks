@@ -19,13 +19,15 @@ import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.control.CreateControlBlock
 import com.example.codebricks.blocks.math.MathBlockButton
 import com.example.codebricks.blocks.print.CreatePrintBlock
-import com.example.codebricks.blocks.variables.ChangeVariableButton
-import com.example.codebricks.blocks.variables.ConvertVariable
-import com.example.codebricks.blocks.variables.DeclareVariable
-import com.example.codebricks.blocks.variables.SetVariableButton
-import com.example.codebricks.blocks.variables.VariableReferenceBlock
+import com.example.codebricks.blocks.variables.varconvert.ConvertVariable
+import com.example.codebricks.blocks.variables.varset.SetVariableButton
+import com.example.codebricks.blocks.variables.varchangeby.ChangeVariableButton
+import com.example.codebricks.blocks.variables.vardeclare.DeclareVariable
+import com.example.codebricks.blocks.variables.varreference.VariableReferenceBlock
 import com.example.codebricks.ui.theme.CodeBricksTheme
 import com.example.codebricks.viewmodel.VariableViewModel
+import com.example.codebricks.viewmodel.blocks.declareMathBlock
+import com.example.codebricks.viewmodel.blocks.declareVariable
 
 @Composable
 fun BlockSection(selectedClass: String, viewModel: VariableViewModel) {

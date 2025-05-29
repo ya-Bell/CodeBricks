@@ -1,4 +1,4 @@
-package com.example.codebricks.blocks.variables
+package com.example.codebricks.blocks.variables.varset
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,6 +14,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.codebricks.viewmodel.VariableViewModel
+import com.example.codebricks.viewmodel.blocks.declareEmptySetVariableBlock
 
 @Composable
 fun SetVariableButton(viewModel: VariableViewModel) {

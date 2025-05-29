@@ -1,4 +1,4 @@
-package com.example.codebricks.blocks.variables
+package com.example.codebricks.blocks.variables.varchangeby
 
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
@@ -56,6 +56,9 @@ import com.example.codebricks.blocks.common.limitPosition
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
+import com.example.codebricks.viewmodel.blocks.updateChangeBlockAmount
+import com.example.codebricks.viewmodel.blocks.updateChangeBlockSign
+import com.example.codebricks.viewmodel.blocks.updateChangeBlockVariable
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)

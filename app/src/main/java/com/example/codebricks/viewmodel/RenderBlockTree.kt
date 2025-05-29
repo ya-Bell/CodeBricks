@@ -6,10 +6,10 @@ import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.control.DraggableControlBlock
 import com.example.codebricks.blocks.math.DraggableMathBlock
 import com.example.codebricks.blocks.print.DraggablePrintBlock
-import com.example.codebricks.blocks.variables.DraggableChangeVariableBlock
-import com.example.codebricks.blocks.variables.DraggableDeclareBlock
-import com.example.codebricks.blocks.variables.DraggableSetVariableBlock
-import com.example.codebricks.blocks.variables.DraggableReferenceBlock
+import com.example.codebricks.blocks.variables.varchangeby.DraggableChangeVariableBlock
+import com.example.codebricks.blocks.variables.vardeclare.DraggableDeclareBlock
+import com.example.codebricks.blocks.variables.varreference.DraggableReferenceBlock
+import com.example.codebricks.blocks.variables.varset.DraggableSetVariableBlock
 
 @Composable
 fun RenderBlockTree(

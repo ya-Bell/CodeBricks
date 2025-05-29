@@ -1,4 +1,4 @@
-package com.example.codebricks.blocks.variables
+package com.example.codebricks.blocks.variables.vardeclare
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.codebricks.R
 import com.example.codebricks.viewmodel.VariableViewModel
+import com.example.codebricks.viewmodel.blocks.declareVariable
+import com.example.codebricks.viewmodel.blocks.isVariableAlreadyDeclared
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

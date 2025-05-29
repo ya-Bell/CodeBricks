@@ -56,12 +56,21 @@ import androidx.compose.ui.unit.sp
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.common.cloneWithNewId
-import com.example.codebricks.blocks.variables.DraggableReferenceBlock
+import com.example.codebricks.blocks.variables.varreference.DraggableReferenceBlock
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker.MAGNETIC_PADDING
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
+import com.example.codebricks.viewmodel.slot.replaceSlotBlock
+import com.example.codebricks.viewmodel.slot.setHighlightedSlot
+import com.example.codebricks.viewmodel.slot.setRecentlyInsertedSlot
+import com.example.codebricks.viewmodel.slot.tryInsertIntoSlot
+import com.example.codebricks.viewmodel.tree.collectDescendantIds
+import com.example.codebricks.viewmodel.tree.findBlockById
+import com.example.codebricks.viewmodel.tree.findBlockContaining
+import com.example.codebricks.viewmodel.tree.removeBlockFromParent
+import com.example.codebricks.viewmodel.tree.removeBlockRecursively
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 

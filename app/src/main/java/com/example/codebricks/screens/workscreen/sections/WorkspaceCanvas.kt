@@ -53,6 +53,7 @@ import com.example.codebricks.R
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.viewmodel.RenderBlockTree
 import com.example.codebricks.viewmodel.VariableViewModel
+import com.example.codebricks.viewmodel.tree.findBlockContaining
 
 @SuppressLint("UnusedTransitionTargetStateParameter", "ConfigurationScreenWidthHeight")
 @Composable

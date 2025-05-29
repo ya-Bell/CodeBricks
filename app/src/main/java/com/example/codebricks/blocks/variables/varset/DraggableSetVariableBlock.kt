@@ -1,4 +1,4 @@
-package com.example.codebricks.blocks.variables
+package com.example.codebricks.blocks.variables.varset
 
 //import androidx.compose.ui.platform.LocalDensity
 //import androidx.compose.ui.unit.Dp
@@ -59,10 +59,16 @@ import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.common.limitPosition
 import com.example.codebricks.blocks.math.DraggableMathBlock
+import com.example.codebricks.blocks.variables.varreference.DraggableReferenceBlock
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
+import com.example.codebricks.viewmodel.blocks.declareVariable
+import com.example.codebricks.viewmodel.blocks.updateSetBlockTarget
+import com.example.codebricks.viewmodel.blocks.updateSetBlockValue
+import com.example.codebricks.viewmodel.tree.findBlockById
+import com.example.codebricks.viewmodel.tree.removeBlockRecursively
 import kotlin.math.roundToInt
 
 

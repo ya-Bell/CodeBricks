@@ -1,4 +1,4 @@
-package com.example.codebricks.blocks.variables
+package com.example.codebricks.blocks.variables.varreference
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
+import com.example.codebricks.viewmodel.blocks.addReferenceBlock
 
 @Composable
 fun VariableReferenceBlock(variable: Variable, viewModel: VariableViewModel) {

@@ -1,4 +1,4 @@
-package com.example.codebricks.blocks.variables
+package com.example.codebricks.blocks.variables.varreference
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.VectorConverter
@@ -45,6 +45,12 @@ import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker.MAGNETIC_PADDING
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
+import com.example.codebricks.viewmodel.slot.setHighlightedSlot
+import com.example.codebricks.viewmodel.slot.setRecentlyInsertedSlot
+import com.example.codebricks.viewmodel.slot.tryInsertIntoSlot
+import com.example.codebricks.viewmodel.tree.findBlockById
+import com.example.codebricks.viewmodel.tree.findBlockContaining
+import com.example.codebricks.viewmodel.tree.removeBlockRecursively
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 

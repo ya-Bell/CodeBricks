@@ -1,4 +1,4 @@
-package com.example.codebricks.blocks.variables
+package com.example.codebricks.blocks.variables.vardeclare
 
 
 import androidx.compose.foundation.background
