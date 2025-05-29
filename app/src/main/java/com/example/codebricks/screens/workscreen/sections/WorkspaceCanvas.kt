@@ -1,6 +1,7 @@
 package com.example.codebricks.screens.workscreen.sections
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -15,10 +16,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -45,16 +50,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.codebricks.R
-import com.example.codebricks.blocks.common.BlockType
-import com.example.codebricks.blocks.control.DraggableControlBlock
-import com.example.codebricks.blocks.math.DraggableMathBlock
-import com.example.codebricks.blocks.print.DraggablePrintBlock
-import com.example.codebricks.blocks.variables.DraggableChangeVariableBlock
-import com.example.codebricks.blocks.variables.DraggableDeclareBlock
-import com.example.codebricks.blocks.variables.DraggableReferenceBlock
-import com.example.codebricks.blocks.variables.DraggableSetVariableBlock
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
-import com.example.codebricks.viewmodel.Variable
+import com.example.codebricks.viewmodel.RenderBlockTree
 import com.example.codebricks.viewmodel.VariableViewModel
 
 @SuppressLint("UnusedTransitionTargetStateParameter", "ConfigurationScreenWidthHeight")
@@ -174,108 +171,17 @@ fun WorkspaceCanvas(
                 }
             }
             // блоки
-            val controlBlocks = viewModel.programBlocks.filter {
-                it.type == BlockType.CONTROL_START || it.type == BlockType.CONTROL_STOP
-            }
-            val printBlocks = viewModel.programBlocks.filter { it.type == BlockType.IO_PRINT }
-            val setVariableBlocks =
-                viewModel.programBlocks.filter { it.type == BlockType.VARIABLE_SET }
-            val changeVariableBlocks =
-                viewModel.programBlocks.filter { it.type == BlockType.VARIABLE_CHANGE }
-
-            controlBlocks.forEach { block ->
-                DraggableControlBlock(
-                    id = block.id,
-                    type = block.type.name,
-                    containerWidth = contentSize,
-                    containerHeight = contentSize,
-                    onDelete = { blockId -> viewModel.removeBlockById(blockId) })
-            }
-
-            printBlocks.forEach { block ->
-                val variable = block.inputBlocks.firstOrNull()?.value as? Variable
-                DraggablePrintBlock(
-                    id = block.id,
-                    variable = variable,
-                    containerWidth = contentSize,
-                    containerHeight = contentSize,
-                    onDelete = { blockId -> viewModel.removeBlockById(blockId) })
-            }
-
-            setVariableBlocks.forEach { block ->
-                DraggableSetVariableBlock(
-                    id = block.id,
-                    containerWidth = contentSize,
-                    containerHeight = contentSize,
-                    onDelete = { blockId -> viewModel.removeBlockById(blockId) },
-                    inputBlocks = block.inputBlocks,
-                    viewModel = viewModel
-                )
-            }
-
-            changeVariableBlocks.forEach { block ->
-                val variable = block.inputBlocks.getOrNull(0)?.value as? Variable
-                DraggableChangeVariableBlock(
-                    id = block.id,
-                    variable = variable,
-                    changeSign = block.changeSign,
-                    changeAmount = block.changeAmount,
-                    containerWidth = contentSize,
-                    containerHeight = contentSize,
-                    onDelete = { blockId -> viewModel.removeBlockById(blockId) },
-                    viewModel = viewModel
-                )
-            }
-
-            val declareBlocks = viewModel.programBlocks.filter {
-                it.type == BlockType.VARIABLE_DECLARE
-            }
-            val referenceBlocks = viewModel.programBlocks.filter { block ->
-                block.type == BlockType.VARIABLE_REFERENCE && viewModel.findBlockContaining(block.id) == null // ❗ не вложен
-            }
-
-
-            declareBlocks.forEach { block ->
-                val variable = block.value as? Variable
-                if (variable != null) {
-                    DraggableDeclareBlock(
-                        id = block.id,
-                        variable = variable,
+            viewModel.programBlocks
+                .filter { viewModel.findBlockContaining(it.id) == null } // только корневые
+                .forEach { block ->
+                    RenderBlockTree(
+                        block = block,
+                        viewModel = viewModel,
                         containerWidth = contentSize,
                         containerHeight = contentSize,
-                        onDelete = { blockId -> viewModel.removeBlockById(blockId) })
-                }
-            }
-
-            val mathBlocks = viewModel.programBlocks.filter {
-                it.type in listOf(
-                    BlockType.MATH_ADD,
-                    BlockType.MATH_SUBTRACT,
-                    BlockType.MATH_MULTIPLY,
-                    BlockType.MATH_DIVIDE
-                ) && viewModel.findBlockContaining(it.id) == null
-            }
-
-            mathBlocks.forEach { block ->
-                DraggableMathBlock(
-                    id = block.id,
-                    type = block.type,
-                    inputBlocks = block.inputBlocks,
-                    containerWidth = contentSize,
-                    containerHeight = contentSize,
-                    onDelete = { viewModel.removeBlockById(block.id) },
-                    viewModel = viewModel
-                )
-            }
-
-            referenceBlocks.forEach { block ->
-                val variable = block.value as? Variable
-                if (variable != null) {
-                    DraggableReferenceBlock(
-                        id = block.id, variable = variable, viewModel = viewModel
+                        onDelete = { viewModel.removeBlockById(it) }
                     )
                 }
-            }
             // соединения
             if (viewModel.shouldDrawConnections.value) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
@@ -303,7 +209,7 @@ fun WorkspaceCanvas(
 
         Row(
             modifier = Modifier
-                .align(Alignment.TopStart)
+                .align(Alignment.BottomEnd)
                 .padding(4.dp)
                 .background(
                     Color.White.copy(alpha = 0.7f), shape = RoundedCornerShape(4.dp)
@@ -341,6 +247,7 @@ fun WorkspaceCanvas(
             }
         }
     }
+
 }
 
 

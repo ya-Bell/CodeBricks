@@ -22,6 +22,9 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
@@ -44,12 +47,15 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
+import com.example.codebricks.blocks.common.cloneWithNewId
 import com.example.codebricks.blocks.variables.DraggableReferenceBlock
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
@@ -63,7 +69,7 @@ import kotlin.math.roundToInt
 fun DraggableMathBlock(
     id: String,
     type: BlockType,
-    inputBlocks: MutableList<Block>,
+    inputBlocks: MutableList<Block?>,
     containerWidth: Float,
     containerHeight: Float,
     onDelete: (String) -> Unit,
@@ -81,6 +87,8 @@ fun DraggableMathBlock(
     var dragStartTime by remember { mutableLongStateOf(0L) }
     var isPressed by remember { mutableStateOf(false) }
     val density = LocalDensity.current
+
+
 
     val symbol = when (type) {
         BlockType.MATH_ADD -> "+"
@@ -165,6 +173,7 @@ fun DraggableMathBlock(
             }
             .pointerInput(id, isInserted) {
                 detectDragGestures(onDragStart = {
+                    viewModel.findBlockContaining(id)?.id?.let { viewModel.bringBlockToFront(it) }
                     if (isInserted) {
                         val coords = layoutCoordinates
                         val windowPos = coords?.boundsInWindow()?.topLeft
@@ -174,10 +183,21 @@ fun DraggableMathBlock(
                             canvasOffset?.let { animOffset.snapTo(it) }
                         }
 
+                        // Найдём оригинальный блок и клонируем
+                        val original = viewModel.findBlockById(id)
                         viewModel.removeBlockFromParent(id)
+                        val clone = original?.cloneWithNewId()
+
+                        if (clone != null) {
+                            viewModel.removeBlockRecursively(id)
+                            viewModel.addBlock(clone)
+                        }
                     }
                 }, onDrag = { change, dragAmount ->
                     change.consume()
+                    val draggedBlock = viewModel.programBlocks.find { it.id == id } ?: return@detectDragGestures
+                    val ignoreIds = viewModel.collectDescendantIds(draggedBlock)
+
                     scope.launch {
                         animOffset.snapTo(animOffset.value + dragAmount)
                     }
@@ -187,6 +207,7 @@ fun DraggableMathBlock(
                     val windowCenter = coords.boundsInWindow().center
 
                     val matchedSlot = BlockSlotTracker.getAllSlots()
+                        .filter { it.blockId != id && it.blockId !in ignoreIds }
                         .map { it.copy(bounds = it.bounds.translate(BlockPositionTracker.canvasOffset)) }
                         .filter { it.bounds.inflate(MAGNETIC_PADDING).contains(windowCenter) }
                         .minByOrNull { it.bounds.width * it.bounds.height }
@@ -197,6 +218,8 @@ fun DraggableMathBlock(
                         viewModel.setHighlightedSlot(null, null)
                     }
                 }, onDragEnd = {
+                    val draggedBlock = viewModel.programBlocks.find { it.id == id } ?: return@detectDragGestures
+                    val ignoreIds = viewModel.collectDescendantIds(draggedBlock)
                     viewModel.setHighlightedSlot(null, null)
                     val coords = layoutCoordinates ?: return@detectDragGestures
                     val blockW = coords.size.width.toFloat()
@@ -204,6 +227,7 @@ fun DraggableMathBlock(
                     val windowCenter = coords.boundsInWindow().center
 
                     val matchedSlot = BlockSlotTracker.getAllSlots()
+                        .filter { it.blockId != id && it.blockId !in ignoreIds }
                         .map { it.copy(bounds = it.bounds.translate(BlockPositionTracker.canvasOffset)) }
                         .filter { it.bounds.inflate(MAGNETIC_PADDING).contains(windowCenter) }
                         .minByOrNull { it.bounds.width * it.bounds.height }
@@ -213,6 +237,7 @@ fun DraggableMathBlock(
                             (matchedSlot.bounds.left + matchedSlot.bounds.right) / 2f,
                             (matchedSlot.bounds.top + matchedSlot.bounds.bottom) / 2f
                         )
+
                         val snappedLocal = coords.windowToLocal(slotCenter) - Offset(
                             blockW / 2f, blockH / 2f
                         )
@@ -246,7 +271,7 @@ fun DraggableMathBlock(
         Row(
             modifier = Modifier.padding(horizontal = 8.dp)
                 .widthIn(max = 2000.dp)
-                .horizontalScroll(scrollState), // ← добавлено
+                .horizontalScroll(scrollState),
             verticalAlignment = Alignment.CenterVertically
         ) {
             MathInputSlot(id, 0, inputBlocks.getOrNull(0), viewModel)
@@ -277,6 +302,17 @@ fun MathInputSlot(
 ) {
     val isHighlighted = viewModel.highlightedSlot.value == (parentId to slotIndex)
 
+    val inputText = remember { mutableStateOf("") }
+    val isEditing = remember { mutableStateOf(false) }
+
+    // Очистка текстового ввода, если пришёл вложенный блок
+    LaunchedEffect(block?.id) {
+        if (block != null && isEditing.value) {
+            inputText.value = ""
+            isEditing.value = false
+        }
+    }
+
     Box(
         modifier = Modifier
             .padding(horizontal = 4.dp)
@@ -295,41 +331,72 @@ fun MathInputSlot(
             .background(Color.White, RoundedCornerShape(8.dp)),
         contentAlignment = Alignment.Center
     ) {
-        when {
-            block == null -> Text("...", color = Color.LightGray, fontSize = 12.sp)
-            block.type in listOf(
+        if (block != null) {
+            when (block.type) {
                 BlockType.MATH_ADD,
                 BlockType.MATH_SUBTRACT,
                 BlockType.MATH_MULTIPLY,
-                BlockType.MATH_DIVIDE
-            ) -> {
-                DraggableMathBlock(
-                    id = block.id,
-                    type = block.type,
-                    inputBlocks = block.inputBlocks,
-                    containerWidth = 0f,
-                    containerHeight = 0f,
-                    onDelete = { viewModel.removeBlockById(block.id) },
-                    viewModel = viewModel
-                )
-            }
-            block.type == BlockType.VARIABLE_REFERENCE -> {
-                val variable = block.value as? Variable
-                if (variable != null) {
-                    DraggableReferenceBlock(
+                BlockType.MATH_DIVIDE -> {
+                    if (!viewModel.programBlocks.any { it.id == block.id }) {
+                        viewModel.addBlock(block)
+                    }
+                    DraggableMathBlock(
                         id = block.id,
-                        variable = variable,
+                        type = block.type,
+                        inputBlocks = block.inputBlocks,
+                        containerWidth = 0f,
+                        containerHeight = 0f,
+                        onDelete = { viewModel.removeBlockById(block.id) },
                         viewModel = viewModel
                     )
-                } else {
-                    Text("?", fontSize = 12.sp)
+                }
+
+                BlockType.VARIABLE_REFERENCE -> {
+                    val variable = block.value as? Variable
+                    if (variable != null) {
+                        DraggableReferenceBlock(
+                            id = block.id,
+                            variable = variable,
+                            viewModel = viewModel
+                        )
+                    } else {
+                        Text("?", fontSize = 12.sp)
+                    }
+                }
+
+                else -> {
+                    Text(block.value?.toString() ?: "?", fontSize = 12.sp)
                 }
             }
-            else -> Text(block.value?.toString() ?: "?", fontSize = 12.sp)
+        } else {
+            BasicTextField(
+                value = inputText.value,
+                onValueChange = {
+                    inputText.value = it.filter { c -> c.isDigit() || c == '.' }
+                    isEditing.value = true
+                },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = {
+                    val value = inputText.value
+                    val number = value.toDoubleOrNull() ?: 0.0
+                    val fakeVar = Variable(name = value, value = number, type = "double")
+                    val newBlock = Block(type = BlockType.VARIABLE_REFERENCE, value = fakeVar)
+                    viewModel.addBlock(newBlock)
+                    BlockSlotTracker.getSlotBounds(parentId, slotIndex)?.center?.let { center ->
+                        viewModel.replaceSlotBlock(parentId, slotIndex, newBlock)
+                        inputText.value = ""
+                        isEditing.value = false
+                    }
+                }),
+                singleLine = true,
+                textStyle = TextStyle(fontSize = 12.sp, color = Color.Black),
+                modifier = Modifier
+                    .padding(horizontal = 4.dp, vertical = 8.dp)
+                    .widthIn(min = 32.dp)
+            )
         }
     }
 }
-
 @Preview(showBackground = true)
 @Composable
 fun MathBlockPreview() {

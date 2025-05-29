@@ -73,12 +73,16 @@ fun DraggableSetVariableBlock(
     containerWidth: Float,
     containerHeight: Float,
     onDelete: (String) -> Unit,
-    inputBlocks: List<Block> = emptyList(),
+    inputBlocks: MutableList<Block?> = mutableListOf(),
     viewModel: VariableViewModel
 ) {
+
+    val block = viewModel.findBlockById(id) ?: return
+    val targetVar = block.inputBlocks.getOrNull(0)?.value as? Variable
+    val valueBlock = block.inputBlocks.getOrNull(1)
+
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
 
-    val targetVar = inputBlocks.getOrNull(0)?.value as? Variable
     val valueVar = inputBlocks.getOrNull(1)?.value as? Variable
     val variableType = targetVar?.type ?: "string"
 
@@ -101,6 +105,12 @@ fun DraggableSetVariableBlock(
     }
     LaunchedEffect(redrawTrigger, valueVar) {}
 
+    LaunchedEffect(redrawTrigger) {
+        layoutCoordinates.value?.let {
+            val bounds = it.boundsInWindow().translate(BlockPositionTracker.canvasOffset)
+            BlockSlotTracker.setSlotBounds(id, 1, bounds)
+        }
+    }
 
     Box(modifier = Modifier
         .wrapContentWidth()
@@ -211,7 +221,7 @@ fun DraggableSetVariableBlock(
             val valueBlock = inputBlocks.getOrNull(1)
 
             val hasBlock = valueBlock != null
-            val isBlockEmpty = valueBlock == null || (valueBlock.value as? Variable)?.name.isNullOrEmpty()
+            val isBlockEmpty = valueBlock == null
 
             Box(
                 modifier = Modifier
@@ -221,8 +231,9 @@ fun DraggableSetVariableBlock(
                     .background(Color.White, RoundedCornerShape(8.dp))
                     .onGloballyPositioned {
                         layoutCoordinates.value = it
-                        val bounds = it.boundsInWindow()
+                        val bounds = it.boundsInWindow().translate(BlockPositionTracker.canvasOffset)
                         BlockSlotTracker.setSlotBounds(id, 1, bounds)
+
                     }
                     .border(
                         1.dp,
@@ -253,7 +264,10 @@ fun DraggableSetVariableBlock(
                                         inputBlocks = valueBlock.inputBlocks,
                                         containerWidth = 0f,
                                         containerHeight = 0f,
-                                        onDelete = { viewModel.removeBlockById(valueBlock.id) },
+                                        onDelete = {
+                                            viewModel.removeBlockRecursively(valueBlock.id)
+                                            if (block.inputBlocks.size > 1) block.inputBlocks[1] = null
+                                        },
                                         viewModel = viewModel
                                     )
                                 }
@@ -316,23 +330,17 @@ fun DraggableSetVariableBlock(
 fun DraggableSetVariableBlockPreview() {
     val mockViewModel = remember { VariableViewModel() }
 
-    // Создаём переменные
     val variableX = Variable(name = "x", value = 0, type = "int")
     val variableY = Variable(name = "y", value = 123, type = "int")
 
-    // Засовываем их во viewModel (будто они уже объявлены)
     mockViewModel.declareVariable(variableX.name, variableX.value, variableX.type)
     mockViewModel.declareVariable(variableY.name, variableY.value, variableY.type)
-
-    // Создаём input-блоки
     val targetBlock = Block(
         type = BlockType.VARIABLE_REFERENCE, value = variableX
     )
     val valueBlock = Block(
         type = BlockType.VARIABLE_REFERENCE, value = variableY
     )
-
-    // Финальный set-блок
     val setBlock = Block(
         type = BlockType.VARIABLE_SET, inputBlocks = mutableListOf(targetBlock, valueBlock)
     )

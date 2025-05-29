@@ -24,9 +24,9 @@ object BlockSlotTracker {
         return slotBounds[blockId to slotIndex]
     }
 
-//    fun clear() {
-//        slotBounds.clear()
-//    }
+    fun clear() {
+        slotBounds.clear()
+    }
 
     data class SlotInfo(
         val blockId: String, val slotIndex: Int, val bounds: Rect
