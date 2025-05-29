@@ -63,8 +63,7 @@ fun WorkspaceControlBar(viewModel: VariableViewModel) {
                 .clip(RoundedCornerShape(8.dp))
                 .clickable {
                     viewModel.clearWorkspace()
-                }
-        ) {
+                }) {
             Image(
                 painter = painterResource(id = R.drawable.baseline_delete_forever_24),
                 contentDescription = stringResource(id = R.string.trash_bin),
@@ -80,7 +79,8 @@ fun WorkspaceControlBar(viewModel: VariableViewModel) {
                     scope.launch {
                         val orderCheck = viewModel.checkBlockOrder()
                         if (!orderCheck.isValid) {
-                            viewModel.consoleOutput.value = orderCheck.errorMessage ?: "❌ Unknown block order error."
+                            viewModel.consoleOutput.value =
+                                orderCheck.errorMessage ?: "❌ Unknown block order error."
                             processRunning = false
                             return@launch
                         }
@@ -102,8 +102,7 @@ fun WorkspaceControlBar(viewModel: VariableViewModel) {
                 .height(26.dp)
                 .width(60.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFFFFFFF),
-                contentColor = Color.Black
+                containerColor = Color(0xFFFFFFFF), contentColor = Color.Black
             ),
             contentPadding = PaddingValues(0.dp)
         ) {

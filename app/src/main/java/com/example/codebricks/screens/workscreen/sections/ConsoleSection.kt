@@ -39,7 +39,7 @@ import com.example.codebricks.viewmodel.VariableViewModel
 fun ConsoleSection(viewModel: VariableViewModel) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp
-    val consoleHeight = screenHeight * 0.15f
+    val consoleHeight = screenHeight * 0.16f
 
     val scrollStateVertical = rememberScrollState()
 
@@ -58,9 +58,7 @@ fun ConsoleSection(viewModel: VariableViewModel) {
                 .fillMaxWidth()
                 .background(Color(0xFFD9D9D9))
                 .border(
-                    1.dp,
-                    Color.Gray,
-                    RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+                    1.dp, Color.Gray, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
                 )
                 .padding(horizontal = 12.dp, vertical = 2.dp)
         ) {
@@ -83,9 +81,7 @@ fun ConsoleSection(viewModel: VariableViewModel) {
             ) {
                 Column {
                     Text(
-                        text = consoleText,
-                        fontSize = 12.sp,
-                        color = Color.Black
+                        text = consoleText, fontSize = 12.sp, color = Color.Black
                     )
                 }
             }
@@ -119,8 +115,7 @@ fun ConsoleSection(viewModel: VariableViewModel) {
                     .align(Alignment.BottomEnd)
                     .clickable {
                         viewModel.clearConsole()
-                    }
-            ) {
+                    }) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = stringResource(id = R.string.clear_console),

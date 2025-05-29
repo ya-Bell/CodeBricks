@@ -53,8 +53,7 @@ fun WorkspaceHeader() {
                 .height(26.dp)
                 .width(60.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFFFFFFF),
-                contentColor = Color.Black
+                containerColor = Color(0xFFFFFFFF), contentColor = Color.Black
             ),
             contentPadding = PaddingValues(0.dp)
         ) {

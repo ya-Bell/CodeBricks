@@ -24,8 +24,7 @@ fun CreateControlBlock(viewModel: VariableViewModel) {
         .height(35.dp)
         .wrapContentWidth()
     val buttonColors = ButtonDefaults.buttonColors(
-        containerColor = Color(0xFF3F51B5),
-        contentColor = Color.Black
+        containerColor = Color(0xFF3F51B5), contentColor = Color.Black
     )
 
     Button(
@@ -34,7 +33,11 @@ fun CreateControlBlock(viewModel: VariableViewModel) {
         colors = buttonColors,
         border = BorderStroke(2.dp, Color.Black)
     ) {
-        Text(text = stringResource(id = R.string.create_start_block), fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
+        Text(
+            text = stringResource(id = R.string.create_start_block),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.ExtraBold
+        )
     }
 
     Button(
@@ -43,6 +46,10 @@ fun CreateControlBlock(viewModel: VariableViewModel) {
         colors = buttonColors,
         border = BorderStroke(2.dp, Color.Black)
     ) {
-        Text(text = stringResource(id = R.string.create_stop_block), fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
+        Text(
+            text = stringResource(id = R.string.create_stop_block),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.ExtraBold
+        )
     }
 }

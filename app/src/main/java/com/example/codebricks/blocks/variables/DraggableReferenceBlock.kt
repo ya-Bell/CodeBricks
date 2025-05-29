@@ -1,5 +1,3 @@
-@file:Suppress("NAME_SHADOWING")
-
 package com.example.codebricks.blocks.variables
 
 import androidx.compose.animation.core.Animatable
@@ -9,10 +7,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.requiredSize
-import androidx.compose.foundation.layout.requiredSizeIn
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,14 +30,19 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
+import com.example.codebricks.blocks.common.cloneWithNewId
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
+import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker.MAGNETIC_PADDING
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
 import kotlinx.coroutines.launch
@@ -45,71 +50,86 @@ import kotlin.math.roundToInt
 
 @Composable
 fun DraggableReferenceBlock(
-    id: String,
-    variable: Variable,
+    id: String, variable: Variable,
 //    containerWidth: Float,
 //    containerHeight: Float,
     viewModel: VariableViewModel
 ) {
-    val density = LocalDensity.current
+    val currentId = remember { mutableStateOf(id) }
     val scope = rememberCoroutineScope()
     val animOffset = remember { Animatable(Offset(0f, 0f), Offset.VectorConverter) }
     var layoutCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
-
-
-    val isInserted = viewModel.findBlockContaining(id) != null
-
-
-    val redrawTrigger = BlockPositionTracker.redrawTrigger.value
-
-    val parent = viewModel.findBlockContaining(id)
-    val slotBounds = BlockSlotTracker.getSlotBounds(parent?.id ?: "", 1)
-    slotBounds?.let {
-        Offset(it.left, it.top)
-    } ?: Offset.Zero
+    val redrawTrigger = BlockPositionTracker.redrawTrigger.intValue
     val localOffset = remember { mutableStateOf(Offset.Zero) }
 
+    val isInserted by remember(currentId.value, viewModel.programBlocks) {
+        mutableStateOf(viewModel.findBlockContaining(currentId.value) != null)
+    }
 
-    // обновление позиции блока
-    LaunchedEffect(id, isInserted, redrawTrigger) {
+    val blockModifier = if (isInserted) {
+        Modifier.wrapContentWidth().heightIn(min = 32.dp)
+    } else {
+        Modifier.wrapContentWidth().height(32.dp)
+    }
+
+    LaunchedEffect(currentId.value, isInserted, redrawTrigger) {
         if (isInserted && layoutCoordinates != null) {
-            val slotBounds = BlockSlotTracker.getSlotBounds(parent?.id ?: "", 1)
-            val windowOffset = slotBounds?.let { Offset(it.left, it.top) } ?: Offset.Zero
-            localOffset.value = layoutCoordinates!!.windowToLocal(windowOffset)
+            val parent = viewModel.findBlockContaining(currentId.value)
+            val slot = BlockSlotTracker.getAllSlots().find {
+                it.blockId == parent?.id && parent.inputBlocks.getOrNull(it.slotIndex)?.id == currentId.value
+            }
+            val windowOffset = slot?.bounds?.let { Offset(it.left, it.top) } ?: Offset.Zero
+            val correctedOffset = layoutCoordinates!!.windowToLocal(windowOffset - BlockPositionTracker.canvasOffset)
+            if (!correctedOffset.x.isNaN() && !correctedOffset.y.isNaN() && correctedOffset != localOffset.value) {
+                localOffset.value = correctedOffset
+            }
         }
     }
 
     Box(
-        modifier = Modifier
+        modifier = blockModifier
+            .then(
+                if (isInserted) Modifier else Modifier.offset {
+                    IntOffset(animOffset.value.x.roundToInt(), animOffset.value.y.roundToInt())
+                }
+            )
             .onGloballyPositioned { coords ->
                 layoutCoordinates = coords
+                BlockPositionTracker.setBlockSize(currentId.value, coords.size.width.toFloat(), coords.size.height.toFloat())
 
-                val widthPx = coords.size.width.toFloat()
-                val heightPx = coords.size.height.toFloat()
-                BlockPositionTracker.setBlockSize(id, widthPx, heightPx)
-
-                // пересчёт localOffset только если вставлен
                 if (isInserted) {
-                    val slotBounds = BlockSlotTracker.getSlotBounds(parent?.id ?: "", 1)
-                    val windowOffset = slotBounds?.let { Offset(it.left, it.top) } ?: Offset.Zero
+                    val parent = viewModel.findBlockContaining(currentId.value)
+                    val slot = BlockSlotTracker.getAllSlots().find {
+                        it.blockId == parent?.id && parent.inputBlocks.getOrNull(it.slotIndex)?.id == currentId.value
+                    }
+                    val windowOffset = slot?.bounds?.let { Offset(it.left, it.top) } ?: Offset.Zero
                     localOffset.value = coords.windowToLocal(windowOffset)
                 }
             }
-            .offset {
-                val offsetToUse = if (isInserted) localOffset.value else animOffset.value
-                IntOffset(offsetToUse.x.roundToInt(), offsetToUse.y.roundToInt())
-            }
-            .widthIn(min = 70.dp)
-            .requiredSizeIn(minHeight = 32.dp)
-            .requiredSize(60.dp, 24.dp)
-            .border(2.dp, Color.Black, RoundedCornerShape(50))
-            .clip(RoundedCornerShape(50))
+            .clip(RoundedCornerShape(8.dp))
+            .border(width = if (isInserted) 0.dp else 2.dp, color = Color.Black, shape = RoundedCornerShape(8.dp))
             .background(Color(0xFFEEEEEE))
-            .pointerInput(id, isInserted) {
+            .zIndex(if (isInserted) 0f else 1f)
+            .pointerInput(currentId.value, isInserted) {
                 detectDragGestures(
                     onDragStart = {
+                        viewModel.findBlockContaining(id)?.id?.let { viewModel.bringBlockToFront(it) }
                         if (isInserted) {
-                            viewModel.removeReferenceFromParent(id)
+                            val original = viewModel.findBlockById(currentId.value)
+                            val clone = original?.cloneWithNewId()
+                            if (clone != null) {
+                                viewModel.removeBlockRecursively(currentId.value)
+                                viewModel.addBlock(clone)
+                                currentId.value = clone.id
+                                layoutCoordinates?.boundsInWindow()?.topLeft?.let { windowPos ->
+                                    val canvasOffset = windowPos + BlockPositionTracker.canvasOffset
+                                    scope.launch {
+                                        animOffset.snapTo(canvasOffset)
+                                        BlockPositionTracker.updateBlockPosition(clone.id, canvasOffset)
+                                        BlockPositionTracker.redrawTrigger.intValue++
+                                    }
+                                }
+                            }
                         }
                     },
                     onDrag = { change, dragAmount ->
@@ -117,43 +137,34 @@ fun DraggableReferenceBlock(
                         scope.launch {
                             animOffset.snapTo(animOffset.value + dragAmount)
                         }
-                    },
-                    onDragEnd = {
                         val coords = layoutCoordinates ?: return@detectDragGestures
-
-                        val halfW = with(density) { 60.dp.toPx() } / 2f
-                        val halfH = with(density) { 24.dp.toPx() } / 2f
-                        val localCenter = animOffset.value + Offset(halfW, halfH)
-                        val windowCenter = coords.localToWindow(localCenter)
-
-                        val matchedSlot = BlockSlotTracker.getAllSlots().find { (_, _, bounds) ->
-                            val magneticPadding = 20f
-                            val expandedBounds = Rect(
-                                left = bounds.left - magneticPadding,
-                                top = bounds.top - magneticPadding,
-                                right = bounds.right + magneticPadding,
-                                bottom = bounds.bottom + magneticPadding
-                            )
-                            expandedBounds.contains(windowCenter)
-                        }
+                        val windowCenter = coords.boundsInWindow().center
+                        val matchedSlot = BlockSlotTracker.getAllSlots()
+                            .map { it.copy(bounds = it.bounds.translate(BlockPositionTracker.canvasOffset)) }
+                            .filter { it.bounds.inflate(MAGNETIC_PADDING).contains(windowCenter) }
+                            .minByOrNull { it.bounds.width * it.bounds.height }
 
                         if (matchedSlot != null) {
-                            val slotCenter = Offset(
-                                (matchedSlot.bounds.left + matchedSlot.bounds.right) / 2f,
-                                (matchedSlot.bounds.top + matchedSlot.bounds.bottom) / 2f
-                            )
-                            val snappedLocal =
-                                coords.windowToLocal(slotCenter) - Offset(halfW, halfH)
-
-                            scope.launch {
-                                animOffset.animateTo(
-                                    targetValue = snappedLocal,
-                                    animationSpec = tween(durationMillis = 200)
-                                )
-                                viewModel.tryInsertReferenceBlock(slotCenter, id)
-                            }
+                            viewModel.setHighlightedSlot(matchedSlot.blockId, matchedSlot.slotIndex)
                         } else {
-                            viewModel.tryInsertReferenceBlock(windowCenter, id)
+                            viewModel.setHighlightedSlot(null, null)
+                        }
+                    },
+                    onDragEnd = {
+                        viewModel.setHighlightedSlot(null, null)
+                        val coords = layoutCoordinates ?: return@detectDragGestures
+                        val blockW = coords.size.width.toFloat()
+                        val blockH = coords.size.height.toFloat()
+                        val windowCenter = coords.boundsInWindow().center
+                        val matchedSlot = BlockSlotTracker.getAllSlots()
+                            .map { it.copy(bounds = it.bounds.translate(BlockPositionTracker.canvasOffset)) }
+                            .filter { it.bounds.inflate(MAGNETIC_PADDING).contains(windowCenter) }
+                            .minByOrNull { it.bounds.width * it.bounds.height }
+                        scope.launch {
+                            viewModel.tryInsertIntoSlot(windowCenter, currentId.value)
+                            matchedSlot?.let {
+                                viewModel.setRecentlyInsertedSlot(it.blockId, it.slotIndex)
+                            }
                         }
                     }
                 )
@@ -164,7 +175,20 @@ fun DraggableReferenceBlock(
             text = variable.name,
             fontWeight = FontWeight.Bold,
             fontSize = 12.sp,
-            color = Color.Black
+            color = Color.Black,
+            modifier = Modifier.padding(horizontal = 6.dp)
         )
     }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun DraggableReferenceBlockPreview() {
+    val mockViewModel = remember { VariableViewModel() }
+    val variable = Variable(name = "e", value = 10, type = "int")
+
+    DraggableReferenceBlock(
+        id = "ref-preview-id", variable = variable, viewModel = mockViewModel
+    )
 }

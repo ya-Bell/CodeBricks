@@ -5,7 +5,7 @@ data class Block(
     val type: BlockType,
     val value: Any? = null, // значение, например, Variable, число, строка
     val children: MutableList<Block> = mutableListOf(), // вложенные блоки (например, в if или while)
-    val inputBlocks: MutableList<Block> = mutableListOf(), // если блоки вставляются в параметры (print(x), set x to y)
+    val inputBlocks: MutableList<Block?> = mutableListOf(), // если блоки вставляются в параметры (print(x), set x to y)
     var nextBlockId: String? = null, //  связь с другим блоком
     var changeSign: String = "+",
     var changeAmount: Int = 0

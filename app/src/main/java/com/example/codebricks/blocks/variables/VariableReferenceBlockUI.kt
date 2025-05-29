@@ -29,8 +29,7 @@ fun VariableReferenceBlock(variable: Variable, viewModel: VariableViewModel) {
             .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
             .clickable {
                 viewModel.addReferenceBlock(variable)
-            },
-        contentAlignment = Alignment.Center
+            }, contentAlignment = Alignment.Center
     ) {
         Text(
             text = variable.name,

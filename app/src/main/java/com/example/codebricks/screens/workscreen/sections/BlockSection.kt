@@ -15,9 +15,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.codebricks.R
+import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.control.CreateControlBlock
+import com.example.codebricks.blocks.math.MathBlockButton
 import com.example.codebricks.blocks.print.CreatePrintBlock
 import com.example.codebricks.blocks.variables.ChangeVariableButton
+import com.example.codebricks.blocks.variables.ConvertVariable
 import com.example.codebricks.blocks.variables.DeclareVariable
 import com.example.codebricks.blocks.variables.SetVariableButton
 import com.example.codebricks.blocks.variables.VariableReferenceBlock
@@ -38,6 +41,7 @@ fun BlockSection(selectedClass: String, viewModel: VariableViewModel) {
                     }
                 }
             }
+
             "Variables" -> {
                 LazyRow(
                     modifier = Modifier.fillMaxWidth(),
@@ -52,6 +56,9 @@ fun BlockSection(selectedClass: String, viewModel: VariableViewModel) {
                     item {
                         ChangeVariableButton(viewModel)
                     }
+                    item {
+                        ConvertVariable(viewModel)
+                    }
                 }
                 Spacer(modifier = Modifier.height(8.dp))
 
@@ -64,21 +71,43 @@ fun BlockSection(selectedClass: String, viewModel: VariableViewModel) {
                     }
                 }
             }
+
             "Math" -> {
-                Text(stringResource(id = R.string.math_blocks))
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    item {
+                        MathBlockButton("Add") { viewModel.declareMathBlock(BlockType.MATH_ADD) }
+                    }
+                    item {
+                        MathBlockButton("Subtract") { viewModel.declareMathBlock(BlockType.MATH_SUBTRACT) }
+                    }
+                    item {
+                        MathBlockButton("Multiply") { viewModel.declareMathBlock(BlockType.MATH_MULTIPLY) }
+                    }
+                    item {
+                        MathBlockButton("Divide") { viewModel.declareMathBlock(BlockType.MATH_DIVIDE) }
+                    }
+                }
             }
+
             "Comparison" -> {
                 Text(stringResource(id = R.string.comparison_blocks))
             }
+
             "Logic" -> {
                 Text(stringResource(id = R.string.logic_blocks))
             }
+
             "Input/Output" -> {
                 CreatePrintBlock(viewModel)
             }
+
             "Loops" -> {
                 Text(stringResource(id = R.string.loops_blocks))
             }
+
             "Functions" -> {
                 Text(stringResource(id = R.string.functions_blocks))
             }
@@ -96,8 +125,7 @@ fun BlockSectionPreview() {
 
     CodeBricksTheme {
         BlockSection(
-            selectedClass = "Variables",
-            viewModel = mockViewModel
+            selectedClass = "Variables", viewModel = mockViewModel
         )
     }
 }

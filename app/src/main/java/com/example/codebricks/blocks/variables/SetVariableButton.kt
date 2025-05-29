@@ -23,8 +23,7 @@ fun SetVariableButton(viewModel: VariableViewModel) {
         .fillMaxWidth()
 
     val buttonColors = ButtonDefaults.buttonColors(
-        containerColor = Color(0xFFFFA500),
-        contentColor = Color.Black
+        containerColor = Color(0xFFFFA500), contentColor = Color.Black
     )
     Button(
         onClick = { viewModel.declareEmptySetVariableBlock() },

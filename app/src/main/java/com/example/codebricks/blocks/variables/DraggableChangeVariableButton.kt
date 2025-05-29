@@ -33,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -71,7 +72,7 @@ fun DraggableChangeVariableBlock(
 ) {
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
     var showDeleteIcon by remember { mutableStateOf(false) }
-    var dragStartTime by remember { mutableStateOf<Long>(0L) }
+    var dragStartTime by remember { mutableLongStateOf(0L) }
     var isPressed by remember { mutableStateOf(false) }
 
     val expandedVar = remember { mutableStateOf(false) }
@@ -94,51 +95,45 @@ fun DraggableChangeVariableBlock(
         selectedSign.value = changeSign
     }
     LaunchedEffect(changeAmount) {
-        if (!isEditing.value && inputText.value.isEmpty()) {
-
-        }
     }
 
     LaunchedEffect(id, offset) {
         BlockPositionTracker.updateBlockPosition(id, offset)
     }
 
-    Box(
-        modifier = Modifier
-            .offset {
-                val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 44f)
-                IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
-            }
-            .height(44.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
-            .background(Color(0xFFFB8C00))
-            .pointerInput(Unit) {
-                detectDragGestures { change, dragAmount ->
-                    if (!isPressed) {
-                        isPressed = true
-                        dragStartTime = System.currentTimeMillis()
-                    }
+    Box(modifier = Modifier
+        .offset {
+            val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 44f)
+            IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
+        }
+        .height(44.dp)
+        .clip(RoundedCornerShape(12.dp))
+        .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
+        .background(Color(0xFFFB8C00))
+        .pointerInput(Unit) {
+            detectDragGestures { change, dragAmount ->
+                if (!isPressed) {
+                    isPressed = true
+                    dragStartTime = System.currentTimeMillis()
+                }
 
-                    offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
-                    BlockPositionTracker.updateBlockPosition(id, offset)
-                    change.consume()
+                offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
+                BlockPositionTracker.updateBlockPosition(id, offset)
+                change.consume()
 
-                    if (System.currentTimeMillis() - dragStartTime >= 2500) {
-                        showDeleteIcon = true
-                    }
+                if (System.currentTimeMillis() - dragStartTime >= 2500) {
+                    showDeleteIcon = true
                 }
             }
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onPress = {
-                        isPressed = false
-                        showDeleteIcon = false
-                    }
-                )
-            }
-            .padding(horizontal = 4.dp, vertical = 2.dp),
-        contentAlignment = Alignment.Center
+        }
+        .pointerInput(Unit) {
+            detectTapGestures(
+                onPress = {
+                    isPressed = false
+                    showDeleteIcon = false
+                })
+        }
+        .padding(horizontal = 4.dp, vertical = 2.dp), contentAlignment = Alignment.Center
 
     ) {
         if (showDeleteIcon) {
@@ -147,8 +142,7 @@ fun DraggableChangeVariableBlock(
                     .align(Alignment.TopEnd)
                     .clickable {
                         onDelete(id)
-                    }
-            ) {
+                    }) {
                 Icon(
                     imageVector = Icons.Filled.Close,
                     contentDescription = "Delete Block",
@@ -177,7 +171,9 @@ fun DraggableChangeVariableBlock(
             ) {
                 Box(
                     modifier = Modifier
-                        .menuAnchor(type = MenuAnchorType.PrimaryEditable, enabled = true)
+                        .menuAnchor(
+                            type = MenuAnchorType.PrimaryEditable, enabled = true
+                        )
                         .widthIn(min = 48.dp, max = 300.dp)
                         .height(24.dp)
                         .height(24.dp)
@@ -185,8 +181,7 @@ fun DraggableChangeVariableBlock(
                         .border(2.dp, Color.Black, RoundedCornerShape(4.dp))
                         .clickable { expandedVar.value = true }
                         .padding(horizontal = 8.dp),
-                    contentAlignment = Alignment.CenterStart
-                ) {
+                    contentAlignment = Alignment.CenterStart) {
                     Text(text = selectedVar.value, fontSize = 11.sp, color = Color.Black)
                 }
                 ExposedDropdownMenu(
@@ -202,8 +197,7 @@ fun DraggableChangeVariableBlock(
                                 selectedVar.value = variable.name
                                 viewModel.updateChangeBlockVariable(id, variable)
                                 expandedVar.value = false
-                            }
-                        )
+                            })
                     }
                 }
             }
@@ -218,11 +212,12 @@ fun DraggableChangeVariableBlock(
 
             ExposedDropdownMenuBox(
                 expanded = expandedSign.value,
-                onExpandedChange = { expandedSign.value = !expandedSign.value }
-            ) {
+                onExpandedChange = { expandedSign.value = !expandedSign.value }) {
                 Box(
                     modifier = Modifier
-                        .menuAnchor(type = MenuAnchorType.PrimaryEditable, enabled = true)
+                        .menuAnchor(
+                            type = MenuAnchorType.PrimaryEditable, enabled = true
+                        )
                         .width(24.dp)
                         .height(24.dp)
                         .background(Color.White, RoundedCornerShape(4.dp))
@@ -245,8 +240,7 @@ fun DraggableChangeVariableBlock(
                                 selectedSign.value = sign
                                 viewModel.updateChangeBlockSign(id, sign)
                                 expandedSign.value = false
-                            }
-                        )
+                            })
                     }
                 }
             }
@@ -255,8 +249,7 @@ fun DraggableChangeVariableBlock(
 
             val targetWidth = (inputText.value.length * 8 + 20).dp.coerceIn(32.dp, 240.dp)
             val animatedWidth by animateDpAsState(
-                targetValue = targetWidth,
-                animationSpec = tween(200)
+                targetValue = targetWidth, animationSpec = tween(200)
             )
 
             BasicTextField(
@@ -270,18 +263,15 @@ fun DraggableChangeVariableBlock(
                     imeAction = ImeAction.Done,
                     keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
                 ),
-                keyboardActions = KeyboardActions(
-                    onDone = {
-                        val parsed = inputText.value.toIntOrNull() ?: 0
-                        viewModel.updateChangeBlockAmount(id, parsed)
-                        isEditing.value = false
-                        focusManager.clearFocus()
-                    }
-                ),
+                keyboardActions = KeyboardActions(onDone = {
+                    val parsed = inputText.value.toIntOrNull() ?: 0
+                    viewModel.updateChangeBlockAmount(id, parsed)
+                    isEditing.value = false
+                    focusManager.clearFocus()
+                }),
                 singleLine = true,
                 textStyle = TextStyle(
-                    fontSize = 12.sp,
-                    color = if (isError.value) Color.Red else Color.Black
+                    fontSize = 12.sp, color = if (isError.value) Color.Red else Color.Black
                 ),
                 decorationBox = { innerTextField ->
                     Box(

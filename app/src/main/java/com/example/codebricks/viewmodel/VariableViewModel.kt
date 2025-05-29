@@ -1,17 +1,22 @@
 package com.example.codebricks.viewmodel
 
-import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
+import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker.redrawTrigger
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
+import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker.MAGNETIC_PADDING
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-data class Variable(val name: String, var value: Any, val type: String)
+data class Variable(val name: String, var value: Any, var type: String)
 
 class VariableViewModel : ViewModel() {
+
 
     val shouldDrawConnections = mutableStateOf(false)
 
@@ -37,16 +42,19 @@ class VariableViewModel : ViewModel() {
     }
 
     // Добавить блок в программу
-    private fun addBlock(block: Block) {
+    fun addBlock(block: Block) {
         _programBlocks.value += block
+        redrawTrigger.intValue++
     }
 
-    // Очистка рабочей зоны
     fun clearWorkspace() {
         _variables.value = emptyList()
         _programBlocks.value = emptyList()
-        shouldDrawConnections.value = false // выключаем стрелки
-        BlockPositionTracker.clear() // очищаем позиции блоков
+        shouldDrawConnections.value = false
+        BlockPositionTracker.clear()
+        BlockSlotTracker.clear()
+        highlightedSlot.value = null
+        recentlyInsertedSlot.value = null
     }
 
     // Создание переменной
@@ -55,12 +63,12 @@ class VariableViewModel : ViewModel() {
         _variables.value += newVariable
 
         val block = Block(
-            type = BlockType.VARIABLE_DECLARE,
-            value = newVariable
+            type = BlockType.VARIABLE_DECLARE, value = newVariable
         )
-        BlockPositionTracker.redrawTrigger.value++
+        redrawTrigger.intValue++
         addBlock(block)
     }
+
     fun isVariableAlreadyDeclared(name: String): Boolean {
         return variables.any { it.name == name }
     }
@@ -73,14 +81,93 @@ class VariableViewModel : ViewModel() {
 
         val changeBlock = Block(
             type = BlockType.VARIABLE_CHANGE,
-            inputBlocks = referenceBlock?.let { mutableListOf(it) } ?: mutableListOf()
-        ).apply {
+            inputBlocks = referenceBlock?.let { mutableListOf(it) } ?: mutableListOf()).apply {
             changeSign = "+"
             changeAmount = 0
         }
 
-        BlockPositionTracker.redrawTrigger.value++
+        redrawTrigger.intValue++
         addBlock(changeBlock)
+    }
+
+    private fun formatValueForOutput(value: Any, type: String): String {
+        return when (type) {
+            "double" -> {
+                val doubleValue = when (value) {
+                    is Number -> value.toDouble()
+                    else -> value.toString().toDoubleOrNull() ?: 0.0
+                }
+                if (doubleValue % 1 == 0.0) "%.1f".format(doubleValue).replace(',', '.')
+                else doubleValue.toString().replace(',', '.')
+            }
+
+            "string" -> "\"$value\""
+            else -> value.toString()
+        }
+    }
+
+    fun convertVariableType(variableName: String, newType: String) {
+        _variables.value = _variables.value.map { variable ->
+            if (variable.name == variableName) {
+                val newValue = when {
+                    variable.type == newType -> variable.value
+
+                    newType == "double" -> when {
+                        variable.value is Int -> (variable.value as Int).toDouble()
+                        variable.value is Double -> variable.value
+                        //variable.value is Boolean -> if (variable.value) 1.0 else 0.0
+                        variable.value is String -> (variable.value as String).toDoubleOrNull()
+                            ?: 0.0
+
+                        else -> (variable.value as? Number)?.toDouble() ?: 0.0
+                    }
+
+                    newType == "int" -> when {
+                        variable.value is Double -> (variable.value as Double).toInt()
+                        variable.value is Int -> variable.value
+                        //variable.value is Boolean -> if (variable.value) 1 else 0
+                        variable.value is String -> (variable.value as String).toIntOrNull() ?: 0
+                        else -> (variable.value as? Number)?.toInt() ?: 0
+                    }
+
+                    newType == "bool" -> when {
+                        variable.value is Number -> (variable.value as Number).toInt() != 0
+                        variable.value is Boolean -> variable.value
+                        variable.value is String -> (variable.value as String).toBooleanStrictOrNull()
+                            ?: false
+
+                        else -> false
+                    }
+
+                    newType == "string" -> variable.value.toString()
+
+                    else -> variable.value
+                }
+
+                variable.copy(type = newType, value = newValue)
+            } else {
+                variable
+            }
+        }
+
+        _programBlocks.value = _programBlocks.value.map { block ->
+            when (block.type) {
+                BlockType.VARIABLE_DECLARE -> {
+                    val varValue = block.value as? Variable
+                    if (varValue?.name == variableName) {
+                        _variables.value.find { it.name == variableName }?.let { newVar ->
+                            block.copy(value = newVar)
+                        } ?: block
+                    } else {
+                        block
+                    }
+                }
+
+                else -> block
+            }
+        }
+
+        redrawTrigger.intValue++
     }
 
     fun updateChangeBlockVariable(blockId: String, variable: Variable) {
@@ -95,7 +182,7 @@ class VariableViewModel : ViewModel() {
             }
             block
         }
-        BlockPositionTracker.redrawTrigger.value++
+        redrawTrigger.intValue++
     }
 
     fun updateChangeBlockSign(blockId: String, sign: String) {
@@ -105,7 +192,7 @@ class VariableViewModel : ViewModel() {
             }
             block
         }
-        BlockPositionTracker.redrawTrigger.value++
+        redrawTrigger.intValue++
     }
 
     fun updateChangeBlockAmount(blockId: String, amount: Int) {
@@ -115,89 +202,127 @@ class VariableViewModel : ViewModel() {
             }
             block
         }
-        BlockPositionTracker.redrawTrigger.value++
+        redrawTrigger.intValue++
     }
 
     // Создание блока Print(variable)
     fun declarePrintBlock(variable: Variable) {
         val referenceBlock = Block(
-            type = BlockType.VARIABLE_REFERENCE,
-            value = variable
+            type = BlockType.VARIABLE_REFERENCE, value = variable
         )
+
         val printBlock = Block(
-            type = BlockType.IO_PRINT,
-            inputBlocks = mutableListOf(referenceBlock)
+            type = BlockType.IO_PRINT, inputBlocks = mutableListOf(referenceBlock)
         )
-        BlockPositionTracker.redrawTrigger.value++
+
         addBlock(printBlock)
-
+        redrawTrigger.intValue++
     }
-
-    private val _highlightedSlot = mutableStateOf<Pair<String, Int>?>(null)
-    val highlightedSlot: State<Pair<String, Int>?> = _highlightedSlot
 
     fun declareEmptySetVariableBlock() {
         val firstVar = variables.firstOrNull()
-        val referenceBlock = firstVar?.let {
-            Block(type = BlockType.VARIABLE_REFERENCE, value = it)
+
+        val setBlock = Block(type = BlockType.VARIABLE_SET, inputBlocks = firstVar?.let {
+            mutableListOf(
+                Block(
+                    type = BlockType.VARIABLE_REFERENCE, value = it
+                )
+            )
+        } ?: mutableListOf())
+
+        addBlock(setBlock)
+        redrawTrigger.intValue++
+    }
+
+    fun cleanupUnattachedReferenceBlocks() {
+        val attachedIds = mutableSetOf<String>()
+        fun collect(block: Block) {
+            if (attachedIds.add(block.id)) {
+                block.inputBlocks.filterNotNull().forEach(::collect)
+                block.children.forEach(::collect)
+            }
         }
 
-        val setBlock = Block(
-            type = BlockType.VARIABLE_SET,
-            inputBlocks = referenceBlock?.let { mutableListOf(it) } ?: mutableListOf()
-        )
+        programBlocks.filter { findBlockContaining(it.id) == null }.forEach(::collect)
 
-        BlockPositionTracker.redrawTrigger.value++
-        addBlock(setBlock)
+        val before = _programBlocks.value.size
+        _programBlocks.value = _programBlocks.value.filter { it.id in attachedIds }
+        val after = _programBlocks.value.size
+
+        println("Cleaned: removed ${before - after} detached blocks")
     }
 
     fun updateSetBlockTarget(blockId: String, variable: Variable) {
-        _programBlocks.value = _programBlocks.value.map { block ->
+        val updatedBlocks = mutableListOf<Block>()
+        val detachedIds = mutableSetOf<String>()
+
+        _programBlocks.value.forEach { block ->
             if (block.id == blockId && block.type == BlockType.VARIABLE_SET) {
-                val refBlock = Block(
-                    type = BlockType.VARIABLE_REFERENCE,
-                    value = variable
-                )
+                val oldRef = block.inputBlocks.getOrNull(0)
+                oldRef?.let { detachedIds.add(it.id) }
+
+                val newRef = Block(type = BlockType.VARIABLE_REFERENCE, value = variable)
                 block.inputBlocks.apply {
-                    if (isEmpty()) {
-                        add(refBlock)
-                    } else {
-                        this[0] = refBlock
-                    }
+                    if (isEmpty()) add(newRef) else this[0] = newRef
                 }
+                updatedBlocks.add(block)
+            } else {
+                updatedBlocks.add(block)
             }
-            block
+            cleanupUnattachedReferenceBlocks()
         }
-        BlockPositionTracker.redrawTrigger.value++
+
+        _programBlocks.value = updatedBlocks.filterNot { it.id in detachedIds }
+        redrawTrigger.intValue++
     }
 
     fun updateSetBlockValue(blockId: String, rawValue: String) {
         if (rawValue.isBlank()) return
 
-        _programBlocks.value = _programBlocks.value.map { block ->
+        val updatedBlocks = mutableListOf<Block>()
+        val detachedIds = mutableSetOf<String>()
+
+        _programBlocks.value.forEach { block ->
             if (block.id == blockId && block.type == BlockType.VARIABLE_SET) {
-                val type = (block.inputBlocks.getOrNull(0)?.value as? Variable)?.type ?: "string"
+                val targetVar = block.inputBlocks.getOrNull(0)?.value as? Variable
+                val type = targetVar?.type ?: "string"
 
                 val parsed: Any = when (type) {
                     "int" -> rawValue.toIntOrNull() ?: 0
-                    "double" -> rawValue.replace(",", ".").toDoubleOrNull() ?: 0.0
+                    "double" -> {
+                        val doubleValue = rawValue.replace(",", ".").toDoubleOrNull() ?: 0.0
+                        if (doubleValue % 1 == 0.0) doubleValue.toInt().toDouble()
+                        else doubleValue
+                    }
+
                     "bool" -> rawValue.toBooleanStrictOrNull() ?: false
                     else -> rawValue
                 }
 
-                val fakeVariable = Variable(name = rawValue, value = parsed, type = type)
-                val ref = Block(type = BlockType.VARIABLE_REFERENCE, value = fakeVariable)
+                val fakeVariable = Variable(
+                    name = rawValue, value = parsed, type = type
+                )
+
+                val newRef = Block(
+                    type = BlockType.VARIABLE_REFERENCE, value = fakeVariable
+                )
+
+                block.inputBlocks.getOrNull(1)?.let { detachedIds.add(it.id) }
 
                 if (block.inputBlocks.size < 2) {
-                    block.inputBlocks.add(ref)
+                    block.inputBlocks.add(newRef)
                 } else {
-                    block.inputBlocks[1] = ref
+                    block.inputBlocks[1] = newRef
                 }
+
+                updatedBlocks.add(block)
+            } else {
+                updatedBlocks.add(block)
             }
-            block
         }
 
-        BlockPositionTracker.redrawTrigger.value++
+        _programBlocks.value = updatedBlocks.filterNot { it.id in detachedIds }
+        redrawTrigger.intValue++
     }
 
 
@@ -212,89 +337,264 @@ class VariableViewModel : ViewModel() {
         val controlBlock = Block(
             type = blockType
         )
-        BlockPositionTracker.redrawTrigger.value++
+        redrawTrigger.intValue++
         addBlock(controlBlock)
     }
 
     fun removeBlockById(blockId: String) {
         _programBlocks.value = _programBlocks.value.filterNot { it.id == blockId }
-        BlockPositionTracker.redrawTrigger.value++
+        redrawTrigger.intValue++
     }
 
 
     fun addReferenceBlock(variable: Variable) {
         println("Added insert block: ${variable.name}")
         val block = Block(
-            type = BlockType.VARIABLE_REFERENCE,
-            value = variable
+            type = BlockType.VARIABLE_REFERENCE, value = variable
         )
-        BlockPositionTracker.redrawTrigger.value++
+        redrawTrigger.intValue++
         _programBlocks.value += block
     }
 
-    fun tryInsertReferenceBlock(position: Offset, referenceBlockId: String) {
-        val refBlock = programBlocks.find { it.id == referenceBlockId } ?: return
-        println(">> Drop at: $position")
+    val highlightedSlot = mutableStateOf<Pair<String, Int>?>(null)
 
-        val matchedSlot = BlockSlotTracker.getAllSlots().find { (_, _, bounds) ->
-            bounds.contains(position)
+    fun setHighlightedSlot(blockId: String?, slotIndex: Int?) {
+        highlightedSlot.value =
+            if (blockId != null && slotIndex != null) blockId to slotIndex else null
+    }
+
+    fun tryInsertIntoSlot(position: Offset, blockId: String) {
+        val draggedBlock = programBlocks.find { it.id == blockId } ?: return
+
+        val matchedSlot = BlockSlotTracker.getAllSlots()
+            .filter { it.bounds.inflate(MAGNETIC_PADDING).contains(position) }
+            .minByOrNull { it.bounds.width * it.bounds.height } ?: return
+
+        if (blockId == matchedSlot.blockId) {
+            println("⚠️ Warning: inserting into self")
+            return
         }
 
-        if (matchedSlot != null) {
-            val targetBlock = programBlocks.find { it.id == matchedSlot.blockId }
-            if (targetBlock != null && targetBlock.type == BlockType.VARIABLE_SET) {
-                val slotIndex = matchedSlot.slotIndex
+        // найти любой блок (на любой глубине) по matchedSlot.blockId
+        val targetBlock = findBlockRecursivelyById(matchedSlot.blockId, programBlocks) ?: return
 
-                // Проверка типа переменной
-                val targetVar = targetBlock.inputBlocks.getOrNull(0)?.value as? Variable
-                val refVar = refBlock.value as? Variable
+        val slotIndex = matchedSlot.slotIndex
 
-                if (slotIndex == 1 && targetVar != null && refVar != null) {
-                    if (targetVar.type != refVar.type) {
-                        logToConsole("❌ Type mismatch: ${refVar.type} cannot be assigned to ${targetVar.type}")
-                        return
-                    }
-                }
+        if (targetBlock.type !in listOf(
+                BlockType.VARIABLE_SET,
+                BlockType.MATH_ADD,
+                BlockType.MATH_SUBTRACT,
+                BlockType.MATH_MULTIPLY,
+                BlockType.MATH_DIVIDE
+            )
+        ) {
+            println("🚫 Target block doesn't support insertion")
+            return
+        }
 
-                while (targetBlock.inputBlocks.size <= slotIndex) {
-                    targetBlock.inputBlocks.add(Block(type = BlockType.VARIABLE_REFERENCE))
-                }
+        if (isRecursiveInsertion(blockId, targetBlock.id)) {
+            println("🚫 Recursive insertion detected")
+            return
+        }
 
-                targetBlock.inputBlocks[slotIndex] = refBlock
+        while (targetBlock.inputBlocks.size <= slotIndex) {
+            targetBlock.inputBlocks.add(null)
+        }
 
-                _programBlocks.value = _programBlocks.value.toList()
-                BlockPositionTracker.redrawTrigger.value++
+        targetBlock.inputBlocks[slotIndex] = draggedBlock
+        _programBlocks.value = _programBlocks.value.filterNot { it.id == draggedBlock.id }
+        println("✅ Inserted into $slotIndex of ${targetBlock.type} (${targetBlock.id})")
+
+        _programBlocks.value = _programBlocks.value.toList()
+        redrawTrigger.intValue++
+    }
+
+    fun collectDescendantIds(block: Block): Set<String> {
+        val result = mutableSetOf<String>()
+        fun collect(current: Block) {
+            if (result.add(current.id)) {
+                current.inputBlocks.filterNotNull().forEach { collect(it) }
+                current.children.forEach { collect(it) }
             }
         }
+        collect(block)
+        return result
+    }
+
+    fun findBlockById(id: String): Block? {
+        fun search(block: Block): Block? {
+            if (block.id == id) return block
+            block.inputBlocks.filterNotNull().forEach {
+                val result = search(it)
+                if (result != null) return result
+            }
+            block.children.forEach {
+                val result = search(it)
+                if (result != null) return result
+            }
+            return null
+        }
+
+        return programBlocks.firstNotNullOfOrNull { search(it) }
     }
 
 
-    fun removeReferenceFromParent(referenceId: String) {
-        _programBlocks.value.forEach { block ->
-            val index = block.inputBlocks.indexOfFirst { it.id == referenceId }
-            if (index != -1) {
-                block.inputBlocks.removeAt(index)
+    private fun findBlockRecursivelyById(targetId: String, blocks: List<Block>): Block? {
+        for (block in blocks) {
+            if (block.id == targetId) return block
+
+            for (child in block.inputBlocks) {
+                if (child == null) continue
+                val found = findBlockRecursivelyById(targetId, listOf(child))
+                if (found != null) return found
+            }
+
+            for (child in block.children) {
+                val found = findBlockRecursivelyById(targetId, listOf(child))
+                if (found != null) return found
             }
         }
-        _programBlocks.value = _programBlocks.value.toList()
-        BlockPositionTracker.redrawTrigger.value++
+        return null
+    }
+
+    fun bringBlockToFront(id: String) {
+        val block = findBlockById(id) ?: return
+        _programBlocks.value = _programBlocks.value.filterNot { it.id == id } + block
+        redrawTrigger.intValue++
+    }
+
+    fun declareMathBlock(type: BlockType) {
+        if (type !in listOf(
+                BlockType.MATH_ADD,
+                BlockType.MATH_SUBTRACT,
+                BlockType.MATH_MULTIPLY,
+                BlockType.MATH_DIVIDE
+            )
+        ) return
+
+        val block = Block(
+            type = type, inputBlocks = mutableListOf(null, null)
+        )
+
+        addBlock(block)
+        redrawTrigger.intValue++
+    }
+
+    private val recentlyInsertedSlot = mutableStateOf<Pair<String, Int>?>(null)
+
+    fun setRecentlyInsertedSlot(blockId: String, slotIndex: Int) {
+        recentlyInsertedSlot.value = blockId to slotIndex
+        viewModelScope.launch {
+            delay(300)
+            recentlyInsertedSlot.value = null
+        }
+    }
+
+    fun removeBlockRecursively(blockId: String) {
+        val toRemove = collectDescendantIds(findBlockById(blockId) ?: return)
+        _programBlocks.value = _programBlocks.value.filterNot { it.id in toRemove }
+        redrawTrigger.intValue++
+    }
+
+
+    fun removeBlockFromParent(childId: String) {
+        fun removeFrom(block: Block): Block {
+            val newInputs = block.inputBlocks.map { input ->
+                when {
+                    input?.id == childId -> null
+                    input != null -> removeFrom(input)
+                    else -> null
+                }
+            }.toMutableList()
+
+            val newChildren = block.children.map { removeFrom(it) }.toMutableList()
+
+            return block.copy(inputBlocks = newInputs, children = newChildren)
+        }
+
+        _programBlocks.value = _programBlocks.value.map { removeFrom(it) }
+        redrawTrigger.intValue++
+    }
+
+    fun isRecursiveInsertion(childId: String, targetId: String): Boolean {
+        if (childId == targetId) return true
+        val visited = mutableSetOf<String>()
+
+        val rootCandidates = programBlocks
+
+        fun containsRecursively(block: Block): Boolean {
+            if (block.id == targetId) return true
+            return block.inputBlocks.any { it != null && containsRecursively(it) } || block.children.any {
+                containsRecursively(
+                    it
+                )
+            }
+        }
+
+        fun findBlockRecursivelyById(targetId: String, blocks: List<Block>): Block? {
+            fun recurse(block: Block): Block? {
+                if (!visited.add(block.id)) return null
+
+                if (block.id == targetId) return block
+
+                for (child in block.inputBlocks) {
+                    if (child != null) {
+                        val result = recurse(child)
+                        if (result != null) return result
+                    }
+                }
+
+                for (child in block.children) {
+                    val result = recurse(child)
+                    if (result != null) return result
+                }
+
+                return null
+            }
+
+            for (block in blocks) {
+                val result = recurse(block)
+                if (result != null) return result
+            }
+
+            return null
+        }
+
+        val draggedBlock = findBlockRecursivelyById(childId, rootCandidates) ?: return false
+        return containsRecursively(draggedBlock)
+    }
+
+    fun replaceSlotBlock(parentId: String, slotIndex: Int, newBlock: Block) {
+        val parent = findBlockById(parentId) ?: return
+
+        // Удаляем старый блок из слота
+        parent.inputBlocks.getOrNull(slotIndex)?.let {
+            removeBlockRecursively(it.id)
+        }
+
+        while (parent.inputBlocks.size <= slotIndex) {
+            parent.inputBlocks.add(null)
+        }
+
+        parent.inputBlocks[slotIndex] = newBlock
+
+        removeBlockById(newBlock.id)
+
+        redrawTrigger.intValue++
     }
 
     fun executeProgram(onFinish: () -> Unit) {
         val blocksById = programBlocks.associateBy { it.id }
         val declaredVariables = mutableMapOf<String, Variable>()
-
         var current = programBlocks.find { it.type == BlockType.CONTROL_START }
 
         while (current != null) {
             when (current.type) {
-                BlockType.CONTROL_START -> {
-                    logToConsole("🟢 Program started")
-                }
+                BlockType.CONTROL_START -> logToConsole("🟢 Program started")
+                BlockType.CONTROL_STOP -> logToConsole("🔴 Program stopped")
 
                 BlockType.VARIABLE_DECLARE -> {
-                    val variable = current.value as? Variable
-                    if (variable != null) {
+                    (current.value as? Variable)?.let { variable ->
                         declaredVariables[variable.name] = variable.copy()
                         logToConsole("✅ Declared ${variable.name} = ${variable.value}")
                     }
@@ -302,74 +602,92 @@ class VariableViewModel : ViewModel() {
 
                 BlockType.VARIABLE_SET -> {
                     val targetVar = current.inputBlocks.getOrNull(0)?.value as? Variable
-                    val valueBlock = current.inputBlocks.getOrNull(1)?.value as? Variable
+                    val valueBlock = current.inputBlocks.getOrNull(1)
 
                     if (targetVar == null) {
                         logToConsole("❌ Error: No variable selected in Set block.")
-                    } else if (valueBlock == null) {
-                        logToConsole("❌ Error: No value provided for ${targetVar.name}")
                     } else {
-                        val memoryVar = declaredVariables[targetVar.name]
+                        declaredVariables[targetVar.name]?.let { memoryVar ->
+                            val rawValue = MathExpressionEvaluator.evaluate(valueBlock)
 
-                        if (memoryVar != null) {
-                            val refName = valueBlock.name
-                            val referenced = declaredVariables[refName]
-
-                            if (referenced != null) {
-                                memoryVar.value = referenced.value
-                                logToConsole("📝 Set ${memoryVar.name} to ${referenced.value} (from ${refName})")
-                            } else {
-                                memoryVar.value = valueBlock.value
-                                logToConsole("📝 Set ${memoryVar.name} to ${valueBlock.value}")
+                            val newValue = when (memoryVar.type) {
+                                "int" -> rawValue.toInt()
+                                "double" -> rawValue
+                                "bool" -> rawValue != 0.0
+                                else -> rawValue.toString()
                             }
-                        }
 
+                            memoryVar.value = newValue
+                            logToConsole(
+                                "📝 Set ${memoryVar.name} = ${
+                                    formatValueForOutput(newValue, memoryVar.type)
+                                }"
+                            )
+                        }
                     }
                 }
+
 
                 BlockType.VARIABLE_CHANGE -> {
-                    val refVar = current.inputBlocks.getOrNull(0)?.value as? Variable
-                    if (refVar != null) {
-                        val target = declaredVariables[refVar.name]
-                        if (target != null) {
-                            val sign = current.changeSign
-                            val amount = current.changeAmount
+                    (current.inputBlocks.getOrNull(0)?.value as? Variable)?.let { refVar ->
+                        declaredVariables[refVar.name]?.let { target ->
+                            val sign = current!!.changeSign
+                            val amount = current!!.changeAmount
                             val delta = if (sign == "-") -amount else amount
-                            val oldValue = target.value as? Int ?: 0
-                            target.value = oldValue + delta
-                            logToConsole("🔄 Changed ${target.name} by $sign$amount to ${target.value}")
+
+                            val newValue = when (target.type) {
+                                "double" -> (target.value.toString().toDoubleOrNull()
+                                    ?: 0.0) + delta
+
+                                else -> (target.value.toString().toIntOrNull() ?: 0) + delta
+                            }
+
+                            target.value = newValue
+                            logToConsole(
+                                "🔄 Changed ${target.name} by $sign$amount to ${
+                                    formatValueForOutput(
+                                        newValue, target.type
+                                    )
+                                }"
+                            )
                         }
                     }
                 }
 
-
                 BlockType.IO_PRINT -> {
-                    val input = current.inputBlocks.firstOrNull()
-                    val variable = input?.value as? Variable
-                    val target = variable?.name?.let { declaredVariables[it] }
-
-                    if (target != null) {
-                        logToConsole("📤 Output: ${target.name} = ${target.value}")
-                    } else {
-                        logToConsole("❌ Error: variable '${variable?.name}' not declared")
+                    (current.inputBlocks.firstOrNull()?.value as? Variable)?.let { variable ->
+                        declaredVariables[variable.name]?.let { target ->
+                            logToConsole("📤 Output: ${target.name} = ${target.value}")
+                        } ?: logToConsole("❌ Error: variable '${variable.name}' not declared")
                     }
                 }
 
-                BlockType.CONTROL_STOP -> {
-                    logToConsole("🔴 Program stopped")
+                BlockType.MATH_ADD, BlockType.MATH_SUBTRACT, BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE -> {
+                    val result = MathExpressionEvaluator.evaluate(current)
+                    logToConsole("🧮 Result of math expression: $result")
                 }
+
 
                 BlockType.VARIABLE_REFERENCE -> {
                 }
 
-                else -> {
-                    logToConsole("⚠️ Block '${current.type}' not implemented")
-                }
+                BlockType.COMPARISON_EQUAL -> TODO()
+                BlockType.COMPARISON_GREATER -> TODO()
+                BlockType.COMPARISON_LESS -> TODO()
+                BlockType.LOGIC_AND -> TODO()
+                BlockType.LOGIC_OR -> TODO()
+                BlockType.LOGIC_NOT -> TODO()
+                BlockType.LOOP_REPEAT -> TODO()
+                BlockType.LOOP_WHILE -> TODO()
+                BlockType.LOOP_FOR -> TODO()
+                BlockType.FUNCTION_DEFINE -> TODO()
+                BlockType.FUNCTION_CALL -> TODO()
+                BlockType.IF -> TODO()
+                BlockType.ELSE -> TODO()
+                BlockType.WHILE -> TODO()
             }
-
             current = current.nextBlockId?.let { blocksById[it] }
         }
-
         onFinish()
     }
 
@@ -390,31 +708,29 @@ class VariableViewModel : ViewModel() {
             val nextBlock = sortedBlocks[i + 1].first
             currentBlock.nextBlockId = nextBlock.id
         }
-        BlockPositionTracker.redrawTrigger.value++
+        redrawTrigger.intValue++
     }
+
     fun findBlockContaining(childId: String): Block? {
         return programBlocks.find { block ->
-            block.inputBlocks.any { it.id == childId }
+            block.inputBlocks.any { it?.id == childId }
         }
     }
 
     data class BlockOrderResult(
-        val isValid: Boolean,
-        val errorMessage: String? = null
+        val isValid: Boolean, val errorMessage: String? = null
     )
 
     fun checkBlockOrder(): BlockOrderResult {
         val declared = mutableSetOf<String>()
 
-        val orderedBlocks = programBlocks
-            .mapNotNull { block -> BlockPositionTracker.getPosition(block.id)?.let { block to it } }
-            .sortedBy { it.second.y }
-            .map { it.first }
+        val orderedBlocks = programBlocks.mapNotNull { block ->
+            BlockPositionTracker.getPosition(block.id)?.let { block to it }
+        }.sortedBy { it.second.y }.map { it.first }
 
         if (orderedBlocks.firstOrNull()?.type != BlockType.CONTROL_START) {
             return BlockOrderResult(
-                isValid = false,
-                errorMessage = "❌ Error: Start block must be the first block."
+                isValid = false, errorMessage = "❌ Error: Start block must be the first block."
             )
         }
 
@@ -426,9 +742,10 @@ class VariableViewModel : ViewModel() {
                         declared.add(variable.name)
                     }
                 }
+
                 BlockType.VARIABLE_SET -> {
                     val variable = block.inputBlocks.getOrNull(0)?.value as? Variable
-                    val value = block.inputBlocks.getOrNull(1)?.value as? Variable
+                    val valueBlock = block.inputBlocks.getOrNull(1)
 
                     if (variable == null) {
                         return BlockOrderResult(
@@ -437,7 +754,7 @@ class VariableViewModel : ViewModel() {
                         )
                     }
 
-                    if (value == null) {
+                    if (valueBlock == null) {
                         return BlockOrderResult(
                             isValid = false,
                             errorMessage = "❌ Error: Set block for '${variable.name}' is missing a value."
@@ -468,6 +785,4 @@ class VariableViewModel : ViewModel() {
 
         return BlockOrderResult(isValid = true)
     }
-
-
 }

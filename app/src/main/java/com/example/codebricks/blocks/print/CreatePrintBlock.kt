@@ -31,8 +31,7 @@ fun CreatePrintBlock(viewModel: VariableViewModel) {
         .wrapContentWidth()
 
     val buttonColors = ButtonDefaults.buttonColors(
-        containerColor = Color(0xFFE57373),
-        contentColor = Color.Black
+        containerColor = Color(0xFFE57373), contentColor = Color.Black
     )
 
     Button(
@@ -41,7 +40,11 @@ fun CreatePrintBlock(viewModel: VariableViewModel) {
         colors = buttonColors,
         border = BorderStroke(2.dp, Color.Black)
     ) {
-        Text(text = stringResource(id = R.string.create_print_block), fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
+        Text(
+            text = stringResource(id = R.string.create_print_block),
+            fontSize = 12.sp,
+            fontWeight = FontWeight.ExtraBold
+        )
     }
 
     if (showDialog.value && viewModel.variables.isNotEmpty()) {
@@ -55,8 +58,7 @@ fun CreatePrintBlock(viewModel: VariableViewModel) {
                             onClick = {
                                 viewModel.declarePrintBlock(variable)
                                 showDialog.value = false
-                            },
-                            modifier = Modifier.padding(4.dp)
+                            }, modifier = Modifier.padding(4.dp)
                         ) {
                             Text(variable.name)
                         }
@@ -67,7 +69,6 @@ fun CreatePrintBlock(viewModel: VariableViewModel) {
                 Button(onClick = { showDialog.value = false }) {
                     Text(text = stringResource(id = R.string.cancel))
                 }
-            }
-        )
+            })
     }
 }

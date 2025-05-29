@@ -54,7 +54,7 @@ fun WorkScreen(onBackClick: () -> Unit) {
             .background(Color(0xFFB7EFFF))
             .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
     ) {
-        Spacer(modifier = Modifier.height(2.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         Header(onBackClick = onBackClick)
 
@@ -92,8 +92,7 @@ fun Header(onBackClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
-            modifier = Modifier.weight(1f),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
                 painter = painterResource(id = R.drawable.logo),
@@ -118,8 +117,7 @@ fun Header(onBackClick: () -> Unit) {
                     .padding(start = 8.dp)
                     .height(36.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White,
-                    contentColor = Color.Black
+                    containerColor = Color.White, contentColor = Color.Black
                 )
             ) {
                 Text(stringResource(id = R.string.help), color = Color.Black)
@@ -133,8 +131,7 @@ fun Header(onBackClick: () -> Unit) {
                     .padding(start = 8.dp)
                     .height(36.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White,
-                    contentColor = Color.Black
+                    containerColor = Color.White, contentColor = Color.Black
                 )
             ) {
                 Text(stringResource(id = R.string.back), color = Color.Black)
