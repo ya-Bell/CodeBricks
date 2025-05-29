@@ -2,12 +2,10 @@ package com.example.codebricks.blocks.variables.varreference
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.VectorConverter
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
@@ -26,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -138,7 +135,7 @@ fun DraggableReferenceBlock(
                                 }
                                 return@detectDragGestures
                             }
-                            
+
                             viewModel.removeBlockFromParent(currentId.value)
                             
                             if (parentBlock != null) {
@@ -162,14 +159,14 @@ fun DraggableReferenceBlock(
                     },
                     onDrag = { change, dragAmount ->
                         if (isNumericBlock && isInserted) return@detectDragGestures
-                        
+
                         change.consume()
                         scope.launch {
                             animOffset.snapTo(animOffset.value + dragAmount)
                         }
                         val coords = layoutCoordinates ?: return@detectDragGestures
                         val windowCenter = coords.boundsInWindow().center
-                        
+
                         val matchedSlot = BlockSlotTracker.getAllSlots()
                             .filter { slot ->
                                 val slotParentBlock = viewModel.findBlockById(slot.blockId)
@@ -196,11 +193,11 @@ fun DraggableReferenceBlock(
                     },
                     onDragEnd = {
                         if (isNumericBlock && isInserted) return@detectDragGestures
-                        
+
                         viewModel.setHighlightedSlot(null, null)
                         val coords = layoutCoordinates ?: return@detectDragGestures
                         val windowCenter = coords.boundsInWindow().center
-                        
+
                         scope.launch {
                             viewModel.tryInsertIntoSlot(windowCenter, currentId.value)
                         }

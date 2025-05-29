@@ -28,10 +28,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.codebricks.R
 import com.example.codebricks.blocks.common.limitPosition
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.viewmodel.Variable
@@ -95,7 +97,7 @@ fun DraggablePrintBlock(
                     }) {
                 Icon(
                     imageVector = Icons.Filled.Close,
-                    contentDescription = "Delete Block",
+                    contentDescription = stringResource(id = R.string.delete_icon_description),
                     modifier = Modifier.size(12.dp),
                     tint = Color.Black
                 )

@@ -452,7 +452,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                         )
                                     ) {
                                         Text(
-                                            "True",
+                                            text = stringResource(id = R.string.true_button),
                                             color = Color.White,
                                             fontWeight = FontWeight.Bold
                                         )
@@ -478,7 +478,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                         )
                                     ) {
                                         Text(
-                                            "False",
+                                            text = stringResource(id = R.string.false_button),
                                             color = Color.White,
                                             fontWeight = FontWeight.Bold
                                         )
@@ -504,7 +504,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                         )
                                     ) {
                                         Text(
-                                            "Remove",
+                                            text = stringResource(id = R.string.remove_button),
                                             color = Color.White,
                                             fontWeight = FontWeight.Bold
                                         )

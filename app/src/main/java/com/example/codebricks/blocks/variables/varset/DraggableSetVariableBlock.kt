@@ -50,6 +50,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -57,6 +58,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.codebricks.R
 import androidx.compose.ui.zIndex
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
@@ -191,13 +193,13 @@ fun DraggableSetVariableBlock(
 
                         // Удаляем блок из родителя
                         viewModel.removeBlockFromParent(id)
-                        
+
                         // Восстанавливаем вложенные блоки
                         block.inputBlocks.clear()
                         nestedBlocks.forEach { nestedBlock ->
                             block.inputBlocks.add(nestedBlock)
                         }
-                        
+
                         // Обновляем позицию блока
                         BlockPositionTracker.updateBlockPosition(id, canvasOffset ?: Offset.Zero)
                         BlockPositionTracker.redrawTrigger.intValue++
@@ -209,7 +211,7 @@ fun DraggableSetVariableBlock(
                         animOffset.snapTo(animOffset.value + dragAmount)
                     }
                     BlockPositionTracker.updateBlockPosition(id, animOffset.value)
-                    
+
                     if (System.currentTimeMillis() - dragStartTime >= 2500) {
                         showDeleteIcon = true
                     }
@@ -269,7 +271,7 @@ fun DraggableSetVariableBlock(
                     }) {
                 Icon(
                     imageVector = Icons.Filled.Close,
-                    contentDescription = "Delete Block",
+                    contentDescription = stringResource(id = R.string.delete_icon_description),
                     modifier = Modifier.size(12.dp),
                     tint = Color.Black
                 )
@@ -283,7 +285,7 @@ fun DraggableSetVariableBlock(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                "Set",
+                text = stringResource(id = R.string.set),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
@@ -328,7 +330,12 @@ fun DraggableSetVariableBlock(
             }
 
 
-            Text(" to ", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(
+                text = stringResource(id = R.string.to),
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
 
             val isHighlighted = viewModel.highlightedSlot.value == (id to 1)
             val isRecentlyInserted = viewModel.recentlyInsertedSlot.value == (id to 1)
@@ -414,7 +421,7 @@ fun DraggableSetVariableBlock(
                                         val fakeVar = Variable(name = value, value = number, type = "double")
                                         val newBlock = Block(type = BlockType.VARIABLE_REFERENCE, value = fakeVar)
                                         viewModel.addBlock(newBlock)
-                                        
+
                                         // Вставляем новый блок
                                         if (block.inputBlocks.size <= 1) {
                                             block.inputBlocks.add(null)
@@ -425,7 +432,7 @@ fun DraggableSetVariableBlock(
                                         }
                                         block.inputBlocks[1] = newBlock
                                         BlockPositionTracker.redrawTrigger.intValue++
-                                        
+
                                         inputText.value = ""
                                         isEditing.value = false
                                     }

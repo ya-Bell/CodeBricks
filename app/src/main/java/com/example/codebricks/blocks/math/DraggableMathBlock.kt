@@ -56,7 +56,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
-import com.example.codebricks.blocks.common.cloneWithNewId
 import com.example.codebricks.blocks.variables.varreference.DraggableReferenceBlock
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
@@ -66,7 +65,6 @@ import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.viewmodel.slot.isRecursiveInsertion
 import com.example.codebricks.viewmodel.slot.setHighlightedSlot
 import com.example.codebricks.viewmodel.slot.tryInsertIntoSlot
-import com.example.codebricks.viewmodel.slot.removeAllInstancesOfBlock
 import com.example.codebricks.viewmodel.tree.collectDescendantIds
 import com.example.codebricks.viewmodel.tree.findBlockById
 import com.example.codebricks.viewmodel.tree.findBlockContaining
@@ -204,10 +202,10 @@ fun DraggableMathBlock(
                                     }
                                 }
                             }
-                            
+
                             // Удаляем все копии блока
                             removeAllCopies(id)
-                            
+
                             // Обновляем позицию блока
                             BlockPositionTracker.updateBlockPosition(id, canvasOffset ?: Offset.Zero)
                             BlockPositionTracker.redrawTrigger.intValue++
@@ -219,10 +217,10 @@ fun DraggableMathBlock(
                             animOffset.snapTo(animOffset.value + dragAmount)
                         }
                         BlockPositionTracker.updateBlockPosition(id, animOffset.value)
-                        
+
                         val draggedBlock = viewModel.programBlocks.find { it.id == id } ?: return@detectDragGestures
                         val treeIds = viewModel.collectDescendantIds(draggedBlock) + setOf(id)
-                        
+
                         val coords = layoutCoordinates ?: return@detectDragGestures
                         val windowCenter = coords.boundsInWindow().center
 
@@ -236,17 +234,17 @@ fun DraggableMathBlock(
                                 // 5. Нет циклических зависимостей
                                 val slotParentBlock = viewModel.findBlockById(slot.blockId)
                                 val isValidTarget = slot.blockId !in treeIds &&
-                                    slotParentBlock != null &&
-                                    !treeIds.contains(slotParentBlock.id) &&
-                                    !viewModel.collectDescendantIds(draggedBlock).contains(slot.blockId) &&
-                                    !viewModel.isRecursiveInsertion(id, slot.blockId) &&
-                                    slotParentBlock.type in listOf(
-                                        BlockType.VARIABLE_SET,
-                                        BlockType.MATH_ADD,
-                                        BlockType.MATH_SUBTRACT,
-                                        BlockType.MATH_MULTIPLY,
-                                        BlockType.MATH_DIVIDE
-                                    )
+                                        slotParentBlock != null &&
+                                        !treeIds.contains(slotParentBlock.id) &&
+                                        !viewModel.collectDescendantIds(draggedBlock).contains(slot.blockId) &&
+                                        !viewModel.isRecursiveInsertion(id, slot.blockId) &&
+                                        slotParentBlock.type in listOf(
+                                    BlockType.VARIABLE_SET,
+                                    BlockType.MATH_ADD,
+                                    BlockType.MATH_SUBTRACT,
+                                    BlockType.MATH_MULTIPLY,
+                                    BlockType.MATH_DIVIDE
+                                )
                                 isValidTarget
                             }
                             .map { it.copy(bounds = it.bounds.translate(BlockPositionTracker.canvasOffset)) }
@@ -262,10 +260,10 @@ fun DraggableMathBlock(
                     onDragEnd = {
                         isBeingDragged = false
                         viewModel.setHighlightedSlot(null, null)
-                        
+
                         val coords = layoutCoordinates ?: return@detectDragGestures
                         val windowCenter = coords.boundsInWindow().center
-                        
+
                         scope.launch {
                             viewModel.tryInsertIntoSlot(windowCenter, id)
                         }
@@ -333,9 +331,9 @@ fun MathInputSlot(
     LaunchedEffect(block?.id) {
         if (block != null) {
             // Если был предыдущий блок с числом, удаляем его только если это новый блок
-            if (previousBlock.value != null && 
+            if (previousBlock.value != null &&
                 previousBlock.value?.id != block.id &&
-                previousBlock.value?.type == BlockType.VARIABLE_REFERENCE && 
+                previousBlock.value?.type == BlockType.VARIABLE_REFERENCE &&
                 (previousBlock.value?.value as? Variable)?.name?.toDoubleOrNull() != null) {
                 viewModel.removeBlockRecursively(previousBlock.value!!.id)
             }
@@ -422,7 +420,7 @@ fun MathInputSlot(
                         val fakeVar = Variable(name = value, value = number, type = "double")
                         val newBlock = Block(type = BlockType.VARIABLE_REFERENCE, value = fakeVar)
                         viewModel.addBlock(newBlock)
-                        
+
                         // Находим родительский блок
                         val parentBlock = viewModel.findBlockById(parentId)
                         if (parentBlock != null) {
@@ -440,7 +438,7 @@ fun MathInputSlot(
                             previousBlock.value = newBlock
                             BlockPositionTracker.redrawTrigger.intValue++
                         }
-                        
+
                         inputText.value = ""
                         isEditing.value = false
                     }

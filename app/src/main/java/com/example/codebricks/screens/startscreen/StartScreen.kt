@@ -210,7 +210,7 @@ fun SettingsOverlay(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
-                            contentDescription = "Close",
+                            contentDescription = stringResource(id = R.string.delete_icon_description),
                             tint = Color.Black
                         )
                     }
@@ -222,7 +222,7 @@ fun SettingsOverlay(
                         verticalArrangement = Arrangement.Top
                     ) {
                         Text(
-                            text = "Language",
+                            text = stringResource(id = R.string.language),
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.height(24.dp),
                             color = Color.Black
@@ -235,12 +235,12 @@ fun SettingsOverlay(
                             modifier = Modifier.padding(start = 9.dp)
                         ) {
                             LanguageOption(
-                                text = "English",
+                                text = stringResource(id = R.string.english),
                                 isSelected = isEnglish,
                                 modifier = Modifier.size(width = 90.dp, height = 31.dp),
                                 onClick = { onLanguageToggle(true) })
                             LanguageOption(
-                                text = "Русский",
+                                text = stringResource(id = R.string.russian),
                                 isSelected = !isEnglish,
                                 modifier = Modifier.size(width = 90.dp, height = 31.dp),
                                 onClick = { onLanguageToggle(false) })
@@ -254,7 +254,7 @@ fun SettingsOverlay(
                                 .height(28.dp)
                         ) {
                             Text(
-                                text = "Dark theme",
+                                text = stringResource(id = R.string.dark_theme),
                                 style = MaterialTheme.typography.titleMedium,
                                 color = Color.Black,
                                 modifier = Modifier.align(Alignment.CenterStart)

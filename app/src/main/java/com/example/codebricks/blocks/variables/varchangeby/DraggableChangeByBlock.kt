@@ -46,12 +46,14 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.codebricks.R
 import com.example.codebricks.blocks.common.limitPosition
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.viewmodel.Variable
@@ -148,7 +150,7 @@ fun DraggableChangeVariableBlock(
                     }) {
                 Icon(
                     imageVector = Icons.Filled.Close,
-                    contentDescription = "Delete Block",
+                    contentDescription = stringResource(id = R.string.delete_icon_description),
                     modifier = Modifier.size(12.dp),
                     tint = Color.Black
                 )
@@ -160,7 +162,7 @@ fun DraggableChangeVariableBlock(
             modifier = Modifier.wrapContentSize(Alignment.Center)
         ) {
             Text(
-                text = "Change",
+                text = stringResource(id = R.string.change_label),
                 fontWeight = FontWeight.Bold,
                 fontSize = 12.sp,
                 color = Color.White,
@@ -206,7 +208,7 @@ fun DraggableChangeVariableBlock(
             }
 
             Text(
-                text = "by",
+                text = stringResource(id = R.string.by_label),
                 fontWeight = FontWeight.Bold,
                 fontSize = 12.sp,
                 color = Color.White,

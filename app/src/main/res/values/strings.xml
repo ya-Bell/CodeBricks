@@ -1,67 +1,6 @@
 <resources>
     <string name="app_name">CodeBricks</string>
 
-    <string name="declare_variables">Объявление переменных</string>
-    <string name="example_names">например: x, y, count</string>
-    <string name="default_value">По умолчанию: 0</string>
-    <string name="will_be_created">Будут созданы: %s</string>
-
-    <string name="error_min_one_var">Введите хотя бы одну переменную</string>
-    <string name="error_invalid_chars">Используйте буквы, цифры и _ (начинайте с буквы или _)</string>
-    <string name="error_duplicates">Дубликаты: %s</string>
-
-    <string name="variables_title">Переменные:</string>
-    <string name="no_variables">Нет переменных</string>
-
-    <string name="add_block">Добавить блок</string>
-    <string name="show_stats">Показать статистику</string>
-    <string name="stats_format">Создано переменных: %d</string>
-
-    <string name="confirm">Подтвердить</string>
-    <string name="clear_variables">Очистить переменные</string>
-    <string name="delete_block">Удалить блок</string>
-
-    <string name="assignment_operator">Оператор присваивания</string>
-    <string name="variable_name">Имя переменной</string>
-    <string name="arithmetic_expression">Арифметическое выражение</string>
-    <string name="example_expression">например: 5 + 3 или x * 2</string>
-    <string name="error_variable_not_found">Переменная не объявлена</string>
-    <string name="error_expression">Ошибка в выражении</string>
-    <string name="add_assignment_block">Добавить присваивание</string>
-    <string name="multi_line_placeholder">3+2\na+b</string>
-
-    <string name="multi_assignment_operator">Множественное присваивание</string>
-    <string name="multi_assignment_varnames">Имена переменных (через запятую)</string>
-    <string name="multi_assignment_exprs">Выражения (по одному на строку)</string>
-    <string name="multi_assignment_error_count">Количество переменных и выражений должно совпадать</string>
-    <string name="multi_assignment_error_expr">Ошибка в выражении</string>
-    <string name="add_multi_assignment_block">Добавить множественное присваивание</string>
-
-    <string name="add_input_block">Добавить ввод</string>
-    <string name="add_output_block">Добавить вывод</string>
-    <string name="input_block_title">Ввод</string>
-    <string name="output_block_title">Вывод</string>
-    <string name="input_variables_label">Имена переменных (через запятую)</string>
-    <string name="button_enter_values">Ввести значения</string>
-    <string name="button_show_values">Показать значения</string>
-    <string name="variable_not_declared">не объявлена</string>
-    <string name="enter_variable_values">Введите значения переменных</string>
-    <string name="ok">OK</string>
-    <string name="example_vars">a, b, c</string>
-    <string name="placeholder_number">например: 123</string>
-
-    <string name="if_block_title">Условие (if)</string>
-    <string name="condition_label">Условие</string>
-    <string name="condition_placeholder">например: x > 5</string>
-    <string name="check_condition">Проверить</string>
-    <string name="add_if_block">Добавить условие (if)</string>
-
-    <string name="error_no_operator">Ошибка: нет оператора</string>
-    <string name="error_invalid_format">Ошибка: неверный формат</string>
-    <string name="error_variable_not_found2">Ошибка: переменная не найдена</string>
-    <string name="condition_true">Истина</string>
-    <string name="condition_false">Ложь</string>
-
     <string name="start_work">Start work</string>
     <string name="about_app">About app</string>
     <string name="version">Version 1.0</string>
@@ -114,10 +53,6 @@
     <string name="name">Name</string>
     <string name="initial_value">Initial Value</string>
     <string name="select_type">Select Type</string>
-    <string name="integers">int</string>
-    <string name="bool">bool</string>
-    <string name="string">string</string>
-    <string name="doubles">double</string>
     <string name="create">Create</string>
 
     <string name="trash_bin">Trash Bin</string>
@@ -158,5 +93,47 @@
     <string name="set_value">Set Value</string>
     <string name="change_variable_button">Change Variable</string>
     <string name="convert_variable">Convert Variable</string>
+    <string name="add_operator">+</string>
+    <string name="subtract_operator">-</string>
+    <string name="multiply_operator">*</string>
+    <string name="divide_operator">÷</string>
+    <string name="delete_icon_description">Delete</string>
+    <string name="block_type_unknown">?</string>
+
+    <string name="change_label">Change</string>
+    <string name="by_label">by</string>
+    <string name="variable_name_label">Variable Name</string>
+    <string name="sign_label">Sign</string>
+
+    <string name="select_variable">Select Variable</string>
+    <string name="select_new_type">Select new type:</string>
+    <string name="int_type">Int</string>
+    <string name="bool_type">Bool</string>
+    <string name="string_type">String</string>
+    <string name="double_type">Double</string>
+    <string name="no_variables">No variables to convert</string>
+    <string name="error_same_type">Please select a different type</string>
+    <string name="error_no_variable">Please select a variable</string>
+    <string name="convert">Convert</string>
+
+    <string name="integers">Integers</string>
+    <string name="bool">Bool</string>
+    <string name="string">String</string>
+    <string name="doubles">Doubles</string>
+
+    <string name="set">Set</string>
+    <string name="to">to</string>
+    <string name="select_boolean">Select Boolean</string>
+    <string name="language">Language</string>
+    <string name="english">English</string>
+    <string name="russian">Русский</string>
+    <string name="dark_theme">Dark theme</string>
+    <string name="coordinates_format">X = %.0f; Y = %.0f</string>
+    <string name="zoom_in">Zoom in</string>
+    <string name="zoom_out">Zoom out</string>
+
+    <string name="true_button">True</string>
+    <string name="false_button">False</string>
+    <string name="remove_button">Remove</string>
 
 </resources>
