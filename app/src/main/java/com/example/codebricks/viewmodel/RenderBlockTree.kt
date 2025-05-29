@@ -11,6 +11,7 @@ import com.example.codebricks.blocks.variables.vardeclare.DraggableDeclareBlock
 import com.example.codebricks.blocks.variables.varreference.DraggableReferenceBlock
 import com.example.codebricks.blocks.variables.varset.DraggableSetVariableBlock
 
+
 @Composable
 fun RenderBlockTree(
     block: Block,
@@ -19,6 +20,27 @@ fun RenderBlockTree(
     containerHeight: Float,
     onDelete: (String) -> Unit
 ) {
+    // Проверяем, используется ли блок как input в других блоках
+    fun isUsedAsInput(blockId: String): Boolean {
+        return viewModel.programBlocks.any { parentBlock ->
+            if (parentBlock.id == blockId) return@any false
+            // Проверяем не только inputBlocks, но и все дерево блоков
+            fun checkInTree(block: Block): Boolean {
+                if (block.id == blockId) return true
+                return block.inputBlocks.any { it?.let { checkInTree(it) } ?: false }
+            }
+            parentBlock.inputBlocks.any { it?.let { checkInTree(it) } ?: false }
+        }
+    }
+
+    // Не рендерим блок, если он используется как input в другом блоке
+    // или если это SET блок, который уже отрендерен
+    if (isUsedAsInput(block.id) || 
+        (block.type == BlockType.VARIABLE_SET && 
+         viewModel.programBlocks.any { it.id != block.id && it.type == BlockType.VARIABLE_SET && 
+                                     it.inputBlocks.any { input -> input?.id == block.id } })) {
+        return
+    }
 
     when (block.type) {
         BlockType.MATH_ADD, BlockType.MATH_SUBTRACT, BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE -> {
@@ -71,7 +93,8 @@ fun RenderBlockTree(
                 type = block.type.name,
                 containerWidth = containerWidth,
                 containerHeight = containerHeight,
-                onDelete = onDelete
+                onDelete = onDelete,
+                viewModel = viewModel
             )
         }
         BlockType.VARIABLE_DECLARE -> {

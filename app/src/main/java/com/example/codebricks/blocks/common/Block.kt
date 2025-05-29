@@ -8,5 +8,6 @@ data class Block(
     val inputBlocks: MutableList<Block?> = mutableListOf(), // если блоки вставляются в параметры (print(x), set x to y)
     var nextBlockId: String? = null, //  связь с другим блоком
     var changeSign: String = "+",
-    var changeAmount: Int = 0
+    var changeAmount: Int = 0,
+    val creationTime: Long = System.currentTimeMillis() // время создания блока для определения порядка
 )

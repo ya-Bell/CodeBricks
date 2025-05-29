@@ -10,11 +10,14 @@ import com.example.codebricks.viewmodel.VariableViewModel.BlockOrderResult
 // Устанавливает nextBlockId между блоками в зависимости от их Y-положения
 fun VariableViewModel.linkBlocksByPosition() {
     val positionedBlocks = programBlocks.mapNotNull { block ->
-        val position = BlockPositionTracker.getPosition(block.id)
+        val position = BlockPositionTracker.getRawPosition(block.id)
         position?.let { block to it }
     }
 
-    val sortedBlocks = positionedBlocks.sortedBy { it.second.y }
+    // Сортируем блоки по Y-координате, используя необработанные позиции
+    val sortedBlocks = positionedBlocks.sortedBy { (_, position) ->
+        position.y
+    }
 
     //обнуляем связи
     programBlocks.forEach { it.nextBlockId = null }
@@ -33,8 +36,11 @@ fun VariableViewModel.checkBlockOrder(): BlockOrderResult {
     val declared = mutableSetOf<String>()
 
     val orderedBlocks = programBlocks.mapNotNull { block ->
-        BlockPositionTracker.getPosition(block.id)?.let { block to it }
-    }.sortedBy { it.second.y }.map { it.first }
+        val position = BlockPositionTracker.getRawPosition(block.id)
+        position?.let { block to it }
+    }.sortedBy { (_, position) ->
+        position.y
+    }.map { it.first }
 
     if (orderedBlocks.firstOrNull()?.type != BlockType.CONTROL_START) {
         return BlockOrderResult(

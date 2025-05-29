@@ -10,15 +10,50 @@ object BlockPositionTracker {
     val redrawTrigger = mutableIntStateOf(0)
 
     fun updateBlockPosition(id: String, position: Offset) {
-        blockPositions[id] = position
-        redrawTrigger.intValue++
+        // Сначала преобразуем позицию в абсолютные координаты канваса
+        val absolutePosition = Offset(
+            position.x - canvasOffset.x,
+            position.y - canvasOffset.y
+        )
+        
+        // Затем масштабируем
+        val scaledPosition = Offset(
+            absolutePosition.x / canvasScale,
+            absolutePosition.y / canvasScale
+        )
+        
+        // Проверяем, действительно ли позиция изменилась
+        val currentPosition = blockPositions[id]
+        if (currentPosition != scaledPosition) {
+            blockPositions[id] = scaledPosition
+            redrawTrigger.intValue++
+        }
     }
+
     fun clear() {
         blockPositions.clear()
         redrawTrigger.intValue++
     }
 
-    fun getPosition(id: String): Offset? = blockPositions[id]
+    fun getPosition(id: String): Offset? {
+        val basePosition = blockPositions[id] ?: return null
+        
+        // Сначала применяем масштаб
+        val scaledPosition = Offset(
+            basePosition.x * canvasScale,
+            basePosition.y * canvasScale
+        )
+        
+        // Затем добавляем смещение канваса
+        return Offset(
+            scaledPosition.x + canvasOffset.x,
+            scaledPosition.y + canvasOffset.y
+        )
+    }
+
+    fun getRawPosition(id: String): Offset? {
+        return blockPositions[id]
+    }
 
     private val blockSizes = mutableMapOf<String, Pair<Float, Float>>()
 

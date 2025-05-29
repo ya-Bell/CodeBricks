@@ -1,7 +1,6 @@
 package com.example.codebricks.screens.workscreen.sections
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,10 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,11 +36,11 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
@@ -61,10 +57,7 @@ fun WorkspaceCanvas(
     viewModel: VariableViewModel, onSizeChanged: (Float, Float) -> Unit
 ) {
     val screenHeight = LocalConfiguration.current.screenHeightDp.dp
-
     val adaptiveHeight = screenHeight.value * 0.44f
-
-
     val canvasSize = remember { mutableStateOf(IntSize(0, 0)) }
     val contentSize = 3000f // холст 4000x4000
     var scale by remember { mutableFloatStateOf(1f) }
@@ -74,6 +67,12 @@ fun WorkspaceCanvas(
     val zoomFactor = 1.25f
     val redrawTrigger = BlockPositionTracker.redrawTrigger.value
 
+    // Обновляем BlockPositionTracker при изменении масштаба или смещения
+    LaunchedEffect(scale, offset) {
+        BlockPositionTracker.canvasScale = scale
+        BlockPositionTracker.canvasOffset = offset
+        BlockPositionTracker.redrawTrigger.intValue++
+    }
 
     // функции управления зумом
     fun zoomIn() {
@@ -83,10 +82,9 @@ fun WorkspaceCanvas(
             offset = Offset(
                 x = offset.x.coerceIn(
                     (canvasSize.value.width - contentSize * scale).coerceAtMost(0f), 0f
-                ), y = offset.y.coerceIn(
-                    (canvasSize.value.height - contentSize * scale).coerceAtMost(
-                        0f
-                    ), 0f
+                ),
+                y = offset.y.coerceIn(
+                    (canvasSize.value.height - contentSize * scale).coerceAtMost(0f), 0f
                 )
             )
         }
@@ -99,10 +97,9 @@ fun WorkspaceCanvas(
             offset = Offset(
                 x = offset.x.coerceIn(
                     (canvasSize.value.width - contentSize * scale).coerceAtMost(0f), 0f
-                ), y = offset.y.coerceIn(
-                    (canvasSize.value.height - contentSize * scale).coerceAtMost(
-                        0f
-                    ), 0f
+                ),
+                y = offset.y.coerceIn(
+                    (canvasSize.value.height - contentSize * scale).coerceAtMost(0f), 0f
                 )
             )
         }
@@ -123,7 +120,8 @@ fun WorkspaceCanvas(
                     val minY = (canvasSize.value.height - scaledH).coerceAtMost(0f)
                     val newOffset = offset + dragAmount
                     offset = Offset(
-                        x = newOffset.x.coerceIn(minX, 0f), y = newOffset.y.coerceIn(minY, 0f)
+                        x = newOffset.x.coerceIn(minX, 0f),
+                        y = newOffset.y.coerceIn(minY, 0f)
                     )
                     change.consume()
                 }
@@ -131,7 +129,8 @@ fun WorkspaceCanvas(
             .onSizeChanged {
                 canvasSize.value = it
                 onSizeChanged(it.width.toFloat(), it.height.toFloat())
-            }) {
+            }
+    ) {
         val density = LocalDensity.current
 
         Box(
@@ -145,11 +144,7 @@ fun WorkspaceCanvas(
                     translationX = offset.x
                     translationY = offset.y
                 }
-                .onGloballyPositioned {
-                    // фиксируем scale и offset
-                    BlockPositionTracker.canvasScale = scale
-                    BlockPositionTracker.canvasOffset = offset
-                }) {
+        ) {
             Canvas(modifier = Modifier.matchParentSize()) {
                 // красная рамка
                 drawRect(
@@ -213,13 +208,14 @@ fun WorkspaceCanvas(
                 .align(Alignment.BottomEnd)
                 .padding(4.dp)
                 .background(
-                    Color.White.copy(alpha = 0.7f), shape = RoundedCornerShape(4.dp)
+                    Color.White.copy(alpha = 0.7f),
+                    shape = RoundedCornerShape(4.dp)
                 )
                 .padding(horizontal = 4.dp, vertical = 2.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "X = %.0f; Y = %.0f".format(offset.x, offset.y),
+                text = stringResource(id = R.string.coordinates_format, offset.x, offset.y),
                 fontSize = 12.sp,
                 color = Color.Black
             )
@@ -231,7 +227,7 @@ fun WorkspaceCanvas(
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.baseline_add_24),
-                    contentDescription = "Zoom in",
+                    contentDescription = stringResource(id = R.string.zoom_in),
                     modifier = Modifier.fillMaxSize()
                 )
             }
@@ -242,15 +238,13 @@ fun WorkspaceCanvas(
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.baseline_remove_24),
-                    contentDescription = "Zoom out",
+                    contentDescription = stringResource(id = R.string.zoom_out),
                     modifier = Modifier.fillMaxSize()
                 )
             }
         }
     }
-
 }
-
 
 @SuppressLint("ViewModelConstructorInComposable")
 @Preview(

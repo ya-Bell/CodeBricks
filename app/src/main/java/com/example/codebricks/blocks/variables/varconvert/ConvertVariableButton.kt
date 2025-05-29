@@ -51,6 +51,9 @@ fun ConvertVariable(viewModel: VariableViewModel) {
     val errorMessage = remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
 
+    val errorSameType = stringResource(id = R.string.error_same_type)
+    val errorNoVariable = stringResource(id = R.string.error_no_variable)
+
     Column {
         Button(
             onClick = { showDialog.value = true },
@@ -77,7 +80,7 @@ fun ConvertVariable(viewModel: VariableViewModel) {
                 text = {
                     Column {
                         if (viewModel.variables.isEmpty()) {
-                            Text("No variables to convert", color = Color.Red)
+                            Text(stringResource(id = R.string.no_variables), color = Color.Red)
                         } else {
 
                             ExposedDropdownMenuBox(
@@ -88,7 +91,7 @@ fun ConvertVariable(viewModel: VariableViewModel) {
                                     readOnly = true,
                                     value = selectedVariable.value.ifEmpty { "Select variable" },
                                     onValueChange = {},
-                                    label = { Text("Select Variable") },
+                                    label = { Text(stringResource(id = R.string.select_variable)) },
                                     trailingIcon = {
                                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                                     },
@@ -114,7 +117,7 @@ fun ConvertVariable(viewModel: VariableViewModel) {
                                 }
                             }
 
-                            Text("Select new type:", fontWeight = FontWeight.Bold)
+                            Text(stringResource(id = R.string.select_new_type), fontWeight = FontWeight.Bold)
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
@@ -134,7 +137,7 @@ fun ConvertVariable(viewModel: VariableViewModel) {
                                     shape = RoundedCornerShape(10.dp),
                                     enabled = currentType != "int"
                                 ) {
-                                    Text("Int")
+                                    Text(stringResource(id = R.string.int_type))
                                 }
                                 Button(
                                     onClick = { newType.value = "bool" },
@@ -151,7 +154,7 @@ fun ConvertVariable(viewModel: VariableViewModel) {
                                     shape = RoundedCornerShape(10.dp),
                                     enabled = currentType != "bool"
                                 ) {
-                                    Text("Bool")
+                                    Text(stringResource(id = R.string.bool_type))
                                 }
                             }
                             Row(
@@ -173,7 +176,7 @@ fun ConvertVariable(viewModel: VariableViewModel) {
                                     shape = RoundedCornerShape(10.dp),
                                     enabled = currentType != "string"
                                 ) {
-                                    Text("String")
+                                    Text(stringResource(id = R.string.string_type))
                                 }
                                 Button(
                                     onClick = { newType.value = "double" },
@@ -190,7 +193,7 @@ fun ConvertVariable(viewModel: VariableViewModel) {
                                     shape = RoundedCornerShape(10.dp),
                                     enabled = currentType != "double"
                                 ) {
-                                    Text("Double")
+                                    Text(stringResource(id = R.string.double_type))
                                 }
                             }
 
@@ -210,19 +213,19 @@ fun ConvertVariable(viewModel: VariableViewModel) {
                                 )
                                 showDialog.value = false
                             } else if (newType.value == currentType) {
-                                errorMessage.value = "Please select a different type"
+                                errorMessage.value = errorSameType
                             } else {
-                                errorMessage.value = "Please select a variable"
+                                errorMessage.value = errorNoVariable
                             }
                         },
                         enabled = selectedVariable.value.isNotEmpty() && newType.value != currentType
                     ) {
-                        Text("Convert")
+                        Text(stringResource(id = R.string.convert))
                     }
                 },
                 dismissButton = {
                     Button(onClick = { showDialog.value = false }) {
-                        Text("Cancel")
+                        Text(stringResource(id = R.string.cancel))
                     }
                 }
             )

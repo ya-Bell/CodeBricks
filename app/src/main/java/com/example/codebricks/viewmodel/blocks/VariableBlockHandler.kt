@@ -7,6 +7,7 @@ import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker.redrawTrigger
 
+
 // Создание новой переменной и добавление блока объявления в программу
 fun VariableViewModel.declareVariable(name: String, value: Any, type: String) {
     val newVariable = Variable(name, value, type)
@@ -33,17 +34,48 @@ fun VariableViewModel.declareEmptyChangeVariableBlock() {
 
     val changeBlock = Block(
         type = BlockType.VARIABLE_CHANGE,
-        inputBlocks = referenceBlock?.let { mutableListOf(it) } ?: mutableListOf()).apply {
+        inputBlocks = referenceBlock?.let { mutableListOf(it) } ?: mutableListOf()
+    ).apply {
         changeSign = "+"
         changeAmount = 0
     }
 
-    redrawTrigger.intValue++
+    // Добавляем только change блок, reference блок уже включен в него
     addBlock(changeBlock)
 }
 
 // Обновление переменной, которую изменяет блок VARIABLE_CHANGE
+// Функция для поиска всех используемых reference блоков
+fun VariableViewModel.findUsedReferenceBlocks(blocks: List<Block>): Set<String> {
+    val usedReferenceIds = mutableSetOf<String>()
+
+    fun traverse(block: Block) {
+        block.inputBlocks.forEach { inputBlock ->
+            if (inputBlock != null) {
+                if (inputBlock.type == BlockType.VARIABLE_REFERENCE) {
+                    usedReferenceIds.add(inputBlock.id)
+                }
+                traverse(inputBlock)
+            }
+        }
+    }
+
+    blocks.forEach { traverse(it) }
+    return usedReferenceIds
+}
+
+// Обновленная функция updateChangeBlockVariable
 fun VariableViewModel.updateChangeBlockVariable(blockId: String, variable: Variable) {
+    val oldReferenceIds = mutableSetOf<String>()
+
+    // Сначала найдем ID старого reference блока
+    _programBlocks.value.find { it.id == blockId }?.inputBlocks?.firstOrNull()?.let {
+        if (it.type == BlockType.VARIABLE_REFERENCE) {
+            oldReferenceIds.add(it.id)
+        }
+    }
+
+    // Обновляем change блок с новым reference блоком
     _programBlocks.value = _programBlocks.value.map { block ->
         if (block.id == blockId && block.type == BlockType.VARIABLE_CHANGE) {
             val refBlock = Block(type = BlockType.VARIABLE_REFERENCE, value = variable)
@@ -55,6 +87,15 @@ fun VariableViewModel.updateChangeBlockVariable(blockId: String, variable: Varia
         }
         block
     }
+
+    // Находим все используемые reference блоки
+    val usedReferenceIds = findUsedReferenceBlocks(_programBlocks.value)
+
+    // Удаляем неиспользуемые reference блоки
+    _programBlocks.value = _programBlocks.value.filterNot { block ->
+        block.type == BlockType.VARIABLE_REFERENCE && block.id !in usedReferenceIds
+    }
+
     redrawTrigger.intValue++
 }
 

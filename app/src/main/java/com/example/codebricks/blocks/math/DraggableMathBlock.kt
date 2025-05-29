@@ -53,23 +53,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
-import com.example.codebricks.blocks.common.cloneWithNewId
 import com.example.codebricks.blocks.variables.varreference.DraggableReferenceBlock
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker.MAGNETIC_PADDING
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
-import com.example.codebricks.viewmodel.slot.replaceSlotBlock
+import com.example.codebricks.viewmodel.slot.isRecursiveInsertion
 import com.example.codebricks.viewmodel.slot.setHighlightedSlot
-import com.example.codebricks.viewmodel.slot.setRecentlyInsertedSlot
 import com.example.codebricks.viewmodel.slot.tryInsertIntoSlot
 import com.example.codebricks.viewmodel.tree.collectDescendantIds
 import com.example.codebricks.viewmodel.tree.findBlockById
 import com.example.codebricks.viewmodel.tree.findBlockContaining
-import com.example.codebricks.viewmodel.tree.removeBlockFromParent
 import com.example.codebricks.viewmodel.tree.removeBlockRecursively
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -85,7 +83,6 @@ fun DraggableMathBlock(
     viewModel: VariableViewModel
 ) {
     val scrollState = rememberScrollState()
-
     val isInserted = viewModel.findBlockContaining(id) != null
     val scope = rememberCoroutineScope()
     val animOffset = remember { Animatable(Offset.Zero, Offset.VectorConverter) }
@@ -95,9 +92,8 @@ fun DraggableMathBlock(
     var showDeleteIcon by remember { mutableStateOf(false) }
     var dragStartTime by remember { mutableLongStateOf(0L) }
     var isPressed by remember { mutableStateOf(false) }
+    var isBeingDragged by remember { mutableStateOf(false) }
     val density = LocalDensity.current
-
-
 
     val symbol = when (type) {
         BlockType.MATH_ADD -> "+"
@@ -134,8 +130,7 @@ fun DraggableMathBlock(
     Box(
         modifier = blockModifier
             .then(
-                if (isInserted) Modifier
-                else Modifier.offset {
+                if (isInserted) Modifier else Modifier.offset {
                     IntOffset(animOffset.value.x.roundToInt(), animOffset.value.y.roundToInt())
                 }
             )
@@ -158,11 +153,13 @@ fun DraggableMathBlock(
             .clip(RoundedCornerShape(12.dp))
             .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
             .background(Color(0xFF4FC3F7))
+            .zIndex(if (isBeingDragged) 100f else if (isInserted) 0f else 1f)
             .pointerInput(Unit) {
                 detectDragGestures { change, dragAmount ->
                     if (!isPressed) {
                         isPressed = true
                         dragStartTime = System.currentTimeMillis()
+                        isBeingDragged = true
                     }
                     scope.launch {
                         animOffset.snapTo(animOffset.value + dragAmount)
@@ -178,86 +175,100 @@ fun DraggableMathBlock(
                 detectTapGestures(onPress = {
                     isPressed = false
                     showDeleteIcon = false
+                    isBeingDragged = false
                 })
             }
             .pointerInput(id, isInserted) {
-                detectDragGestures(onDragStart = {
-                    viewModel.findBlockContaining(id)?.id?.let { viewModel.bringBlockToFront(it) }
-                    if (isInserted) {
-                        val coords = layoutCoordinates
-                        val windowPos = coords?.boundsInWindow()?.topLeft
-                        val canvasOffset = windowPos?.plus(BlockPositionTracker.canvasOffset)
+                detectDragGestures(
+                    onDragStart = {
+                        isBeingDragged = true
+                        viewModel.findBlockContaining(id)?.id?.let { viewModel.bringBlockToFront(it) }
+                        if (isInserted) {
+                            val coords = layoutCoordinates
+                            val windowPos = coords?.boundsInWindow()?.topLeft
+                            val canvasOffset = windowPos?.plus(BlockPositionTracker.canvasOffset)
 
+                            scope.launch {
+                                canvasOffset?.let { animOffset.snapTo(it) }
+                            }
+
+                            // Находим все копии блока и удаляем их
+                            fun removeAllCopies(blockId: String) {
+                                viewModel.programBlocks.forEach { block ->
+                                    for (i in block.inputBlocks.indices) {
+                                        if (block.inputBlocks[i]?.id == blockId) {
+                                            block.inputBlocks[i] = null
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Удаляем все копии блока
+                            removeAllCopies(id)
+
+                            // Обновляем позицию блока
+                            BlockPositionTracker.updateBlockPosition(id, canvasOffset ?: Offset.Zero)
+                            BlockPositionTracker.redrawTrigger.intValue++
+                        }
+                    },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
                         scope.launch {
-                            canvasOffset?.let { animOffset.snapTo(it) }
+                            animOffset.snapTo(animOffset.value + dragAmount)
                         }
+                        BlockPositionTracker.updateBlockPosition(id, animOffset.value)
 
-                        // Найдём оригинальный блок и клонируем
-                        val original = viewModel.findBlockById(id)
-                        viewModel.removeBlockFromParent(id)
-                        val clone = original?.cloneWithNewId()
+                        val draggedBlock = viewModel.programBlocks.find { it.id == id } ?: return@detectDragGestures
+                        val treeIds = viewModel.collectDescendantIds(draggedBlock) + setOf(id)
 
-                        if (clone != null) {
-                            viewModel.removeBlockRecursively(id)
-                            viewModel.addBlock(clone)
+                        val coords = layoutCoordinates ?: return@detectDragGestures
+                        val windowCenter = coords.boundsInWindow().center
+
+                        val matchedSlot = BlockSlotTracker.getAllSlots()
+                            .filter { slot ->
+                                // Проверяем, что:
+                                // 1. Слот не принадлежит блоку из нашего дерева
+                                // 2. Родительский блок слота не находится в нашем дереве
+                                // 3. Блок не пытается вставить сам в себя
+                                // 4. Родительский блок поддерживает вставку
+                                // 5. Нет циклических зависимостей
+                                val slotParentBlock = viewModel.findBlockById(slot.blockId)
+                                val isValidTarget = slot.blockId !in treeIds &&
+                                        slotParentBlock != null &&
+                                        !treeIds.contains(slotParentBlock.id) &&
+                                        !viewModel.collectDescendantIds(draggedBlock).contains(slot.blockId) &&
+                                        !viewModel.isRecursiveInsertion(id, slot.blockId) &&
+                                        slotParentBlock.type in listOf(
+                                    BlockType.VARIABLE_SET,
+                                    BlockType.MATH_ADD,
+                                    BlockType.MATH_SUBTRACT,
+                                    BlockType.MATH_MULTIPLY,
+                                    BlockType.MATH_DIVIDE
+                                )
+                                isValidTarget
+                            }
+                            .map { it.copy(bounds = it.bounds.translate(BlockPositionTracker.canvasOffset)) }
+                            .filter { it.bounds.inflate(MAGNETIC_PADDING).contains(windowCenter) }
+                            .minByOrNull { it.bounds.width * it.bounds.height }
+
+                        if (matchedSlot != null) {
+                            viewModel.setHighlightedSlot(matchedSlot.blockId, matchedSlot.slotIndex)
+                        } else {
+                            viewModel.setHighlightedSlot(null, null)
                         }
-                    }
-                }, onDrag = { change, dragAmount ->
-                    change.consume()
-                    val draggedBlock = viewModel.programBlocks.find { it.id == id } ?: return@detectDragGestures
-                    val ignoreIds = viewModel.collectDescendantIds(draggedBlock)
-
-                    scope.launch {
-                        animOffset.snapTo(animOffset.value + dragAmount)
-                    }
-                    BlockPositionTracker.updateBlockPosition(id, animOffset.value)
-                    BlockPositionTracker.redrawTrigger.intValue++
-                    val coords = layoutCoordinates ?: return@detectDragGestures
-                    val windowCenter = coords.boundsInWindow().center
-
-                    val matchedSlot = BlockSlotTracker.getAllSlots()
-                        .filter { it.blockId != id && it.blockId !in ignoreIds }
-                        .map { it.copy(bounds = it.bounds.translate(BlockPositionTracker.canvasOffset)) }
-                        .filter { it.bounds.inflate(MAGNETIC_PADDING).contains(windowCenter) }
-                        .minByOrNull { it.bounds.width * it.bounds.height }
-
-                    if (matchedSlot != null) {
-                        viewModel.setHighlightedSlot(matchedSlot.blockId, matchedSlot.slotIndex)
-                    } else {
+                    },
+                    onDragEnd = {
+                        isBeingDragged = false
                         viewModel.setHighlightedSlot(null, null)
-                    }
-                }, onDragEnd = {
-                    val draggedBlock = viewModel.programBlocks.find { it.id == id } ?: return@detectDragGestures
-                    val ignoreIds = viewModel.collectDescendantIds(draggedBlock)
-                    viewModel.setHighlightedSlot(null, null)
-                    val coords = layoutCoordinates ?: return@detectDragGestures
-                    val blockW = coords.size.width.toFloat()
-                    val blockH = coords.size.height.toFloat()
-                    val windowCenter = coords.boundsInWindow().center
 
-                    val matchedSlot = BlockSlotTracker.getAllSlots()
-                        .filter { it.blockId != id && it.blockId !in ignoreIds }
-                        .map { it.copy(bounds = it.bounds.translate(BlockPositionTracker.canvasOffset)) }
-                        .filter { it.bounds.inflate(MAGNETIC_PADDING).contains(windowCenter) }
-                        .minByOrNull { it.bounds.width * it.bounds.height }
+                        val coords = layoutCoordinates ?: return@detectDragGestures
+                        val windowCenter = coords.boundsInWindow().center
 
-                    if (matchedSlot != null) {
-                        val slotCenter = Offset(
-                            (matchedSlot.bounds.left + matchedSlot.bounds.right) / 2f,
-                            (matchedSlot.bounds.top + matchedSlot.bounds.bottom) / 2f
-                        )
-
-                        val snappedLocal = coords.windowToLocal(slotCenter) - Offset(
-                            blockW / 2f, blockH / 2f
-                        )
                         scope.launch {
-                            viewModel.tryInsertIntoSlot(slotCenter, id)
-                            viewModel.setRecentlyInsertedSlot(
-                                matchedSlot.blockId, matchedSlot.slotIndex
-                            )
+                            viewModel.tryInsertIntoSlot(windowCenter, id)
                         }
                     }
-                })
+                )
             },
         contentAlignment = Alignment.Center
     ) {
@@ -310,13 +321,23 @@ fun MathInputSlot(
     viewModel: VariableViewModel
 ) {
     val isHighlighted = viewModel.highlightedSlot.value == (parentId to slotIndex)
+    val isRecentlyInserted = viewModel.recentlyInsertedSlot.value == (parentId to slotIndex)
 
     val inputText = remember { mutableStateOf("") }
     val isEditing = remember { mutableStateOf(false) }
+    val previousBlock = remember { mutableStateOf<Block?>(null) }
 
-    // Очистка текстового ввода, если пришёл вложенный блок
+    // Очистка текстового ввода и удаление предыдущего блока, если пришёл новый блок
     LaunchedEffect(block?.id) {
-        if (block != null && isEditing.value) {
+        if (block != null) {
+            // Если был предыдущий блок с числом, удаляем его только если это новый блок
+            if (previousBlock.value != null &&
+                previousBlock.value?.id != block.id &&
+                previousBlock.value?.type == BlockType.VARIABLE_REFERENCE &&
+                (previousBlock.value?.value as? Variable)?.name?.toDoubleOrNull() != null) {
+                viewModel.removeBlockRecursively(previousBlock.value!!.id)
+            }
+            previousBlock.value = block
             inputText.value = ""
             isEditing.value = false
         }
@@ -333,11 +354,18 @@ fun MathInputSlot(
                 BlockSlotTracker.setSlotBounds(parentId, slotIndex, bounds)
             }
             .border(
-                1.dp,
-                if (isHighlighted) Color.Green else Color.Gray,
-                RoundedCornerShape(8.dp)
+                width = if (isRecentlyInserted) 2.dp else 1.dp,
+                color = when {
+                    isRecentlyInserted -> Color(0xFF4CAF50)
+                    isHighlighted -> Color(0xFF2196F3)
+                    else -> Color.Gray
+                },
+                shape = RoundedCornerShape(8.dp)
             )
-            .background(Color.White, RoundedCornerShape(8.dp)),
+            .background(
+                color = if (isHighlighted) Color(0xFFE3F2FD) else Color.White,
+                shape = RoundedCornerShape(8.dp)
+            ),
         contentAlignment = Alignment.Center
     ) {
         if (block != null) {
@@ -386,13 +414,31 @@ fun MathInputSlot(
                 },
                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                 keyboardActions = KeyboardActions(onDone = {
-                    val value = inputText.value
-                    val number = value.toDoubleOrNull() ?: 0.0
-                    val fakeVar = Variable(name = value, value = number, type = "double")
-                    val newBlock = Block(type = BlockType.VARIABLE_REFERENCE, value = fakeVar)
-                    viewModel.addBlock(newBlock)
-                    BlockSlotTracker.getSlotBounds(parentId, slotIndex)?.center?.let { center ->
-                        viewModel.replaceSlotBlock(parentId, slotIndex, newBlock)
+                    if (inputText.value.isNotEmpty()) {
+                        val value = inputText.value
+                        val number = value.toDoubleOrNull() ?: 0.0
+                        val fakeVar = Variable(name = value, value = number, type = "double")
+                        val newBlock = Block(type = BlockType.VARIABLE_REFERENCE, value = fakeVar)
+                        viewModel.addBlock(newBlock)
+
+                        // Находим родительский блок
+                        val parentBlock = viewModel.findBlockById(parentId)
+                        if (parentBlock != null) {
+                            // Расширяем список inputBlocks если нужно
+                            while (parentBlock.inputBlocks.size <= slotIndex) {
+                                parentBlock.inputBlocks.add(null)
+                            }
+                            // Сохраняем старый блок
+                            val oldBlock = parentBlock.inputBlocks[slotIndex]
+                            if (oldBlock != null) {
+                                viewModel.removeBlockRecursively(oldBlock.id)
+                            }
+                            // Вставляем новый блок
+                            parentBlock.inputBlocks[slotIndex] = newBlock
+                            previousBlock.value = newBlock
+                            BlockPositionTracker.redrawTrigger.intValue++
+                        }
+
                         inputText.value = ""
                         isEditing.value = false
                     }

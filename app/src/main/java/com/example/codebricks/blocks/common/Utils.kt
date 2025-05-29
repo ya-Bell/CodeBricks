@@ -24,6 +24,7 @@ fun Block.cloneWithNewId(): Block {
         changeAmount = this.changeAmount,
         inputBlocks = this.inputBlocks.map { it?.cloneWithNewId() }.toMutableList(),
         children = this.children.map { it.cloneWithNewId() }.toMutableList(),
-        nextBlockId = this.nextBlockId
+        nextBlockId = this.nextBlockId,
+        creationTime = System.currentTimeMillis()
     )
 }

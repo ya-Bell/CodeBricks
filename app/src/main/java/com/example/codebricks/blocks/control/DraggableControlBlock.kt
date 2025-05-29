@@ -32,8 +32,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.example.codebricks.blocks.common.limitPosition
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
+import com.example.codebricks.viewmodel.VariableViewModel
 import kotlin.math.roundToInt
 
 @Composable
@@ -42,15 +44,18 @@ fun DraggableControlBlock(
     type: String,
     containerWidth: Float,
     containerHeight: Float,
-    onDelete: (String) -> Unit
+    onDelete: (String) -> Unit,
+    viewModel: VariableViewModel
 ) {
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
     var showDeleteIcon by remember { mutableStateOf(false) }
     var dragStartTime by remember { mutableLongStateOf(0L) }
     var isPressed by remember { mutableStateOf(false) }
+    var isBeingDragged by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        BlockPositionTracker.updateBlockPosition(id, offset)
+    LaunchedEffect(offset) {
+        val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 44f)
+        BlockPositionTracker.updateBlockPosition(id, newOffset)
     }
 
     Box(modifier = Modifier
@@ -62,29 +67,38 @@ fun DraggableControlBlock(
         .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
         .clip(RoundedCornerShape(12.dp))
         .background(if (type == "Start") Color(0xFF4CAF50) else Color(0xFFf44336))
+        .zIndex(if (isBeingDragged) 100f else 1f)
         .pointerInput(Unit) {
-            detectDragGestures { change, dragAmount ->
-                if (!isPressed) {
+            detectDragGestures(
+                onDragStart = {
+                    isBeingDragged = true
                     isPressed = true
                     dragStartTime = System.currentTimeMillis()
+                },
+                onDrag = { change, dragAmount ->
+                    change.consume()
+                    offset = Offset(
+                        offset.x + dragAmount.x,
+                        offset.y + dragAmount.y
+                    )
+                    if (System.currentTimeMillis() - dragStartTime >= 2500) {
+                        showDeleteIcon = true
+                    }
+                },
+                onDragEnd = {
+                    isBeingDragged = false
                 }
-
-                offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
-                BlockPositionTracker.updateBlockPosition(id, offset)
-                change.consume()
-
-                if (System.currentTimeMillis() - dragStartTime >= 2500) {
-                    showDeleteIcon = true
-                }
-            }
+            )
         }
         .pointerInput(Unit) {
             detectTapGestures(
                 onPress = {
                     isPressed = false
                     showDeleteIcon = false
-                })
-        }) {
+                }
+            )
+        }
+    ) {
         if (showDeleteIcon) {
             Box(
                 modifier = Modifier
@@ -112,5 +126,4 @@ fun DraggableControlBlock(
             color = Color.White
         )
     }
-
 }
