@@ -93,7 +93,8 @@ fun RenderBlockTree(
                 type = block.type.name,
                 containerWidth = containerWidth,
                 containerHeight = containerHeight,
-                onDelete = onDelete
+                onDelete = onDelete,
+                viewModel = viewModel
             )
         }
         BlockType.VARIABLE_DECLARE -> {
