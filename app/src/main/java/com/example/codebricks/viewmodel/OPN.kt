@@ -38,6 +38,12 @@ object MathExpressionEvaluator {
                 if (a == null || b == null) listOf("0")
                 else buildInfixExpression(a) + "/" + buildInfixExpression(b)
             }
+            BlockType.MATH_MODULO -> {
+                val a = block.inputBlocks.getOrNull(0)
+                val b = block.inputBlocks.getOrNull(1)
+                if (a == null || b == null) listOf("0")
+                else buildInfixExpression(a) + "%" + buildInfixExpression(b)
+            }
             BlockType.COMPARISON_EQUAL -> {
                 val a = block.inputBlocks.getOrNull(0)
                 val b = block.inputBlocks.getOrNull(1)
@@ -88,7 +94,7 @@ object MathExpressionEvaluator {
             "==" to 3, "!=" to 3,
             "<" to 4, ">" to 4, "<=" to 4, ">=" to 4,
             "+" to 5, "-" to 5,
-            "*" to 6, "/" to 6,
+            "*" to 6, "/" to 6,"%" to 6,
             "!" to 7
         )
         val output = mutableListOf<String>()
@@ -145,6 +151,11 @@ object MathExpressionEvaluator {
                         val b = stack.removeLastOrNull() ?: 1.0
                         val a = stack.removeLastOrNull() ?: 0.0
                         stack.add(if (b != 0.0) a / b else 0.0)
+                    }
+                    token == "%" -> {
+                        val b = stack.removeLastOrNull() ?: 1.0
+                        val a = stack.removeLastOrNull() ?: 0.0
+                        stack.add(if (b != 0.0) a % b else 0.0)
                     }
                     token == "==" -> {
                         val b = stack.removeLastOrNull() ?: 0.0

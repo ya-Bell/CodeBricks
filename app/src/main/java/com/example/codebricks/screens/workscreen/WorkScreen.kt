@@ -60,7 +60,7 @@ fun WorkScreen(onBackClick: () -> Unit) {
 
         Header(onBackClick = onBackClick, onHelpClick = { showHelpDialog = true })
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(4.dp))
 
         ConsoleSection(viewModel = viewModel)
 

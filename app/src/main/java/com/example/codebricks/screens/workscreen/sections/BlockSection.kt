@@ -98,6 +98,9 @@ fun BlockSection(selectedClass: String, viewModel: VariableViewModel) {
                     item {
                         MathBlockButton(stringResource(id = R.string.math_divide)) { viewModel.declareMathBlock(BlockType.MATH_DIVIDE) }
                     }
+                    item {
+                        MathBlockButton(stringResource(id = R.string.math_modulo)) { viewModel.declareMathBlock(BlockType.MATH_MODULO) }
+                    }
                 }
             }
 

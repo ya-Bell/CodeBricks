@@ -228,7 +228,7 @@ fun DraggableChangeVariableBlock(
                     onDismissRequest = { expandedSign.value = false },
                     modifier = Modifier.width(28.dp)
                 ) {
-                    listOf("+", "-").forEach { sign ->
+                    listOf("+", "-", "*", "/", "%").forEach { sign ->
                         DropdownMenuItem(
                             text = { Text(sign, fontWeight = FontWeight.Bold, fontSize = 14.sp) },
                             modifier = Modifier.height(20.dp),

@@ -3,9 +3,9 @@ package com.example.codebricks.viewmodel.blocks
 
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
+import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker.redrawTrigger
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
-import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker.redrawTrigger
 
 
 // Создание новой переменной и добавление блока объявления в программу
@@ -99,11 +99,11 @@ fun VariableViewModel.updateChangeBlockVariable(blockId: String, variable: Varia
     redrawTrigger.intValue++
 }
 
-// Обновление знака изменения ("+" или "-") в блоке VARIABLE_CHANGE
-fun VariableViewModel.updateChangeBlockSign(blockId: String, sign: String) {
+// Обновление знака изменения в блоке VARIABLE_CHANGE
+fun VariableViewModel.updateChangeBlockSign(blockId: String, operation: String) {
     _programBlocks.value = _programBlocks.value.map { block ->
         if (block.id == blockId && block.type == BlockType.VARIABLE_CHANGE) {
-            block.changeSign = sign
+            block.changeSign = operation
         }
         block
     }
