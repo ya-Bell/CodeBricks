@@ -1,4 +1,4 @@
-package com.example.codebricks.blocks.variables.varset
+package com.example.codebricks.blocks.loops.whileblocks
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,24 +16,24 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.codebricks.R
 import com.example.codebricks.viewmodel.VariableViewModel
-import com.example.codebricks.viewmodel.blocks.declareEmptySetVariableBlock
+import com.example.codebricks.viewmodel.blocks.declareWhileBlock
 
 @Composable
-fun SetVariableButton(viewModel: VariableViewModel) {
+fun WhileBlock(viewModel: VariableViewModel) {
     val buttonModifier = Modifier
         .padding(4.dp)
         .height(36.dp)
         .fillMaxWidth()
 
     val buttonColors = ButtonDefaults.buttonColors(
-        containerColor = Color(0xFFFB8C00), contentColor = Color.White
+        containerColor =Color(0xFF9C27B0), contentColor = Color.White
     )
     Button(
-        onClick = { viewModel.declareEmptySetVariableBlock() },
+        onClick = {viewModel.declareWhileBlock()},
         modifier = buttonModifier,
         colors = buttonColors,
         border = BorderStroke(2.dp, Color.Black)
     ) {
-        Text(text = stringResource(id = R.string.set_variable), fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
+        Text(text = stringResource(id = R.string.loops_while), fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
     }
 }

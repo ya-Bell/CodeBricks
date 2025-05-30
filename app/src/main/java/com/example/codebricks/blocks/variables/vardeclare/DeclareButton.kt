@@ -46,7 +46,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
         .fillMaxWidth()
 
     val buttonColors = ButtonDefaults.buttonColors(
-        containerColor = Color(0xFFFFA500), contentColor = Color.Black
+        containerColor = Color(0xFFFB8C00), contentColor = Color.White
     )
 
     val showDialog = remember { mutableStateOf(false) }

@@ -40,5 +40,6 @@ enum class BlockType {
     ELSE_IF,
     ELSE,
     END_IF,
-    WHILE
+    WHILE,
+    WHILE_END
 }

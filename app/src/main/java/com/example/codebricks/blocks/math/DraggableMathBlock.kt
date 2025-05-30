@@ -399,7 +399,7 @@ fun MathInputSlot(
                 shape = RoundedCornerShape(8.dp)
             )
             .background(
-                color = if (isHighlighted) Color(0xFFE3F2FD) else Color.White,
+                color = if (isHighlighted) Color(0xFFAAC9C7) else Color(0xFFDDE3E0),
                 shape = RoundedCornerShape(8.dp)
             ),
         contentAlignment = Alignment.Center

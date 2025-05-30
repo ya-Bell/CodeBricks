@@ -163,4 +163,7 @@
     <string name="create_write_block">write [ ]</string>
     <string name="select_variable_to_write">Select Variable to Write</string>
 
+    <string name="loops_while">while [ ] [op] [ ]</string>
+    <string name="loops_while_end">while end</string>
+
 </resources>

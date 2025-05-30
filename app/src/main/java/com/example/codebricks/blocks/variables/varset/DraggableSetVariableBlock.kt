@@ -375,7 +375,7 @@ fun DraggableSetVariableBlock(
                     .wrapContentWidth()
                     .defaultMinSize(minWidth = 28.dp)
                     .background(
-                        color = if (isHighlighted) Color(0xFFE3F2FD) else Color.White,
+                        color = if (isHighlighted) Color(0xFFAAC9C7) else Color(0xFFDDE3E0),
                         shape = RoundedCornerShape(8.dp)
                     )
                     .onGloballyPositioned {
@@ -389,7 +389,7 @@ fun DraggableSetVariableBlock(
                             isRecentlyInserted -> Color(0xFF4CAF50)
                             isHighlighted -> Color(0xFF2196F3)
                             isError.value -> Color.Red
-                            else -> Color.Gray
+                            else -> Color.Black
                         },
                         shape = RoundedCornerShape(8.dp)
                     ),

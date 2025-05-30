@@ -27,7 +27,8 @@ fun CreateControlBlock(viewModel: VariableViewModel) {
         .height(35.dp)
         .wrapContentWidth()
     val buttonColors = ButtonDefaults.buttonColors(
-        containerColor = Color(0xFF3F51B5), contentColor = Color.Black
+        containerColor = Color(0xFF3F51B5),
+        contentColor = Color.White
     )
 
     Row(

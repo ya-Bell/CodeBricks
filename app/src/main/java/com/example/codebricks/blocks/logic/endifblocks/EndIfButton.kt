@@ -26,7 +26,7 @@ fun EndIfBlock(viewModel: VariableViewModel) {
         .fillMaxWidth()
 
     val buttonColors = ButtonDefaults.buttonColors(
-        containerColor = Color(0xFF81C784), contentColor = Color.Black
+        containerColor = Color(0xFF81C784), contentColor = Color.White
     )
     Button(
         onClick = { viewModel.declareEndIfBlock()},

@@ -21,6 +21,8 @@ import com.example.codebricks.blocks.logic.elseblocks.ElseBlock
 import com.example.codebricks.blocks.logic.elseifblocks.ElseIfBlock
 import com.example.codebricks.blocks.logic.endifblocks.EndIfBlock
 import com.example.codebricks.blocks.logic.ifblocks.IfBlock
+import com.example.codebricks.blocks.loops.whileblocks.WhileBlock
+import com.example.codebricks.blocks.loops.whileendblocks.WhileEndBlock
 import com.example.codebricks.blocks.math.MathBlockButton
 import com.example.codebricks.blocks.print.CreatePrintBlock
 import com.example.codebricks.blocks.variables.varchangeby.ChangeVariableButton
@@ -133,12 +135,21 @@ fun BlockSection(selectedClass: String, viewModel: VariableViewModel) {
                 }
             }
 
+            "Loops" -> {
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    item {
+                       WhileBlock(viewModel)
+                    }
+                    item {
+                        WhileEndBlock(viewModel)
+                    }
+                }
+            }
             "Comparison" -> {
                 Text(stringResource(id = R.string.comparison_blocks))
-            }
-
-            "Loops" -> {
-                Text(stringResource(id = R.string.loops_blocks))
             }
 
             "Functions" -> {

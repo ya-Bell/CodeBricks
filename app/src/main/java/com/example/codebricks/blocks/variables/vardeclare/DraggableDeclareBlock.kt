@@ -85,7 +85,7 @@ fun DraggableDeclareBlock(
         .requiredSizeIn(minHeight = 40.dp)
         .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
         .clip(RoundedCornerShape(12.dp))
-        .background(Color(0xFFFFA500))
+        .background(Color(0xFFFB8C00))
         .pointerInput(Unit) {
             detectDragGestures(
                 onDragStart = {
@@ -129,7 +129,9 @@ fun DraggableDeclareBlock(
 
         Text(
             text = "Declare ${variable.type} ${variable.name} = ${formatVariableValue(variable)}",
-            modifier = Modifier.align(Alignment.Center),
+            modifier = Modifier
+                .align(Alignment.Center)
+                .padding(horizontal = 8.dp),
             fontWeight = FontWeight.Bold,
             fontSize = 12.sp,
             color = Color.White

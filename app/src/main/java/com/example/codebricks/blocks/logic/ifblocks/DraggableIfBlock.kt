@@ -8,6 +8,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -20,7 +21,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.DropdownMenuItem
@@ -39,16 +44,21 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.common.limitPosition
@@ -62,23 +72,12 @@ import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.viewmodel.blocks.updateIfBlockOperator
 import com.example.codebricks.viewmodel.slot.isRecursiveInsertion
 import com.example.codebricks.viewmodel.slot.setHighlightedSlot
+import com.example.codebricks.viewmodel.slot.setRecentlyInsertedSlot
 import com.example.codebricks.viewmodel.slot.tryInsertIntoSlot
 import com.example.codebricks.viewmodel.tree.findBlockById
 import com.example.codebricks.viewmodel.tree.removeBlockRecursively
-import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.zIndex
-import com.example.codebricks.viewmodel.slot.setRecentlyInsertedSlot
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
-import kotlinx.coroutines.delay
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -268,7 +267,7 @@ fun DraggableIfBlock(
                     onDismissRequest = { expandedOperator.value = false },
                     modifier = Modifier.widthIn(min = 38.dp, max = 140.dp)
                 ) {
-                    listOf("==", "!=", ">", "<", ">=", "<=").forEach { operator ->
+                    listOf("==","!=",">", "<", ">=", "<=").forEach { operator ->
                         DropdownMenuItem(
                             text = { Text(operator, fontSize = 12.sp) },
                             modifier = Modifier.height(24.dp),

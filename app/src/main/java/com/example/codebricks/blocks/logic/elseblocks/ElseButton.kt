@@ -27,7 +27,7 @@ fun ElseBlock(viewModel: VariableViewModel) {
 
     val buttonColors = ButtonDefaults.buttonColors(
         containerColor = Color(0xFF81C784),
-        contentColor = Color.Black
+        contentColor = Color.White
     )
 
     Button(

@@ -24,7 +24,7 @@ fun MathBlockButton(label: String, onClick: () -> Unit) {
             .height(36.dp)
             .widthIn(min = 100.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF4FC3F7), contentColor = Color.Black
+            containerColor = Color(0xFF4FC3F7), contentColor = Color.White
         ),
         border = BorderStroke(2.dp, Color.Black)
     ) {

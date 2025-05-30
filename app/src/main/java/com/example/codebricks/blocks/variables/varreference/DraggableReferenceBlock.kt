@@ -29,6 +29,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -115,7 +116,7 @@ fun DraggableReferenceBlock(
             }
             .clip(RoundedCornerShape(8.dp))
             .border(width = if (isInserted) 0.dp else 2.dp, color = Color.Black, shape = RoundedCornerShape(8.dp))
-            .background(Color(0xFFEEEEEE))
+            .background(Color(0xFFFB8C00))
             .zIndex(if (isInserted) 0f else 1f)
             .pointerInput(currentId.value, isInserted) {
                 detectDragGestures(
@@ -219,7 +220,8 @@ fun DraggableReferenceBlock(
         Text(
             text = variable.name,
             fontSize = 12.sp,
-            color = Color.Black,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
         )
     }

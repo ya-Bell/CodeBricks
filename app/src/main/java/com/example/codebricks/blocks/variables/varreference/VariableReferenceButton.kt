@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.codebricks.viewmodel.Variable
@@ -26,7 +27,7 @@ fun VariableReferenceBlock(variable: Variable, viewModel: VariableViewModel) {
             .padding(4.dp)
             .widthIn(min = 70.dp)
             .height(36.dp)
-            .background(Color(0xFFFFA500), RoundedCornerShape(8.dp))
+            .background(Color(0xFFFB8C00), RoundedCornerShape(8.dp))
             .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
             .clickable {
                 viewModel.addReferenceBlock(variable)
@@ -35,7 +36,8 @@ fun VariableReferenceBlock(variable: Variable, viewModel: VariableViewModel) {
         Text(
             text = variable.name,
             fontSize = 12.sp,
-            color = Color.Black,
+            color = Color.White,
+            fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(horizontal = 4.dp)
         )
     }
