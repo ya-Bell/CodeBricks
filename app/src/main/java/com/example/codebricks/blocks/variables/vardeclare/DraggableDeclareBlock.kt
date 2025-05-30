@@ -132,7 +132,7 @@ fun DraggableDeclareBlock(
             modifier = Modifier.align(Alignment.Center),
             fontWeight = FontWeight.Bold,
             fontSize = 12.sp,
-            color = Color.Black
+            color = Color.White
         )
     }
 }

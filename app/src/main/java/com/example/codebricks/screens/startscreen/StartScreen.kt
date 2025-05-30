@@ -120,7 +120,9 @@ fun StartScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Кнопка About App
-            AboutAppButton(onClick = onAboutClick)
+            AboutAppButton(
+                onClick = onAboutClick
+            )
         }
         // Версия внизу
         Text(

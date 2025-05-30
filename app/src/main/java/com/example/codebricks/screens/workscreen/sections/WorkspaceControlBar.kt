@@ -40,6 +40,7 @@ import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.viewmodel.execution.checkBlockOrder
 import com.example.codebricks.viewmodel.execution.linkBlocksByPosition
 import kotlinx.coroutines.launch
+import androidx.compose.ui.graphics.ColorFilter
 
 @Composable
 fun WorkspaceControlBar(viewModel: VariableViewModel) {
@@ -69,7 +70,8 @@ fun WorkspaceControlBar(viewModel: VariableViewModel) {
             Image(
                 painter = painterResource(id = R.drawable.baseline_delete_forever_24),
                 contentDescription = stringResource(id = R.string.trash_bin),
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier.fillMaxSize(),
+                colorFilter = ColorFilter.tint(Color(0xFF515157))
             )
         }
 

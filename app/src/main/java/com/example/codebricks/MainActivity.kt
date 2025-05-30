@@ -1,5 +1,6 @@
 package com.example.codebricks
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -7,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.core.net.toUri
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -35,7 +37,11 @@ class MainActivity : ComponentActivity() {
                     composable("start") {
                         StartScreen(
                             onStartClick = { navController.navigate("work") },
-                            onAboutClick = { /* TODO: AboutScreen */ },
+                            onAboutClick = {
+                                val url = getString(R.string.repository_url)
+                                val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+                                startActivity(intent)
+                            },
                             isThemeDark = isDark,
                             onThemeToggle = { isDark = it },
                             isEnglish = isEnglish,

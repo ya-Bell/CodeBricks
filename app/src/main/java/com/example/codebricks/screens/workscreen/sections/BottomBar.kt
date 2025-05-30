@@ -19,14 +19,18 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -77,6 +81,7 @@ fun BottomBlockBar(
                         stringResource(id = R.string.control) to Color(0xFF3F51B5),
                         stringResource(id = R.string.variables) to Color(0xFFFFA500),
                         stringResource(id = R.string.math) to Color(0xFF4FC3F7),
+                        stringResource(id = R.string.comparison) to Color(0xFF9C27B0),
                         stringResource(id = R.string.logic) to Color(0xFF81C784),
                         stringResource(id = R.string.input_output) to Color(0xFFE57373),
                         stringResource(id = R.string.comparison) to Color(0xFF9C27B0),
@@ -93,10 +98,24 @@ fun BottomBlockBar(
                             Button(
                                 onClick = { onClassSelected(name) },
                                 modifier = buttonModifier,
-                                colors = ButtonDefaults.buttonColors(containerColor = color),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (selectedClass == name) color else Color.White,
+                                    contentColor = if (selectedClass == name) Color.White else color
+                                ),
                                 contentPadding = PaddingValues(0.dp)
                             ) {
-                                Text(text = name, fontSize = 12.sp, color = Color.Black)
+                                Text(
+                                    text = name,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        shadow = Shadow(
+                                            color = Color.Black.copy(alpha = 0.5f),
+                                            offset = Offset(1f, 1f),
+                                            blurRadius = 2f
+                                        )
+                                    )
+                                )
                             }
                             Spacer(modifier = Modifier.width(12.dp))
                         }

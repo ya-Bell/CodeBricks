@@ -58,8 +58,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.codebricks.R
 import androidx.compose.ui.zIndex
+import com.example.codebricks.R
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.math.DraggableMathBlock
@@ -78,8 +78,8 @@ import com.example.codebricks.viewmodel.tree.findBlockById
 import com.example.codebricks.viewmodel.tree.findBlockContaining
 import com.example.codebricks.viewmodel.tree.removeBlockFromParent
 import com.example.codebricks.viewmodel.tree.removeBlockRecursively
-import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -316,7 +316,7 @@ fun DraggableSetVariableBlock(
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
-                modifier = Modifier.padding(end = 4.dp)
+                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
             )
 
             val expanded = remember { mutableStateOf(false) }
@@ -361,7 +361,8 @@ fun DraggableSetVariableBlock(
                 text = stringResource(id = R.string.to),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = Color.White,
+                modifier = Modifier.padding(horizontal = 4.dp)
             )
 
             val isHighlighted = viewModel.highlightedSlot.value == (id to 1)

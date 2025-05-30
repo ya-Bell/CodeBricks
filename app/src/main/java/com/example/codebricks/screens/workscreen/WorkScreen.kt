@@ -44,9 +44,11 @@ fun WorkScreen(onBackClick: () -> Unit) {
     val viewModel: VariableViewModel = viewModel()
     var selectedClass by remember { mutableStateOf("Control") }
     var showDialog by remember { mutableStateOf(false) }
+    var showHelpDialog by remember { mutableStateOf(false) }
 
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp
+
 
     Column(
         modifier = Modifier
@@ -56,7 +58,7 @@ fun WorkScreen(onBackClick: () -> Unit) {
     ) {
         Spacer(modifier = Modifier.height(4.dp))
 
-        Header(onBackClick = onBackClick)
+        Header(onBackClick = onBackClick, onHelpClick = { showHelpDialog = true })
 
         Spacer(modifier = Modifier.height(6.dp))
 
@@ -80,11 +82,17 @@ fun WorkScreen(onBackClick: () -> Unit) {
             showDialog = false
         }
     }
+    if (showHelpDialog) {
+        HelpDialog(onDismiss = { showHelpDialog = false })
+    }
 }
 
 
 @Composable
-fun Header(onBackClick: () -> Unit) {
+fun Header(
+    onBackClick: () -> Unit,
+    onHelpClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -112,7 +120,7 @@ fun Header(onBackClick: () -> Unit) {
 
         Row {
             Button(
-                onClick = {/* TODO: Help */ },
+                onClick = onHelpClick,
                 modifier = Modifier
                     .padding(start = 8.dp)
                     .height(36.dp),
