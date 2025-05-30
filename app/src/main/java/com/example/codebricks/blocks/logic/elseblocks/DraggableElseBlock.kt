@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.codebricks.blocks.common.limitPosition
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
+import com.example.codebricks.viewmodel.VariableViewModel
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -43,7 +44,8 @@ fun DraggableElseBlock(
     id: String,
     containerWidth: Float,
     containerHeight: Float,
-    onDelete: (String) -> Unit
+    onDelete: (String) -> Unit,
+    viewModel: VariableViewModel
 ) {
     val redrawTrigger = BlockPositionTracker.redrawTrigger.intValue
 
@@ -68,22 +70,26 @@ fun DraggableElseBlock(
             .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
             .padding(8.dp)
             .pointerInput(Unit) {
-                detectDragGestures { change, dragAmount ->
-                    if (!isPressed) {
+                detectDragGestures(
+                    onDragStart = {
+                        viewModel.shouldDrawConnections.value = false
                         isPressed = true
                         dragStartTime = System.currentTimeMillis()
+                    },
+                    onDrag = { change, dragAmount ->
+                        offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
+                        BlockPositionTracker.updateBlockPosition(id, offset)
+                        change.consume()
+
+                        if (System.currentTimeMillis() - dragStartTime >= 2500) {
+                            showDeleteIcon = true
+                        }
+                    },
+                    onDragEnd = {
+                        isPressed = false
+                        showDeleteIcon = false
                     }
-
-                    offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
-
-                    BlockPositionTracker.updateBlockPosition(id, offset)
-
-                    change.consume()
-
-                    if (System.currentTimeMillis() - dragStartTime >= 2500) {
-                        showDeleteIcon = true
-                    }
-                }
+                )
             }
     ) {
         if (showDeleteIcon) {

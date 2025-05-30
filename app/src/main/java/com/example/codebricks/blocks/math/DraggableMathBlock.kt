@@ -157,6 +157,7 @@ fun DraggableMathBlock(
             .zIndex(if (isBeingDragged) 100f else if (isInserted) 0f else 1f)
             .pointerInput(Unit) {
                 detectDragGestures { change, dragAmount ->
+                    viewModel.shouldDrawConnections.value = false
                     if (!isPressed) {
                         isPressed = true
                         dragStartTime = System.currentTimeMillis()
@@ -174,6 +175,7 @@ fun DraggableMathBlock(
             }
             .pointerInput(id) {
                 detectTapGestures(onPress = {
+                    viewModel.shouldDrawConnections.value = false
                     isPressed = false
                     showDeleteIcon = false
                     isBeingDragged = false
@@ -182,6 +184,7 @@ fun DraggableMathBlock(
             .pointerInput(id, isInserted) {
                 detectDragGestures(
                     onDragStart = {
+                        viewModel.shouldDrawConnections.value = false
                         isBeingDragged = true
                         viewModel.findBlockContaining(id)?.id?.let { viewModel.bringBlockToFront(it) }
                         if (isInserted) {

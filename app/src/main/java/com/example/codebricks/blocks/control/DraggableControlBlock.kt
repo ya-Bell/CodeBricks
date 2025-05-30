@@ -68,6 +68,7 @@ fun DraggableControlBlock(
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDragStart = {
+                        viewModel.shouldDrawConnections.value = false
                         isBeingDragged = true
                         isPressed = true
                     },

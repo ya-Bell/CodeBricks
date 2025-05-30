@@ -1,6 +1,5 @@
 package com.example.codebricks.blocks.variables.vardeclare
 
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -38,6 +37,7 @@ import com.example.codebricks.R
 import com.example.codebricks.blocks.common.limitPosition
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.viewmodel.Variable
+import com.example.codebricks.viewmodel.VariableViewModel
 import kotlin.math.roundToInt
 
 @Composable
@@ -56,16 +56,19 @@ private fun formatVariableValue(variable: Variable): String {
         else -> variable.value.toString()
     }
 }
+
 @Composable
 fun DraggableDeclareBlock(
     id: String,
     variable: Variable,
     containerWidth: Float,
     containerHeight: Float,
-    onDelete: (String) -> Unit
+    onDelete: (String) -> Unit,
+    viewModel: VariableViewModel
 ) {
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
     var isPressed by remember { mutableStateOf(false) }
+    var isBeingDragged by remember { mutableStateOf(false) }
 
     val showDeleteIcon = true
 
@@ -84,15 +87,22 @@ fun DraggableDeclareBlock(
         .clip(RoundedCornerShape(12.dp))
         .background(Color(0xFFFFA500))
         .pointerInput(Unit) {
-            detectDragGestures { change, dragAmount ->
-                if (!isPressed) {
+            detectDragGestures(
+                onDragStart = {
+                    viewModel.shouldDrawConnections.value = false
+                    isBeingDragged = true
                     isPressed = true
+                },
+                onDrag = { change, dragAmount ->
+                    offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
+                    BlockPositionTracker.updateBlockPosition(id, offset)
+                    change.consume()
+                },
+                onDragEnd = {
+                    isBeingDragged = false
+                    isPressed = false
                 }
-
-                offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
-                BlockPositionTracker.updateBlockPosition(id, offset)
-                change.consume()
-            }
+            )
         }
         .pointerInput(Unit) {
             detectTapGestures(

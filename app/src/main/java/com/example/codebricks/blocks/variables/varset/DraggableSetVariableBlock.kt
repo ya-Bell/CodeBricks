@@ -173,6 +173,7 @@ fun DraggableSetVariableBlock(
         .pointerInput(Unit) {
             detectDragGestures(
                 onDragStart = {
+                    viewModel.shouldDrawConnections.value = false
                     isBeingDragged = true
                     dragStartTime = System.currentTimeMillis()
                     viewModel.findBlockContaining(id)?.id?.let { viewModel.bringBlockToFront(it) }

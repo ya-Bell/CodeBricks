@@ -67,9 +67,9 @@ class VariableViewModel : ViewModel() {
     }
 
     // Добавить сообщение в консоль
-    private fun logToConsole(message: String) {
-        // Если режим отладки выключен, показываем только вывод print и инициализацию
-        if (!isDebugMode.value && !message.startsWith("📤") && !message.startsWith("🟢") && !message.startsWith("🔴") && !message.startsWith("Console")) {
+    private fun logToConsole(message: String, isPrintOutput: Boolean = false) {
+        // Если режим отладки выключен, показываем только вывод print, инициализацию и остановку программы
+        if (!isDebugMode.value && !isPrintOutput && !message.startsWith("🟢") && !message.startsWith("🔴") && !message.startsWith("Console")) {
             return
         }
         consoleOutput.value += "\n$message"
@@ -204,7 +204,12 @@ class VariableViewModel : ViewModel() {
         while (current != null) {
             when (current.type) {
                 BlockType.CONTROL_START -> logToConsole("🟢 Program started")
-                BlockType.CONTROL_STOP -> logToConsole("🔴 Program stopped")
+                BlockType.CONTROL_STOP -> {
+                    if (!skipUntilEndIf) {
+                        logToConsole("🔴 Program stopped")
+                        break // Прерываем программу только если блок реально выполняется
+                    }
+                }
 
                 BlockType.IF -> {
                     wasConditionMet = evaluateCondition(current, declaredVariables)
@@ -212,10 +217,8 @@ class VariableViewModel : ViewModel() {
                     skipUntilEndIf = !wasConditionMet
                     if (wasConditionMet) {
                         logToConsole("✅ IF condition is true")
-                        logToConsole("⏭️ Next ELSE IF blocks will be skipped")
                     } else {
                         logToConsole("❌ IF condition is false")
-                        logToConsole("➡️ Moving to next condition")
                     }
                 }
 
@@ -226,15 +229,12 @@ class VariableViewModel : ViewModel() {
                         skipUntilEndIf = !wasConditionMet
                         if (wasConditionMet) {
                             logToConsole("✅ ELSE IF condition is true")
-                            logToConsole("⏭️ Next ELSE IF/ELSE blocks will be skipped")
                         } else {
                             logToConsole("❌ ELSE IF condition is false")
-                            logToConsole("➡️ Moving to next condition")
                         }
                     } else {
                         // Если предыдущее условие выполнилось, пропускаем этот блок
                         skipUntilEndIf = true
-                        logToConsole("⏭️ Skipping ELSE IF block (previous condition was true)")
                     }
                 }
 
@@ -247,7 +247,6 @@ class VariableViewModel : ViewModel() {
                     } else {
                         // Если предыдущее условие выполнилось, пропускаем этот блок
                         skipUntilEndIf = true
-                        logToConsole("⏭️ Skipping ELSE block (previous condition was true)")
                     }
                 }
 
@@ -257,7 +256,6 @@ class VariableViewModel : ViewModel() {
                     }
                     skipUntilEndIf = false
                     wasConditionMet = false
-                    logToConsole("✅ END IF reached - condition chain completed")
                 }
 
                 else -> {
@@ -288,46 +286,16 @@ class VariableViewModel : ViewModel() {
                                         }
 
                                         memoryVar.value = newValue
-                                        logToConsole(
-                                            "📝 Set ${memoryVar.name} = ${
-                                                formatValueForOutput(newValue, memoryVar.type)
-                                            }"
-                                        )
-                                    }
-                                }
-                            }
-
-                            BlockType.VARIABLE_CHANGE -> {
-                                (current.inputBlocks.getOrNull(0)?.value as? Variable)?.let { refVar ->
-                                    declaredVariables[refVar.name]?.let { target ->
-                                        val sign = current!!.changeSign
-                                        val amount = current!!.changeAmount
-                                        val delta = if (sign == "-") -amount else amount
-
-                                        val newValue = when (target.type) {
-                                            "double" -> (target.value.toString().toDoubleOrNull()
-                                                ?: 0.0) + delta
-
-                                            else -> (target.value.toString().toIntOrNull() ?: 0) + delta
-                                        }
-
-                                        target.value = newValue
-                                        logToConsole(
-                                            "🔄 Changed ${target.name} by $sign$amount to ${
-                                                formatValueForOutput(
-                                                    newValue, target.type
-                                                )
-                                            }"
-                                        )
-                                    }
+                                        logToConsole("✅ Set ${memoryVar.name} = ${memoryVar.value}")
+                                    } ?: logToConsole("❌ Error: variable '${targetVar.name}' not declared")
                                 }
                             }
 
                             BlockType.IO_PRINT -> {
                                 (current.inputBlocks.firstOrNull()?.value as? Variable)?.let { variable ->
                                     declaredVariables[variable.name]?.let { target ->
-                                        logToConsole("📤 Output: ${target.name} = ${target.value}")
-                                    } ?: logToConsole("❌ Error: variable '${variable.name}' not declared")
+                                        logToConsole("📤 Output: ${target.name} = ${target.value}", true)
+                                    } ?: logToConsole("❌ Error: variable '${variable.name}' not declared", true)
                                 }
                             }
 
@@ -341,7 +309,7 @@ class VariableViewModel : ViewModel() {
                     }
                 }
             }
-            current = current.nextBlockId?.let { blocksById[it] }
+            current = current?.nextBlockId?.let { blocksById[it] }
         }
         onFinish()
     }

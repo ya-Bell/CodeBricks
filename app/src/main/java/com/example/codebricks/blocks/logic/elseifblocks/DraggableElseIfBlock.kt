@@ -140,8 +140,9 @@ fun DraggableElseIfBlock(
             .pointerInput(Unit) {
                 detectDragGestures(
                     onDragStart = {
-                        dragStartTime = System.currentTimeMillis()
+                        viewModel.shouldDrawConnections.value = false
                         isPressed = true
+                        dragStartTime = System.currentTimeMillis()
                         
                         // Запоминаем текущую позицию для плавного перемещения
                         val currentPosition = BlockPositionTracker.getPosition(id)

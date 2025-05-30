@@ -188,14 +188,29 @@ fun WorkspaceCanvas(
                         val to = block.nextBlockId?.let { BlockPositionTracker.getPosition(it) }
 
                         if (from != null && to != null) {
-                            val fromPoint = from + Offset(140.dp.toPx() / 2, 40.dp.toPx() / 2)
-                            val toPoint = to + Offset(140.dp.toPx() / 2, 40.dp.toPx() / 2)
-
-                            drawLine(
+                            val blockWidth = 140.dp.toPx()
+                            val blockHeight = 40.dp.toPx()
+                            
+                            // Точки начала и конца
+                            val fromPoint = from + Offset(blockWidth / 2, blockHeight)  // Внизу первого блока
+                            val toPoint = to + Offset(blockWidth / 2, 0f)  // Вверху второго блока
+                            
+                            // Контрольные точки для кривой Безье
+                            val control1 = fromPoint + Offset(0f, 20f)  // 20px вниз от начала
+                            val control2 = toPoint - Offset(0f, 20f)    // 20px вверх от конца
+                            
+                            // Рисуем кривую Безье
+                            drawPath(
+                                androidx.compose.ui.graphics.Path().apply {
+                                    moveTo(fromPoint.x, fromPoint.y)
+                                    cubicTo(
+                                        control1.x, control1.y,
+                                        control2.x, control2.y,
+                                        toPoint.x, toPoint.y
+                                    )
+                                },
                                 color = Color.Black,
-                                start = fromPoint,
-                                end = toPoint,
-                                strokeWidth = 4f
+                                style = Stroke(width = 4f)
                             )
                         }
                     }

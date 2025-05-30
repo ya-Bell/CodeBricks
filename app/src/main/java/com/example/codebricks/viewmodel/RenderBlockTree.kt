@@ -88,7 +88,9 @@ fun RenderBlockTree(
                 variable = variable,
                 containerWidth = containerWidth,
                 containerHeight = containerHeight,
-                onDelete = onDelete
+                onDelete = onDelete,
+                viewModel = viewModel
+
             )
         }
         BlockType.CONTROL_START, BlockType.CONTROL_STOP -> {
@@ -109,7 +111,8 @@ fun RenderBlockTree(
                     variable = variable,
                     containerWidth = containerWidth,
                     containerHeight = containerHeight,
-                    onDelete = onDelete
+                    onDelete = onDelete,
+                    viewModel = viewModel
                 )
             }
         }
@@ -151,7 +154,8 @@ fun RenderBlockTree(
                 id = block.id,
                 containerWidth = containerWidth,
                 containerHeight = containerHeight,
-                onDelete = onDelete
+                onDelete = onDelete,
+                viewModel = viewModel
             )
         }
 
@@ -160,7 +164,8 @@ fun RenderBlockTree(
                 id = block.id,
                 containerWidth = containerWidth,
                 containerHeight = containerHeight,
-                onDelete = onDelete
+                onDelete = onDelete,
+                viewModel = viewModel
             )
         }
         else -> {}

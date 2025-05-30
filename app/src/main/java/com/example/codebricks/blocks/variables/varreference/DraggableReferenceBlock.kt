@@ -120,6 +120,7 @@ fun DraggableReferenceBlock(
             .pointerInput(currentId.value, isInserted) {
                 detectDragGestures(
                     onDragStart = {
+                        viewModel.shouldDrawConnections.value = false
                         viewModel.findBlockContaining(id)?.id?.let { viewModel.bringBlockToFront(it) }
                         if (isInserted) {
                             val original = viewModel.findBlockById(currentId.value)

@@ -36,6 +36,7 @@ import com.example.codebricks.R
 import com.example.codebricks.blocks.common.limitPosition
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.viewmodel.Variable
+import com.example.codebricks.viewmodel.VariableViewModel
 import kotlin.math.roundToInt
 
 @Composable
@@ -44,10 +45,12 @@ fun DraggablePrintBlock(
     variable: Variable?,
     containerWidth: Float,
     containerHeight: Float,
-    onDelete: (String) -> Unit
+    onDelete: (String) -> Unit,
+    viewModel: VariableViewModel
 ) {
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
     var isPressed by remember { mutableStateOf(false) }
+    var isBeingDragged by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         BlockPositionTracker.updateBlockPosition(id, offset)
@@ -63,21 +66,22 @@ fun DraggablePrintBlock(
         .clip(RoundedCornerShape(12.dp))
         .background(Color(0xFFE57373))
         .pointerInput(Unit) {
-            detectDragGestures { change, dragAmount ->
-                if (!isPressed) {
+            detectDragGestures(
+                onDragStart = {
+                    viewModel.shouldDrawConnections.value = false
+                    isBeingDragged = true
                     isPressed = true
-                }
-
-                offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
-                BlockPositionTracker.updateBlockPosition(id, offset)
-                change.consume()
-            }
-        }
-        .pointerInput(Unit) {
-            detectTapGestures(
-                onPress = {
+                },
+                onDrag = { change, dragAmount ->
+                    offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
+                    BlockPositionTracker.updateBlockPosition(id, offset)
+                    change.consume()
+                },
+                onDragEnd = {
+                    isBeingDragged = false
                     isPressed = false
-                })
+                }
+            )
         }) {
         Box(
             modifier = Modifier
