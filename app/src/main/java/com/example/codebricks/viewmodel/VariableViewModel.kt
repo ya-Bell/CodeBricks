@@ -398,7 +398,57 @@ class VariableViewModel : ViewModel() {
             }
         }
 
-        // Стринговое сравнение
+        // Сравнение булевых значений
+        if (leftValue is Boolean || rightValue is Boolean || 
+            (leftValue is String && leftValue.lowercase() in listOf("true", "false", "1", "0")) ||
+            (rightValue is String && rightValue.lowercase() in listOf("true", "false", "1", "0"))) {
+            
+            // Преобразуем значения в boolean
+            val leftBool = when (leftValue) {
+                is Boolean -> leftValue
+                is Number -> leftValue.toDouble() != 0.0
+                is String -> when (leftValue.lowercase()) {
+                    "true", "1" -> true
+                    "false", "0" -> false
+                    else -> {
+                        logToConsole("❌ Left operand cannot be converted to boolean: $leftValue")
+                        return false
+                    }
+                }
+                else -> {
+                    logToConsole("❌ Left operand is not a boolean, number or string: $leftValue")
+                    return false
+                }
+            }
+
+            val rightBool = when (rightValue) {
+                is Boolean -> rightValue
+                is Number -> rightValue.toDouble() != 0.0
+                is String -> when (rightValue.lowercase()) {
+                    "true", "1" -> true
+                    "false", "0" -> false
+                    else -> {
+                        logToConsole("❌ Right operand cannot be converted to boolean: $rightValue")
+                        return false
+                    }
+                }
+                else -> {
+                    logToConsole("❌ Right operand is not a boolean, number or string: $rightValue")
+                    return false
+                }
+            }
+
+            return when (block.operator) {
+                "==" -> leftBool == rightBool
+                "!=" -> leftBool != rightBool
+                else -> {
+                    logToConsole("❌ Unsupported operator for boolean values: ${block.operator}")
+                    false
+                }
+            }
+        }
+
+        // Стринговое сравнение (если не boolean)
         if (leftValue is String || rightValue is String) {
             val leftStr = leftValue.toString()
             val rightStr = rightValue.toString()
@@ -418,7 +468,7 @@ class VariableViewModel : ViewModel() {
             return result
         }
 
-        // Автоматическое поддеражание типов если есть возможность
+        // Числовое сравнение (если не строки и не boolean)
         val leftNum = when (leftValue) {
             is Number -> leftValue.toDouble()
             is String -> leftValue.toDoubleOrNull() ?: run {
