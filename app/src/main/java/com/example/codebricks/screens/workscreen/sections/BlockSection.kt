@@ -28,6 +28,7 @@ import com.example.codebricks.blocks.variables.varconvert.ConvertVariable
 import com.example.codebricks.blocks.variables.vardeclare.DeclareVariable
 import com.example.codebricks.blocks.variables.varreference.VariableReferenceBlock
 import com.example.codebricks.blocks.variables.varset.SetVariableButton
+import com.example.codebricks.blocks.write.CreateWriteBlock
 import com.example.codebricks.ui.theme.CodeBricksTheme
 import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.viewmodel.blocks.declareMathBlock
@@ -119,7 +120,17 @@ fun BlockSection(selectedClass: String, viewModel: VariableViewModel) {
             }
 
             "Input/Output" -> {
-                CreatePrintBlock(viewModel)
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    item {
+                        CreatePrintBlock(viewModel)
+                    }
+                    item{
+                        CreateWriteBlock(viewModel)
+                    }
+                }
             }
 
             "Comparison" -> {

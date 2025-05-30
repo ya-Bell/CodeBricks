@@ -14,6 +14,7 @@ import com.example.codebricks.blocks.variables.varchangeby.DraggableChangeVariab
 import com.example.codebricks.blocks.variables.vardeclare.DraggableDeclareBlock
 import com.example.codebricks.blocks.variables.varreference.DraggableReferenceBlock
 import com.example.codebricks.blocks.variables.varset.DraggableSetVariableBlock
+import com.example.codebricks.blocks.write.DraggableWriteBlock
 
 
 @Composable
@@ -162,6 +163,18 @@ fun RenderBlockTree(
         BlockType.END_IF -> {
             DraggableEndIfBlock(
                 id = block.id,
+                containerWidth = containerWidth,
+                containerHeight = containerHeight,
+                onDelete = onDelete,
+                viewModel = viewModel
+            )
+        }
+
+        BlockType.IO_WRITE -> {
+            val variable = block.value as? Variable
+            DraggableWriteBlock(
+                id = block.id,
+                variable = variable,
                 containerWidth = containerWidth,
                 containerHeight = containerHeight,
                 onDelete = onDelete,

@@ -116,7 +116,6 @@
     <string name="multiply_operator">*</string>
     <string name="divide_operator">÷</string>
     <string name="delete_icon_description">Delete</string>
-    <string name="block_type_unknown">?</string>
 
     <string name="change_label">Change</string>
     <string name="by_label">by</string>
@@ -160,5 +159,8 @@
     <string name="logic_end_if">end if</string>
 
     <string name="repository_url">https://github.com/ya-Bell/CodeBricks</string>
+
+    <string name="create_write_block">write [ ]</string>
+    <string name="select_variable_to_write">Select Variable to Write</string>
 
 </resources>
