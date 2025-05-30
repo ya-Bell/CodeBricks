@@ -185,6 +185,7 @@ fun DraggableReferenceBlock(
                                     BlockType.MATH_MODULO,
                                     BlockType.IF,
                                     BlockType.ELSE_IF,
+                                    BlockType.WHILE,
                                     BlockType.COMPARISON_EQUAL,
                                     BlockType.COMPARISON_GREATER,
                                     BlockType.COMPARISON_LESS,
@@ -223,7 +224,7 @@ fun DraggableReferenceBlock(
             fontSize = 12.sp,
             color = Color.White,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+            modifier = Modifier.padding(horizontal = 11.dp)
         )
     }
 }

@@ -1,4 +1,4 @@
-package com.example.codebricks.blocks.logic
+package com.example.codebricks.blocks.loops.whileblocks
 
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.VectorConverter
@@ -57,9 +57,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.common.limitPosition
+import com.example.codebricks.blocks.loops.whileblocks.BlockInputSlot
 import com.example.codebricks.blocks.math.DraggableMathBlock
 import com.example.codebricks.blocks.variables.varreference.DraggableReferenceBlock
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
@@ -67,7 +69,7 @@ import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker.MAGNETIC_PADDING
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
-import com.example.codebricks.viewmodel.blocks.updateElseIfBlockOperator
+import com.example.codebricks.viewmodel.blocks.updateWhileBlockOperator
 import com.example.codebricks.viewmodel.slot.isRecursiveInsertion
 import com.example.codebricks.viewmodel.slot.setHighlightedSlot
 import com.example.codebricks.viewmodel.slot.setRecentlyInsertedSlot
@@ -79,7 +81,7 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DraggableElseIfBlock(
+fun DraggableWhileBlock(
     id: String,
     containerWidth: Float,
     containerHeight: Float,
@@ -109,16 +111,21 @@ fun DraggableElseIfBlock(
     LaunchedEffect(offset) {
         BlockPositionTracker.updateBlockPosition(id, offset)
     }
+
     LaunchedEffect(selectedOperator.value) {
         if (currentBlock != null) {
-            viewModel.updateElseIfBlockOperator(id, selectedOperator.value)
+            viewModel.updateWhileBlockOperator(id, selectedOperator.value)
         }
     }
+
     LaunchedEffect(redrawTrigger) {
         layoutCoordinates?.let { coords ->
+            val bounds = coords.boundsInWindow()
+            BlockPositionTracker.setBlockSize(id, bounds.width, bounds.height)
+            // Обновляем позиции слотов
             inputBlocks.forEachIndexed { index, _ ->
-                val bounds = coords.boundsInWindow().translate(BlockPositionTracker.canvasOffset)
-                BlockSlotTracker.setSlotBounds(id, index, bounds)
+                val slotBounds = coords.boundsInWindow()
+                BlockSlotTracker.setSlotBounds(id, index, slotBounds)
             }
         }
     }
@@ -127,12 +134,21 @@ fun DraggableElseIfBlock(
         modifier = Modifier
             .wrapContentWidth()
             .heightIn(min = 50.dp)
+            .zIndex(0f)
             .offset {
-
                 val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 50f)
                 IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
             }
-            .background(Color(0xFF81C784), RoundedCornerShape(12.dp))
+            .onGloballyPositioned { 
+                layoutCoordinates = it
+                val bounds = it.boundsInWindow()
+                BlockPositionTracker.setBlockSize(id, bounds.width, bounds.height)
+                // Обновляем позиции слотов при изменении позиции блока
+                inputBlocks.forEachIndexed { index, _ ->
+                    BlockSlotTracker.setSlotBounds(id, index, bounds)
+                }
+            }
+            .background(Color(0xFF9C27B0), RoundedCornerShape(12.dp))
             .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
             .padding(8.dp)
             .pointerInput(Unit) {
@@ -142,7 +158,6 @@ fun DraggableElseIfBlock(
                         isPressed = true
                         dragStartTime = System.currentTimeMillis()
                         
-                        // Запоминаем текущую позицию для плавного перемещения
                         val currentPosition = BlockPositionTracker.getPosition(id)
                         if (currentPosition != null) {
                             offset = currentPosition
@@ -152,10 +167,10 @@ fun DraggableElseIfBlock(
                     },
                     onDrag = { change, dragAmount ->
                         change.consume()
-                        offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
+                        offset = offset.plus(Offset(dragAmount.x, dragAmount.y))
                         BlockPositionTracker.updateBlockPosition(id, offset)
+                        BlockPositionTracker.redrawTrigger.intValue++
 
-                        // Проверяем возможность вставки во время перетаскивания
                         val windowCenter = layoutCoordinates?.boundsInWindow()?.center
                         if (windowCenter != null) {
                             val matchedSlot = BlockSlotTracker.getAllSlots()
@@ -166,13 +181,13 @@ fun DraggableElseIfBlock(
                                         slot.blockId != id &&
                                         !viewModel.isRecursiveInsertion(id, slot.blockId) &&
                                         when (slotParentBlock.type) {
+                                            BlockType.WHILE -> false // Cannot insert while block into another while block
                                             BlockType.IF, BlockType.ELSE_IF -> draggedBlock.type in listOf(
                                                 BlockType.VARIABLE_REFERENCE,
                                                 BlockType.MATH_ADD,
                                                 BlockType.MATH_SUBTRACT,
                                                 BlockType.MATH_MULTIPLY,
                                                 BlockType.MATH_DIVIDE,
-                                                BlockType.MATH_MODULO,
                                                 BlockType.COMPARISON_EQUAL,
                                                 BlockType.COMPARISON_GREATER,
                                                 BlockType.COMPARISON_LESS,
@@ -180,31 +195,19 @@ fun DraggableElseIfBlock(
                                                 BlockType.LOGIC_OR,
                                                 BlockType.LOGIC_NOT
                                             )
-                                            BlockType.VARIABLE_SET -> draggedBlock.type in listOf(
-                                                BlockType.VARIABLE_REFERENCE,
-                                                BlockType.MATH_ADD,
-                                                BlockType.MATH_SUBTRACT,
-                                                BlockType.MATH_MULTIPLY,
-                                                BlockType.MATH_DIVIDE,
-                                                BlockType.MATH_MODULO
-                                            )
                                             else -> false
                                         }
                                     isValidTarget
                                 }
                                 .map { it.copy(bounds = it.bounds.translate(BlockPositionTracker.canvasOffset)) }
                                 .filter { it.bounds.inflate(MAGNETIC_PADDING).contains(windowCenter) }
-                                .minByOrNull { it.bounds.width * it.bounds.height }
+                                .minByOrNull { it.bounds.center.minus(windowCenter).getDistance() }
 
                             if (matchedSlot != null) {
                                 viewModel.setHighlightedSlot(matchedSlot.blockId, matchedSlot.slotIndex)
                             } else {
                                 viewModel.setHighlightedSlot(null, null)
                             }
-                        }
-
-                        if (System.currentTimeMillis() - dragStartTime >= 2500) {
-                            showDeleteIcon = true
                         }
                     },
                     onDragEnd = {
@@ -216,6 +219,7 @@ fun DraggableElseIfBlock(
                                 viewModel.tryInsertIntoSlot(windowCenter, id)
                             }
                         }
+                        viewModel.setHighlightedSlot(null, null)
                     }
                 )
             }
@@ -241,9 +245,9 @@ fun DraggableElseIfBlock(
                 .horizontalScroll(rememberScrollState()),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("else if", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text("while", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
 
-            BlockInputsSlot(id, 0, inputBlocks.getOrNull(0), viewModel)
+            BlockInputSlot(id, 0, inputBlocks.getOrNull(0), viewModel)
 
             ExposedDropdownMenuBox(
                 expanded = expandedOperator.value,
@@ -267,7 +271,7 @@ fun DraggableElseIfBlock(
                     onDismissRequest = { expandedOperator.value = false },
                     modifier = Modifier.widthIn(min = 38.dp, max = 140.dp)
                 ) {
-                    listOf("==", "!=",">", "<", ">=", "<=").forEach { operator ->
+                    listOf("==","!=",">", "<", ">=", "<=").forEach { operator ->
                         DropdownMenuItem(
                             text = { Text(operator, fontSize = 12.sp) },
                             modifier = Modifier.height(24.dp),
@@ -280,169 +284,7 @@ fun DraggableElseIfBlock(
                 }
             }
 
-            BlockInputsSlot(id, 1, inputBlocks.getOrNull(1), viewModel)
+            BlockInputSlot(id, 1, inputBlocks.getOrNull(1), viewModel)
         }
     }
-}
-
-@Composable
-fun BlockInputsSlot(
-    parentId: String,
-    slotIndex: Int,
-    block: Block?,
-    viewModel: VariableViewModel
-) {
-    val isHighlighted = viewModel.highlightedSlot.value == (parentId to slotIndex)
-    val isRecentlyInserted = viewModel.recentlyInsertedSlot.value == (parentId to slotIndex)
-    var showInput by remember { mutableStateOf(block == null) }
-    var inputValue by remember { mutableStateOf("") }
-    val redrawTrigger = BlockPositionTracker.redrawTrigger.intValue
-    val focusRequester = remember { FocusRequester() }
-    val scope = rememberCoroutineScope()
-
-    Box(
-        modifier = Modifier
-            .padding(horizontal = 4.dp)
-            .wrapContentWidth()
-            .heightIn(min = 32.dp)
-            .defaultMinSize(minWidth = 30.dp)
-            .onGloballyPositioned {
-                val bounds = it.boundsInWindow().translate(BlockPositionTracker.canvasOffset)
-                BlockSlotTracker.setSlotBounds(parentId, slotIndex, bounds)
-            }
-            .border(
-                width = if (isRecentlyInserted) 2.dp else 1.dp,
-                color = when {
-                    isRecentlyInserted -> Color(0xFF4CAF50)
-                    isHighlighted -> Color(0xFF2196F3)
-                    else -> Color.Gray
-                },
-                shape = RoundedCornerShape(8.dp)
-            )
-            .background(
-                color = if (isHighlighted) Color(0xFFAAC9C7) else Color(0xFFDDE3E0),
-                shape = RoundedCornerShape(8.dp)
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-        when {
-            block != null -> {
-                when (block.type) {
-                    BlockType.VARIABLE_REFERENCE -> {
-                        val variable = block.value as? Variable
-                        if (variable != null) {
-                            DraggableReferenceBlock(
-                                id = block.id,
-                                variable = variable,
-                                viewModel = viewModel,
-                                onDelete = {
-                                    if (variable.name.toDoubleOrNull() != null) {
-                                        viewModel.removeBlockRecursively(block.id)
-                                    }
-                                    viewModel.findBlockById(parentId)?.let { parentBlock ->
-                                        if (parentBlock.inputBlocks.size > slotIndex) {
-                                            parentBlock.inputBlocks[slotIndex] = null
-                                        }
-                                    }
-                                    BlockPositionTracker.redrawTrigger.intValue++
-                                    showInput = true
-                                }
-                            )
-                        }
-                    }
-                    in listOf(
-                        BlockType.MATH_ADD,
-                        BlockType.MATH_SUBTRACT,
-                        BlockType.MATH_MULTIPLY,
-                        BlockType.MATH_DIVIDE,
-                        BlockType.MATH_MODULO,
-                        BlockType.VARIABLE_REFERENCE,
-                        BlockType.COMPARISON_EQUAL,
-                        BlockType.COMPARISON_GREATER,
-                        BlockType.COMPARISON_LESS,
-                        BlockType.LOGIC_AND,
-                        BlockType.LOGIC_OR,
-                        BlockType.LOGIC_NOT
-                    ) -> {
-                        DraggableMathBlock(
-                            id = block.id,
-                            type = block.type,
-                            inputBlocks = block.inputBlocks,
-                            containerWidth = 0f,
-                            containerHeight = 0f,
-                            onDelete = {
-                                viewModel.findBlockById(parentId)?.let { parentBlock ->
-                                    if (parentBlock.inputBlocks.size > slotIndex) {
-                                        parentBlock.inputBlocks[slotIndex] = null
-                                    }
-                                }
-                                BlockPositionTracker.redrawTrigger.intValue++
-                                showInput = true
-                            },
-                            viewModel = viewModel
-                        )
-                    }
-                    else -> {
-                        Box(
-                            modifier = Modifier
-                                .padding(horizontal = 8.dp, vertical = 4.dp)
-                                .width(32.dp)
-                                .height(24.dp)
-                                .clickable { showInput = true },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("...", color = Color.LightGray, fontSize = 12.sp)
-                        }
-                    }
-                }
-            }
-            else -> {
-                BasicTextField(
-                    value = inputValue,
-                    onValueChange = { value ->
-                        inputValue = value
-                    },
-                    textStyle = TextStyle(
-                        fontSize = 12.sp,
-                        color = Color.Black
-                    ),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(
-                        imeAction = ImeAction.Done
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-                            if (inputValue.isNotEmpty()) {
-                                val variable = Variable(name = inputValue, value = inputValue, type = "string")
-                                val newBlock = Block(
-                                    type = BlockType.VARIABLE_REFERENCE,
-                                    value = variable
-                                )
-                                viewModel.findBlockById(parentId)?.let { parentBlock ->
-                                    if (parentBlock.inputBlocks.size > slotIndex) {
-                                        parentBlock.inputBlocks[slotIndex] = newBlock
-                                    } else {
-                                        parentBlock.inputBlocks.add(newBlock)
-                                    }
-                                    viewModel.setRecentlyInsertedSlot(parentId, slotIndex)
-                                    BlockPositionTracker.redrawTrigger.intValue++
-                                }
-                            }
-                            showInput = false
-                            inputValue = ""
-                        }
-                    ),
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp)
-                        .width(IntrinsicSize.Min)
-                        .focusRequester(focusRequester)
-                        .focusable()
-                )
-
-                LaunchedEffect(Unit) {
-                    focusRequester.requestFocus()
-                }
-            }
-        }
-    }
-}
+} 

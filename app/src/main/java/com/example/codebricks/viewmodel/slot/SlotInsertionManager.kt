@@ -49,6 +49,13 @@ fun VariableViewModel.tryInsertIntoSlot(position: Offset, blockId: String) {
                         BlockType.MATH_DIVIDE,
                         BlockType.MATH_MODULO
                     )
+                    BlockType.WHILE -> draggedBlock.type in listOf(
+                        BlockType.VARIABLE_REFERENCE,
+                        BlockType.MATH_ADD,
+                        BlockType.MATH_SUBTRACT,
+                        BlockType.MATH_MULTIPLY,
+                        BlockType.MATH_DIVIDE
+                    )
                     BlockType.MATH_ADD,
                     BlockType.MATH_SUBTRACT,
                     BlockType.MATH_MULTIPLY,

@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -62,9 +63,10 @@ fun DraggableWriteBlock(
             val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 44f)
             IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
         }
+        .defaultMinSize(minWidth = 100.dp)
         .wrapContentWidth()
         .height(40.dp)
-        .border(2.dp, Color.White, RoundedCornerShape(12.dp))
+        .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
         .clip(RoundedCornerShape(12.dp))
         .background(Color(0xFFE57373))
         .pointerInput(Unit) {
@@ -106,7 +108,7 @@ fun DraggableWriteBlock(
             text = displayText,
             modifier = Modifier
                 .align(Alignment.Center)
-                .padding(4.dp),
+                .padding(5.dp),
             fontWeight = FontWeight.Bold,
             fontSize = 12.sp,
             color = Color.White

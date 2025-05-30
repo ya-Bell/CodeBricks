@@ -6,10 +6,12 @@ import androidx.compose.animation.core.VectorConverter
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.height
@@ -33,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -40,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -277,6 +281,7 @@ fun DraggableMathBlock(
                                     BlockType.MATH_MODULO,
                                     BlockType.IF,
                                     BlockType.ELSE_IF,
+                                    BlockType.WHILE,
                                     BlockType.COMPARISON_EQUAL,
                                     BlockType.COMPARISON_GREATER,
                                     BlockType.COMPARISON_LESS,
@@ -387,6 +392,7 @@ fun MathInputSlot(
             .wrapContentWidth()
             .heightIn(min = 32.dp)
             .defaultMinSize(minWidth = 30.dp)
+            .zIndex(1f)
             .onGloballyPositioned {
                 val bounds = it.boundsInWindow().translate(BlockPositionTracker.canvasOffset)
                 BlockSlotTracker.setSlotBounds(parentId, slotIndex, bounds)
@@ -488,55 +494,41 @@ fun MathInputSlot(
                 singleLine = true,
                 textStyle = TextStyle(fontSize = 12.sp, color = Color.Black),
                 modifier = Modifier
-                    .padding(horizontal = 4.dp, vertical = 8.dp)
-                    .widthIn(min = 32.dp)
+                    .padding(horizontal = 8.dp)
+                    .width(IntrinsicSize.Min)
+                    .focusable()
             )
         }
     }
 }
+
 @Preview(showBackground = true)
 @Composable
-fun MathBlockPreview() {
-    Box(
-        modifier = Modifier
-            .wrapContentWidth()
-            .height(40.dp)
-            .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
-            .background(Color(0xFF4FC3F7), RoundedCornerShape(12.dp))
-            .padding(horizontal = 8.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .width(60.dp)
-                    .height(32.dp)
-                    .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
-                    .background(Color.White, RoundedCornerShape(8.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("...", color = Color.LightGray, fontSize = 12.sp)
-            }
-
-            Text(
-                "+",
-                fontSize = 16.sp,
-                color = Color.White,
-                modifier = Modifier.padding(horizontal = 8.dp)
-            )
-
-            Box(
-                modifier = Modifier
-                    .width(60.dp)
-                    .height(32.dp)
-                    .border(1.dp, Color.Gray, RoundedCornerShape(8.dp))
-                    .background(Color.White, RoundedCornerShape(8.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("...", color = Color.LightGray, fontSize = 12.sp)
-            }
+fun DraggableMathBlockPreview() {
+    // Фейковый ViewModel
+    val viewModel = remember {
+        VariableViewModel().apply {
+            // Для примера можно добавить фейковые данные, если нужно
         }
     }
+
+    // Фейковые inputBlocks
+    val inputBlocks = remember {
+        mutableStateListOf<Block?>(
+            null,
+            null
+        )
+    }
+
+    DraggableMathBlock(
+        id = "preview-math-block",
+        type = BlockType.MATH_ADD,
+        inputBlocks = inputBlocks,
+        containerWidth = 300f,
+        containerHeight = 100f,
+        onDelete = {},
+        viewModel = viewModel
+    )
 }
 
 @SuppressLint("ViewModelConstructorInComposable")

@@ -25,8 +25,8 @@ fun VariableReferenceBlock(variable: Variable, viewModel: VariableViewModel) {
     Box(
         modifier = Modifier
             .padding(4.dp)
-            .widthIn(min = 70.dp)
-            .height(36.dp)
+            .widthIn(min = 50.dp)
+            .height(42.dp)
             .background(Color(0xFFFB8C00), RoundedCornerShape(8.dp))
             .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
             .clickable {
@@ -35,10 +35,10 @@ fun VariableReferenceBlock(variable: Variable, viewModel: VariableViewModel) {
     ) {
         Text(
             text = variable.name,
-            fontSize = 12.sp,
+            fontSize = 14.sp,
             color = Color.White,
             fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(horizontal = 4.dp)
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
         )
     }
 }

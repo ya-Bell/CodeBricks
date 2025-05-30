@@ -8,6 +8,8 @@ import com.example.codebricks.blocks.logic.DraggableElseIfBlock
 import com.example.codebricks.blocks.logic.DraggableEndIfBlock
 import com.example.codebricks.blocks.logic.elseblocks.DraggableElseBlock
 import com.example.codebricks.blocks.logic.ifblocks.DraggableIfBlock
+import com.example.codebricks.blocks.loops.whileblocks.DraggableWhileBlock
+import com.example.codebricks.blocks.loops.whileendblocks.DraggableWhileEndBlock
 import com.example.codebricks.blocks.math.DraggableMathBlock
 import com.example.codebricks.blocks.print.DraggablePrintBlock
 import com.example.codebricks.blocks.variables.varchangeby.DraggableChangeVariableBlock
@@ -162,6 +164,27 @@ fun RenderBlockTree(
 
         BlockType.END_IF -> {
             DraggableEndIfBlock(
+                id = block.id,
+                containerWidth = containerWidth,
+                containerHeight = containerHeight,
+                onDelete = onDelete,
+                viewModel = viewModel
+            )
+        }
+
+        BlockType.WHILE -> {
+            DraggableWhileBlock(
+                id = block.id,
+                inputBlocks = block.inputBlocks,
+                containerWidth = containerWidth,
+                containerHeight = containerHeight,
+                onDelete = onDelete,
+                viewModel = viewModel
+            )
+        }
+
+        BlockType.WHILE_END -> {
+            DraggableWhileEndBlock(
                 id = block.id,
                 containerWidth = containerWidth,
                 containerHeight = containerHeight,

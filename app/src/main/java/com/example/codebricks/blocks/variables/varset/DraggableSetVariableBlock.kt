@@ -6,10 +6,12 @@ import androidx.compose.animation.core.VectorConverter
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
@@ -474,8 +476,9 @@ fun DraggableSetVariableBlock(
                             singleLine = true,
                             textStyle = TextStyle(fontSize = 12.sp, color = if (isError.value) Color.Red else Color.Black),
                             modifier = Modifier
-                                .padding(horizontal = 4.dp, vertical = 8.dp)
-                                .widthIn(min = 32.dp)
+                                .padding(horizontal = 8.dp)
+                                .width(IntrinsicSize.Min)
+                                .focusable()
                         )
                     }
                 }
