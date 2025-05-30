@@ -54,7 +54,8 @@ import kotlin.math.roundToInt
 fun DraggableReferenceBlock(
     id: String,
     variable: Variable,
-    viewModel: VariableViewModel
+    viewModel: VariableViewModel,
+    onDelete: (String) -> Unit = {}
 ) {
     val currentId = remember { mutableStateOf(id) }
     val scope = rememberCoroutineScope()
@@ -178,7 +179,15 @@ fun DraggableReferenceBlock(
                                     BlockType.MATH_ADD,
                                     BlockType.MATH_SUBTRACT,
                                     BlockType.MATH_MULTIPLY,
-                                    BlockType.MATH_DIVIDE
+                                    BlockType.MATH_DIVIDE,
+                                    BlockType.IF,
+                                    BlockType.ELSE_IF,
+                                    BlockType.COMPARISON_EQUAL,
+                                    BlockType.COMPARISON_GREATER,
+                                    BlockType.COMPARISON_LESS,
+                                    BlockType.LOGIC_AND,
+                                    BlockType.LOGIC_OR,
+                                    BlockType.LOGIC_NOT
                                 )
                             }
                             .map { it.copy(bounds = it.bounds.translate(BlockPositionTracker.canvasOffset)) }

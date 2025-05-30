@@ -17,13 +17,17 @@ import androidx.compose.ui.unit.dp
 import com.example.codebricks.R
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.control.CreateControlBlock
+import com.example.codebricks.blocks.logic.elseblocks.ElseBlock
+import com.example.codebricks.blocks.logic.elseifblocks.ElseIfBlock
+import com.example.codebricks.blocks.logic.endifblocks.EndIfBlock
+import com.example.codebricks.blocks.logic.ifblocks.IfBlock
 import com.example.codebricks.blocks.math.MathBlockButton
 import com.example.codebricks.blocks.print.CreatePrintBlock
-import com.example.codebricks.blocks.variables.varconvert.ConvertVariable
-import com.example.codebricks.blocks.variables.varset.SetVariableButton
 import com.example.codebricks.blocks.variables.varchangeby.ChangeVariableButton
+import com.example.codebricks.blocks.variables.varconvert.ConvertVariable
 import com.example.codebricks.blocks.variables.vardeclare.DeclareVariable
 import com.example.codebricks.blocks.variables.varreference.VariableReferenceBlock
+import com.example.codebricks.blocks.variables.varset.SetVariableButton
 import com.example.codebricks.ui.theme.CodeBricksTheme
 import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.viewmodel.blocks.declareMathBlock
@@ -99,7 +103,23 @@ fun BlockSection(selectedClass: String, viewModel: VariableViewModel) {
             }
 
             "Logic" -> {
-                Text(stringResource(id = R.string.logic_blocks))
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    item {
+                        IfBlock(viewModel)
+                    }
+                    item {
+                        ElseIfBlock(viewModel)
+                    }
+                    item {
+                        ElseBlock(viewModel)
+                    }
+                    item {
+                        EndIfBlock(viewModel)
+                    }
+                }
             }
 
             "Input/Output" -> {

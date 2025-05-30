@@ -9,5 +9,7 @@ data class Block(
     var nextBlockId: String? = null, //  связь с другим блоком
     var changeSign: String = "+",
     var changeAmount: Int = 0,
-    val creationTime: Long = System.currentTimeMillis() // время создания блока для определения порядка
+    val creationTime: Long = System.currentTimeMillis(), // время создания блока для определения порядка
+    val operator: String = "==",
+    val variable: String = ""
 )

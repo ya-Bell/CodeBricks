@@ -14,7 +14,7 @@ fun WorkSpaceSection(viewModel: VariableViewModel, modifier: Modifier = Modifier
     val screenHeight = configuration.screenHeightDp
 
     Column(modifier = modifier.fillMaxWidth()) {
-        WorkspaceHeader()
+        WorkspaceHeader(viewModel = viewModel)
 
         WorkspaceCanvas(
             viewModel = viewModel,

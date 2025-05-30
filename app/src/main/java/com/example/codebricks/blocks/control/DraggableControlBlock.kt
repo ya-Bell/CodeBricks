@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -18,7 +17,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -48,8 +46,6 @@ fun DraggableControlBlock(
     viewModel: VariableViewModel
 ) {
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
-    var showDeleteIcon by remember { mutableStateOf(false) }
-    var dragStartTime by remember { mutableLongStateOf(0L) }
     var isPressed by remember { mutableStateOf(false) }
     var isBeingDragged by remember { mutableStateOf(false) }
 
@@ -58,64 +54,54 @@ fun DraggableControlBlock(
         BlockPositionTracker.updateBlockPosition(id, newOffset)
     }
 
-    Box(modifier = Modifier
-        .offset {
-            val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 44f)
-            IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
-        }
-        .requiredSize(140.dp, 40.dp)
-        .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
-        .clip(RoundedCornerShape(12.dp))
-        .background(if (type == "Start") Color(0xFF4CAF50) else Color(0xFFf44336))
-        .zIndex(if (isBeingDragged) 100f else 1f)
-        .pointerInput(Unit) {
-            detectDragGestures(
-                onDragStart = {
-                    isBeingDragged = true
-                    isPressed = true
-                    dragStartTime = System.currentTimeMillis()
-                },
-                onDrag = { change, dragAmount ->
-                    change.consume()
-                    offset = Offset(
-                        offset.x + dragAmount.x,
-                        offset.y + dragAmount.y
-                    )
-                    if (System.currentTimeMillis() - dragStartTime >= 2500) {
-                        showDeleteIcon = true
+    Box(
+        modifier = Modifier
+            .offset {
+                val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 44f)
+                IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
+            }
+            .requiredSize(140.dp, 40.dp)
+            .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (type == "Start") Color(0xFF4CAF50) else Color(0xFFf44336))
+            .zIndex(if (isBeingDragged) 100f else 1f)
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragStart = {
+                        isBeingDragged = true
+                        isPressed = true
+                    },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        offset = Offset(
+                            offset.x + dragAmount.x,
+                            offset.y + dragAmount.y
+                        )
+                    },
+                    onDragEnd = {
+                        isBeingDragged = false
                     }
-                },
-                onDragEnd = {
-                    isBeingDragged = false
-                }
-            )
-        }
-        .pointerInput(Unit) {
-            detectTapGestures(
-                onPress = {
-                    isPressed = false
-                    showDeleteIcon = false
-                }
-            )
-        }
-    ) {
-        if (showDeleteIcon) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(4.dp)
-                    .clickable {
-                        onDelete(id)
-                    }) {
-                Icon(
-                    imageVector = Icons.Filled.Close,
-                    contentDescription = "Delete Block",
-                    modifier = Modifier.size(12.dp),
-                    tint = Color.Black
                 )
             }
+    ) {
+        // Крестик для удаления блока сразу
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(4.dp)
+                .clickable {
+                    onDelete(id) // Удаление блока
+                }
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Close,
+                contentDescription = "Delete Block",
+                modifier = Modifier.size(12.dp),
+                tint = Color.Black
+            )
         }
 
+        // Отображение текста
         Text(
             text = type,
             modifier = Modifier
@@ -127,3 +113,4 @@ fun DraggableControlBlock(
         )
     }
 }
+

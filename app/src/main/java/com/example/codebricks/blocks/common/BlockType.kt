@@ -36,6 +36,8 @@ enum class BlockType {
     FUNCTION_CALL,
 
     IF,
+    ELSE_IF,
     ELSE,
+    END_IF,
     WHILE
 }

@@ -376,7 +376,11 @@ fun DraggableSetVariableBlock(
                                     DraggableReferenceBlock(
                                         id = valueBlock.id,
                                         variable = variable,
-                                        viewModel = viewModel
+                                        viewModel = viewModel,
+                                        onDelete = {
+                                            viewModel.removeBlockRecursively(valueBlock.id)
+                                            if (block.inputBlocks.size > 1) block.inputBlocks[1] = null
+                                        }
                                     )
                                 }
                             }

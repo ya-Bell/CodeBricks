@@ -192,7 +192,6 @@ fun DraggableMathBlock(
                                 canvasOffset?.let { animOffset.snapTo(it) }
                             }
 
-                            // Находим все копии блока и удаляем их
                             fun removeAllCopies(blockId: String) {
                                 viewModel.programBlocks.forEach { block ->
                                     for (i in block.inputBlocks.indices) {
@@ -203,10 +202,8 @@ fun DraggableMathBlock(
                                 }
                             }
 
-                            // Удаляем все копии блока
                             removeAllCopies(id)
 
-                            // Обновляем позицию блока
                             BlockPositionTracker.updateBlockPosition(id, canvasOffset ?: Offset.Zero)
                             BlockPositionTracker.redrawTrigger.intValue++
                         }
@@ -243,7 +240,15 @@ fun DraggableMathBlock(
                                     BlockType.MATH_ADD,
                                     BlockType.MATH_SUBTRACT,
                                     BlockType.MATH_MULTIPLY,
-                                    BlockType.MATH_DIVIDE
+                                    BlockType.MATH_DIVIDE,
+                                    BlockType.IF,
+                                    BlockType.ELSE_IF,
+                                    BlockType.COMPARISON_EQUAL,
+                                    BlockType.COMPARISON_GREATER,
+                                    BlockType.COMPARISON_LESS,
+                                    BlockType.LOGIC_AND,
+                                    BlockType.LOGIC_OR,
+                                    BlockType.LOGIC_NOT
                                 )
                                 isValidTarget
                             }
@@ -272,20 +277,18 @@ fun DraggableMathBlock(
             },
         contentAlignment = Alignment.Center
     ) {
-        if (showDeleteIcon) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .clickable { onDelete(id) }
-                    .padding(4.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = "Delete",
-                    modifier = Modifier.size(12.dp),
-                    tint = Color.Black
-                )
-            }
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .clickable { onDelete(id) }
+                .padding(4.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = "Delete",
+                modifier = Modifier.size(12.dp),
+                tint = Color.Black
+            )
         }
 
         Row(
@@ -312,6 +315,7 @@ fun DraggableMathBlock(
         }
     }
 }
+
 
 @Composable
 fun MathInputSlot(
@@ -394,6 +398,9 @@ fun MathInputSlot(
                         DraggableReferenceBlock(
                             id = block.id,
                             variable = variable,
+                            onDelete = { id ->
+                                viewModel.removeBlockById(id)
+                            },
                             viewModel = viewModel
                         )
                     } else {
@@ -424,7 +431,7 @@ fun MathInputSlot(
                         // Находим родительский блок
                         val parentBlock = viewModel.findBlockById(parentId)
                         if (parentBlock != null) {
-                            // Расширяем список inputBlocks если нужно
+
                             while (parentBlock.inputBlocks.size <= slotIndex) {
                                 parentBlock.inputBlocks.add(null)
                             }
