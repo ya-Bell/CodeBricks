@@ -185,19 +185,42 @@ fun DraggableSetVariableBlock(
                             canvasOffset?.let { animOffset.snapTo(it) }
                         }
 
-                        // Сохраняем все вложенные блоки
-                        val nestedBlocks = mutableListOf<Block>()
-                        block.inputBlocks.filterNotNull().forEach { inputBlock ->
-                            nestedBlocks.add(inputBlock)
+                        // Убеждаемся, что блок есть в programBlocks
+                        val currentBlock = viewModel.findBlockById(id)
+                        if (currentBlock == null) {
+                            val block = Block(
+                                id = id,
+                                type = BlockType.VARIABLE_SET,
+                                inputBlocks = inputBlocks.toMutableList()
+                            )
+                            viewModel.addBlock(block)
                         }
 
-                        // Удаляем блок из родителя
+                        // Сохраняем все вложенные блоки и их состояния
+                        val nestedBlocks = mutableListOf<Block>()
+                        currentBlock?.inputBlocks?.filterNotNull()?.forEach { inputBlock ->
+                            // Рекурсивно копируем вложенные блоки
+                            fun copyBlockWithChildren(block: Block): Block {
+                                val newBlock = Block(
+                                    id = block.id,
+                                    type = block.type,
+                                    inputBlocks = block.inputBlocks.map { child ->
+                                        child?.let { copyBlockWithChildren(it) }
+                                    }.toMutableList(),
+                                    value = block.value
+                                )
+                                return newBlock
+                            }
+                            nestedBlocks.add(copyBlockWithChildren(inputBlock))
+                        }
+
+                        // Удаляем блок из родителя, но НЕ из programBlocks
                         viewModel.removeBlockFromParent(id)
 
                         // Восстанавливаем вложенные блоки
-                        block.inputBlocks.clear()
+                        currentBlock?.inputBlocks?.clear()
                         nestedBlocks.forEach { nestedBlock ->
-                            block.inputBlocks.add(nestedBlock)
+                            currentBlock?.inputBlocks?.add(nestedBlock)
                         }
 
                         // Обновляем позицию блока
@@ -226,12 +249,15 @@ fun DraggableSetVariableBlock(
                             val isValidTarget = slotParentBlock != null &&
                                 slot.blockId != id &&
                                 !viewModel.isRecursiveInsertion(id, slot.blockId) &&
-                                slotParentBlock.type in listOf(
-                                    BlockType.VARIABLE_SET,
-                                    BlockType.MATH_ADD,
-                                    BlockType.MATH_SUBTRACT,
-                                    BlockType.MATH_MULTIPLY,
-                                    BlockType.MATH_DIVIDE
+                                slotParentBlock.type !in listOf(
+                                    BlockType.IF,
+                                    BlockType.ELSE_IF,
+                                    BlockType.COMPARISON_EQUAL,
+                                    BlockType.COMPARISON_GREATER,
+                                    BlockType.COMPARISON_LESS,
+                                    BlockType.LOGIC_AND,
+                                    BlockType.LOGIC_OR,
+                                    BlockType.LOGIC_NOT
                                 )
                             isValidTarget
                         }
@@ -394,8 +420,9 @@ fun DraggableSetVariableBlock(
                                     containerWidth = 0f,
                                     containerHeight = 0f,
                                     onDelete = {
-                                        viewModel.removeBlockRecursively(valueBlock.id)
+                                        // Только очищаем слот, не удаляем блок полностью
                                         if (block.inputBlocks.size > 1) block.inputBlocks[1] = null
+                                        BlockPositionTracker.redrawTrigger.intValue++
                                     },
                                     viewModel = viewModel
                                 )

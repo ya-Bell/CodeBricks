@@ -77,6 +77,8 @@ import com.example.codebricks.viewmodel.slot.setRecentlyInsertedSlot
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import kotlinx.coroutines.delay
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -160,24 +162,33 @@ fun DraggableIfBlock(
                             val matchedSlot = BlockSlotTracker.getAllSlots()
                                 .filter { slot ->
                                     val slotParentBlock = viewModel.findBlockById(slot.blockId)
+                                    val draggedBlock = viewModel.findBlockById(id) ?: return@filter false
                                     val isValidTarget = slotParentBlock != null &&
                                         slot.blockId != id &&
                                         !viewModel.isRecursiveInsertion(id, slot.blockId) &&
-                                        slotParentBlock.type in listOf(
-                                            BlockType.IF,
-                                            BlockType.ELSE_IF,
-                                            BlockType.VARIABLE_SET,
-                                            BlockType.MATH_ADD,
-                                            BlockType.MATH_SUBTRACT,
-                                            BlockType.MATH_MULTIPLY,
-                                            BlockType.MATH_DIVIDE,
-                                            BlockType.COMPARISON_EQUAL,
-                                            BlockType.COMPARISON_GREATER,
-                                            BlockType.COMPARISON_LESS,
-                                            BlockType.LOGIC_AND,
-                                            BlockType.LOGIC_OR,
-                                            BlockType.LOGIC_NOT
-                                        )
+                                        when (slotParentBlock.type) {
+                                            BlockType.IF, BlockType.ELSE_IF -> draggedBlock.type in listOf(
+                                                BlockType.VARIABLE_REFERENCE,
+                                                BlockType.MATH_ADD,
+                                                BlockType.MATH_SUBTRACT,
+                                                BlockType.MATH_MULTIPLY,
+                                                BlockType.MATH_DIVIDE,
+                                                BlockType.COMPARISON_EQUAL,
+                                                BlockType.COMPARISON_GREATER,
+                                                BlockType.COMPARISON_LESS,
+                                                BlockType.LOGIC_AND,
+                                                BlockType.LOGIC_OR,
+                                                BlockType.LOGIC_NOT
+                                            )
+                                            BlockType.VARIABLE_SET -> draggedBlock.type in listOf(
+                                                BlockType.VARIABLE_REFERENCE,
+                                                BlockType.MATH_ADD,
+                                                BlockType.MATH_SUBTRACT,
+                                                BlockType.MATH_MULTIPLY,
+                                                BlockType.MATH_DIVIDE
+                                            )
+                                            else -> false
+                                        }
                                     isValidTarget
                                 }
                                 .map { it.copy(bounds = it.bounds.translate(BlockPositionTracker.canvasOffset)) }
@@ -225,7 +236,9 @@ fun DraggableIfBlock(
         }
 
         Row(
-            modifier = Modifier.align(Alignment.Center),
+            modifier = Modifier
+                .align(Alignment.Center)
+                .horizontalScroll(rememberScrollState()),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text("if", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)

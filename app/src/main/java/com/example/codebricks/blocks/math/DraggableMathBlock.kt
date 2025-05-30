@@ -68,6 +68,7 @@ import com.example.codebricks.viewmodel.slot.tryInsertIntoSlot
 import com.example.codebricks.viewmodel.tree.collectDescendantIds
 import com.example.codebricks.viewmodel.tree.findBlockById
 import com.example.codebricks.viewmodel.tree.findBlockContaining
+import com.example.codebricks.viewmodel.tree.removeBlockFromParent
 import com.example.codebricks.viewmodel.tree.removeBlockRecursively
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -192,18 +193,46 @@ fun DraggableMathBlock(
                                 canvasOffset?.let { animOffset.snapTo(it) }
                             }
 
-                            fun removeAllCopies(blockId: String) {
-                                viewModel.programBlocks.forEach { block ->
-                                    for (i in block.inputBlocks.indices) {
-                                        if (block.inputBlocks[i]?.id == blockId) {
-                                            block.inputBlocks[i] = null
-                                        }
-                                    }
-                                }
+                            // Убеждаемся, что блок есть в programBlocks
+                            val currentBlock = viewModel.findBlockById(id)
+                            if (currentBlock == null) {
+                                // Если блока нет в programBlocks, добавляем его
+                                val block = Block(
+                                    id = id,
+                                    type = type,
+                                    inputBlocks = inputBlocks.toMutableList()
+                                )
+                                viewModel.addBlock(block)
                             }
 
-                            removeAllCopies(id)
+                            // Сохраняем все вложенные блоки и их состояния
+                            val nestedBlocks = mutableListOf<Block>()
+                            currentBlock?.inputBlocks?.filterNotNull()?.forEach { inputBlock ->
+                                // Рекурсивно копируем вложенные блоки
+                                fun copyBlockWithChildren(block: Block): Block {
+                                    val newBlock = Block(
+                                        id = block.id,
+                                        type = block.type,
+                                        inputBlocks = block.inputBlocks.map { child ->
+                                            child?.let { copyBlockWithChildren(it) }
+                                        }.toMutableList(),
+                                        value = block.value
+                                    )
+                                    return newBlock
+                                }
+                                nestedBlocks.add(copyBlockWithChildren(inputBlock))
+                            }
 
+                            // Удаляем блок из родителя, но НЕ из programBlocks
+                            viewModel.removeBlockFromParent(id)
+
+                            // Восстанавливаем вложенные блоки
+                            currentBlock?.inputBlocks?.clear()
+                            nestedBlocks.forEach { nestedBlock ->
+                                currentBlock?.inputBlocks?.add(nestedBlock)
+                            }
+
+                            // Обновляем позицию блока
                             BlockPositionTracker.updateBlockPosition(id, canvasOffset ?: Offset.Zero)
                             BlockPositionTracker.redrawTrigger.intValue++
                         }

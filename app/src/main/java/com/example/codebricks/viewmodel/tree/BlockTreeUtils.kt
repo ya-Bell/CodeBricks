@@ -13,6 +13,14 @@ fun VariableViewModel.removeBlockRecursively(blockId: String) {
 
 // Рекурсивно удаляет блок из inputBlocks и children всех блоков
 fun VariableViewModel.removeBlockFromParent(childId: String) {
+    // Сначала находим блок, который нужно удалить
+    val blockToRemove = findBlockById(childId)
+    if (blockToRemove == null) return
+
+    if (!_programBlocks.value.any { it.id == childId }) {
+        _programBlocks.value = _programBlocks.value + blockToRemove
+    }
+
     fun removeFrom(block: Block): Block {
         val newInputs = block.inputBlocks.map { input ->
             when {

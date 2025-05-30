@@ -26,21 +26,65 @@ fun VariableViewModel.tryInsertIntoSlot(position: Offset, blockId: String) {
             val isValidTarget = slotParentBlock != null &&
                 !isRecursiveInsertion(blockId, slot.blockId) &&
                 slot.blockId != blockId &&
-                slotParentBlock.type in listOf(
-                    BlockType.VARIABLE_SET,
+                when (slotParentBlock.type) {
+                    BlockType.IF, BlockType.ELSE_IF -> draggedBlock.type in listOf(
+                        BlockType.VARIABLE_REFERENCE,
+                        BlockType.MATH_ADD,
+                        BlockType.MATH_SUBTRACT,
+                        BlockType.MATH_MULTIPLY,
+                        BlockType.MATH_DIVIDE,
+                        BlockType.COMPARISON_EQUAL,
+                        BlockType.COMPARISON_GREATER,
+                        BlockType.COMPARISON_LESS,
+                        BlockType.LOGIC_AND,
+                        BlockType.LOGIC_OR,
+                        BlockType.LOGIC_NOT
+                    )
+                    BlockType.VARIABLE_SET -> draggedBlock.type in listOf(
+                        BlockType.VARIABLE_REFERENCE,
+                        BlockType.MATH_ADD,
+                        BlockType.MATH_SUBTRACT,
+                        BlockType.MATH_MULTIPLY,
+                        BlockType.MATH_DIVIDE
+                    )
                     BlockType.MATH_ADD,
                     BlockType.MATH_SUBTRACT,
                     BlockType.MATH_MULTIPLY,
-                    BlockType.MATH_DIVIDE,
-                    BlockType.IF,
-                    BlockType.ELSE_IF,
+                    BlockType.MATH_DIVIDE -> draggedBlock.type in listOf(
+                        BlockType.VARIABLE_REFERENCE,
+                        BlockType.MATH_ADD,
+                        BlockType.MATH_SUBTRACT,
+                        BlockType.MATH_MULTIPLY,
+                        BlockType.MATH_DIVIDE
+                    )
                     BlockType.COMPARISON_EQUAL,
                     BlockType.COMPARISON_GREATER,
-                    BlockType.COMPARISON_LESS,
+                    BlockType.COMPARISON_LESS -> draggedBlock.type in listOf(
+                        BlockType.VARIABLE_REFERENCE,
+                        BlockType.MATH_ADD,
+                        BlockType.MATH_SUBTRACT,
+                        BlockType.MATH_MULTIPLY,
+                        BlockType.MATH_DIVIDE
+                    )
                     BlockType.LOGIC_AND,
-                    BlockType.LOGIC_OR,
-                    BlockType.LOGIC_NOT
-                ) &&
+                    BlockType.LOGIC_OR -> draggedBlock.type in listOf(
+                        BlockType.COMPARISON_EQUAL,
+                        BlockType.COMPARISON_GREATER,
+                        BlockType.COMPARISON_LESS,
+                        BlockType.LOGIC_AND,
+                        BlockType.LOGIC_OR,
+                        BlockType.LOGIC_NOT
+                    )
+                    BlockType.LOGIC_NOT -> draggedBlock.type in listOf(
+                        BlockType.COMPARISON_EQUAL,
+                        BlockType.COMPARISON_GREATER,
+                        BlockType.COMPARISON_LESS,
+                        BlockType.LOGIC_AND,
+                        BlockType.LOGIC_OR,
+                        BlockType.LOGIC_NOT
+                    )
+                    else -> false
+                } &&
                 // Проверяем, что целевой блок не является частью перетаскиваемого блока
                 !isBlockInDraggedTree(slot.blockId, blockId)
             
