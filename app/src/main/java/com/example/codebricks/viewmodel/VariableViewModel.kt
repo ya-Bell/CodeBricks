@@ -214,6 +214,28 @@ class VariableViewModel : ViewModel() {
                                 val result = MathExpressionEvaluator.evaluate(block)
                                 logToConsole("🧮 Result of math expression: $result")
                             }
+                            BlockType.VARIABLE_CHANGE -> {
+                                val targetVar = block.inputBlocks.getOrNull(0)?.value as? Variable
+                                if (targetVar == null) {
+                                    logToConsole("❌ Error: No variable selected in Change block.")
+                                } else {
+                                    declaredVariables[targetVar.name]?.let { memoryVar ->
+                                        val currentValue = when (memoryVar.value) {
+                                            is Int -> memoryVar.value as Int
+                                            is Double -> (memoryVar.value as Double).toInt()
+                                            else -> 0
+                                        }
+                                        val changeAmount = if (block.changeSign == "+") block.changeAmount else -block.changeAmount
+                                        val newValue = currentValue + changeAmount
+                                        memoryVar.value = when (memoryVar.type) {
+                                            "int" -> newValue
+                                            "double" -> newValue.toDouble()
+                                            else -> newValue
+                                        }
+                                        logToConsole("✅ Changed ${memoryVar.name} by ${if (changeAmount >= 0) "+$changeAmount" else changeAmount} to ${memoryVar.value}")
+                                    } ?: logToConsole("❌ Error: variable '${targetVar.name}' not declared")
+                                }
+                            }
                             else -> {}
                         }
                     }
@@ -282,8 +304,7 @@ class VariableViewModel : ViewModel() {
                     conversionResult.isSuccess -> {
                         declaredVar.value = conversionResult.getOrNull()!!
                         logToConsole("✅ Input accepted: ${declaredVar.name} = ${declaredVar.value}", true)
-                        logToConsole("-------------------", true)
-                        
+
                         // Сбрасываем флаги ожидания
                         waitingForInput = false
                         waitingVariable = null

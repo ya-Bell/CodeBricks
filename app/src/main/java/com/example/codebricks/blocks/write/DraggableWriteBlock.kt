@@ -64,7 +64,7 @@ fun DraggableWriteBlock(
         }
         .wrapContentWidth()
         .height(40.dp)
-        .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
+        .border(2.dp, Color.White, RoundedCornerShape(12.dp))
         .clip(RoundedCornerShape(12.dp))
         .background(Color(0xFFE57373))
         .pointerInput(Unit) {

@@ -32,7 +32,7 @@ fun CreateWriteBlock(viewModel: VariableViewModel) {
         .wrapContentWidth()
 
     val buttonColors = ButtonDefaults.buttonColors(
-        containerColor = Color(0xFFE57373), contentColor = Color.Black
+        containerColor = Color(0xFFE57373), contentColor = Color.White
     )
 
     Button(
