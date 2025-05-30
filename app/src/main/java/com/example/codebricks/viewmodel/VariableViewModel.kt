@@ -8,7 +8,6 @@ import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker.redrawTrigger
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
 import com.example.codebricks.viewmodel.blocks.findUsedReferenceBlocks
-import com.example.codebricks.viewmodel.conversion.formatValueForOutput
 import com.example.codebricks.viewmodel.tree.findBlockById
 
 // Модель данных для переменной
@@ -210,7 +209,7 @@ class VariableViewModel : ViewModel() {
                                     } ?: logToConsole("❌ Error: variable '${variable.name}' not declared", true)
                                 }
                             }
-                            BlockType.MATH_ADD, BlockType.MATH_SUBTRACT, BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE -> {
+                            BlockType.MATH_ADD, BlockType.MATH_SUBTRACT, BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE,BlockType.MATH_MODULO -> {
                                 val result = MathExpressionEvaluator.evaluate(block)
                                 logToConsole("🧮 Result of math expression: $result")
                             }
@@ -225,14 +224,21 @@ class VariableViewModel : ViewModel() {
                                             is Double -> (memoryVar.value as Double).toInt()
                                             else -> 0
                                         }
-                                        val changeAmount = if (block.changeSign == "+") block.changeAmount else -block.changeAmount
-                                        val newValue = currentValue + changeAmount
+                                        val changeAmount = block.changeAmount
+                                        val newValue = when (block.changeSign) {
+                                            "+" -> currentValue + changeAmount
+                                            "-" -> currentValue - changeAmount
+                                            "*" -> currentValue * changeAmount
+                                            "/" -> if (changeAmount != 0) currentValue / changeAmount else currentValue
+                                            "%" -> if (changeAmount != 0) currentValue % changeAmount else currentValue
+                                            else -> currentValue
+                                        }
                                         memoryVar.value = when (memoryVar.type) {
                                             "int" -> newValue
                                             "double" -> newValue.toDouble()
                                             else -> newValue
                                         }
-                                        logToConsole("✅ Changed ${memoryVar.name} by ${if (changeAmount >= 0) "+$changeAmount" else changeAmount} to ${memoryVar.value}")
+                                        logToConsole("✅ Changed ${memoryVar.name} by ${block.changeSign}$changeAmount to ${memoryVar.value}")
                                     } ?: logToConsole("❌ Error: variable '${targetVar.name}' not declared")
                                 }
                             }
@@ -393,7 +399,8 @@ class VariableViewModel : ViewModel() {
             BlockType.MATH_ADD,
             BlockType.MATH_SUBTRACT,
             BlockType.MATH_MULTIPLY,
-            BlockType.MATH_DIVIDE -> {
+            BlockType.MATH_DIVIDE,
+            BlockType.MATH_MODULO -> {
                 MathExpressionEvaluator.evaluate(leftBlock)
             }
             else -> {
@@ -410,7 +417,8 @@ class VariableViewModel : ViewModel() {
             BlockType.MATH_ADD,
             BlockType.MATH_SUBTRACT,
             BlockType.MATH_MULTIPLY,
-            BlockType.MATH_DIVIDE -> {
+            BlockType.MATH_DIVIDE,
+            BlockType.MATH_MODULO -> {
                 MathExpressionEvaluator.evaluate(rightBlock)
             }
             else -> {

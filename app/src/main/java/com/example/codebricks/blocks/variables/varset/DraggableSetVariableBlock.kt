@@ -414,7 +414,7 @@ fun DraggableSetVariableBlock(
                             }
 
                             BlockType.MATH_ADD, BlockType.MATH_SUBTRACT,
-                            BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE -> {
+                            BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE,BlockType.MATH_MODULO -> {
                                 DraggableMathBlock(
                                     id = valueBlock.id,
                                     type = valueBlock.type,

@@ -43,7 +43,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.codebricks.R
 import com.example.codebricks.viewmodel.VariableViewModel
 
@@ -52,7 +51,7 @@ import com.example.codebricks.viewmodel.VariableViewModel
 fun ConsoleSection(viewModel: VariableViewModel) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp
-    val consoleHeight = screenHeight * 0.22f
+    val consoleHeight = screenHeight * 0.18f
 
     val scrollStateVertical = rememberScrollState()
     var userInput by remember { mutableStateOf("") }
@@ -74,7 +73,7 @@ fun ConsoleSection(viewModel: VariableViewModel) {
                 .border(
                     1.dp, Color.Gray, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
                 )
-                .padding(horizontal = 12.dp, vertical = 2.dp)
+                .padding(horizontal = 8.dp, vertical = 1.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -147,7 +146,7 @@ fun ConsoleSection(viewModel: VariableViewModel) {
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color(0xFFE0E0E0))
-                .padding(8.dp),
+                .padding(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             CompactTextField(
@@ -184,8 +183,8 @@ fun CompactTextField(
                 .border(1.dp, borderColor, shape)
                 .clip(shape)
                 .background(Color(0xFFF8F8F8))
-                .height(30.dp)
-                .padding(horizontal = 8.dp),
+                .height(24.dp)
+                .padding(horizontal = 6.dp),
             contentAlignment = Alignment.CenterStart
 
         ) {

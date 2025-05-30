@@ -33,6 +33,7 @@ fun VariableViewModel.tryInsertIntoSlot(position: Offset, blockId: String) {
                         BlockType.MATH_SUBTRACT,
                         BlockType.MATH_MULTIPLY,
                         BlockType.MATH_DIVIDE,
+                        BlockType.MATH_MODULO,
                         BlockType.COMPARISON_EQUAL,
                         BlockType.COMPARISON_GREATER,
                         BlockType.COMPARISON_LESS,
@@ -45,17 +46,20 @@ fun VariableViewModel.tryInsertIntoSlot(position: Offset, blockId: String) {
                         BlockType.MATH_ADD,
                         BlockType.MATH_SUBTRACT,
                         BlockType.MATH_MULTIPLY,
-                        BlockType.MATH_DIVIDE
+                        BlockType.MATH_DIVIDE,
+                        BlockType.MATH_MODULO
                     )
                     BlockType.MATH_ADD,
                     BlockType.MATH_SUBTRACT,
                     BlockType.MATH_MULTIPLY,
-                    BlockType.MATH_DIVIDE -> draggedBlock.type in listOf(
+                    BlockType.MATH_DIVIDE,
+                    BlockType.MATH_MODULO-> draggedBlock.type in listOf(
                         BlockType.VARIABLE_REFERENCE,
                         BlockType.MATH_ADD,
                         BlockType.MATH_SUBTRACT,
                         BlockType.MATH_MULTIPLY,
-                        BlockType.MATH_DIVIDE
+                        BlockType.MATH_DIVIDE,
+                        BlockType.MATH_MODULO
                     )
                     BlockType.COMPARISON_EQUAL,
                     BlockType.COMPARISON_GREATER,
@@ -64,7 +68,8 @@ fun VariableViewModel.tryInsertIntoSlot(position: Offset, blockId: String) {
                         BlockType.MATH_ADD,
                         BlockType.MATH_SUBTRACT,
                         BlockType.MATH_MULTIPLY,
-                        BlockType.MATH_DIVIDE
+                        BlockType.MATH_DIVIDE,
+                        BlockType.MATH_MODULO
                     )
                     BlockType.LOGIC_AND,
                     BlockType.LOGIC_OR -> draggedBlock.type in listOf(

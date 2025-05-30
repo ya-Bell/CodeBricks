@@ -48,7 +48,7 @@ fun RenderBlockTree(
     }
 
     when (block.type) {
-        BlockType.MATH_ADD, BlockType.MATH_SUBTRACT, BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE -> {
+        BlockType.MATH_ADD, BlockType.MATH_SUBTRACT, BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE, BlockType.MATH_MODULO -> {
             DraggableMathBlock(
                 id = block.id,
                 type = block.type,

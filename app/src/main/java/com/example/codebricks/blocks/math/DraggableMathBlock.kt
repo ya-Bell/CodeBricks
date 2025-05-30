@@ -101,6 +101,7 @@ fun DraggableMathBlock(
         BlockType.MATH_SUBTRACT -> "-"
         BlockType.MATH_MULTIPLY -> "×"
         BlockType.MATH_DIVIDE -> "÷"
+        BlockType.MATH_MODULO -> "%"
         else -> "?"
     }
 
@@ -273,6 +274,7 @@ fun DraggableMathBlock(
                                     BlockType.MATH_SUBTRACT,
                                     BlockType.MATH_MULTIPLY,
                                     BlockType.MATH_DIVIDE,
+                                    BlockType.MATH_MODULO,
                                     BlockType.IF,
                                     BlockType.ELSE_IF,
                                     BlockType.COMPARISON_EQUAL,
@@ -409,7 +411,8 @@ fun MathInputSlot(
                 BlockType.MATH_ADD,
                 BlockType.MATH_SUBTRACT,
                 BlockType.MATH_MULTIPLY,
-                BlockType.MATH_DIVIDE -> {
+                BlockType.MATH_DIVIDE,
+                BlockType.MATH_MODULO-> {
                     if (!viewModel.programBlocks.any { it.id == block.id }) {
                         viewModel.addBlock(block)
                     }

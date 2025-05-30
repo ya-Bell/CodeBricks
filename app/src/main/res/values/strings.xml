@@ -110,6 +110,7 @@
     <string name="math_subtract">[ ] - [ ]</string>
     <string name="math_multiply">[ ] * [ ]</string>
     <string name="math_divide">[ ] ÷ [ ]</string>
+    <string name="math_modulo">[ ] % [ ]</string>
 
     <string name="add_operator">+</string>
     <string name="subtract_operator">-</string>

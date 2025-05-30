@@ -1,6 +1,5 @@
 package com.example.codebricks.blocks.logic
 
-import android.R.attr.id
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.foundation.background
@@ -173,6 +172,7 @@ fun DraggableElseIfBlock(
                                                 BlockType.MATH_SUBTRACT,
                                                 BlockType.MATH_MULTIPLY,
                                                 BlockType.MATH_DIVIDE,
+                                                BlockType.MATH_MODULO,
                                                 BlockType.COMPARISON_EQUAL,
                                                 BlockType.COMPARISON_GREATER,
                                                 BlockType.COMPARISON_LESS,
@@ -185,7 +185,8 @@ fun DraggableElseIfBlock(
                                                 BlockType.MATH_ADD,
                                                 BlockType.MATH_SUBTRACT,
                                                 BlockType.MATH_MULTIPLY,
-                                                BlockType.MATH_DIVIDE
+                                                BlockType.MATH_DIVIDE,
+                                                BlockType.MATH_MODULO
                                             )
                                             else -> false
                                         }
@@ -354,6 +355,7 @@ fun BlockInputsSlot(
                         BlockType.MATH_SUBTRACT,
                         BlockType.MATH_MULTIPLY,
                         BlockType.MATH_DIVIDE,
+                        BlockType.MATH_MODULO,
                         BlockType.VARIABLE_REFERENCE,
                         BlockType.COMPARISON_EQUAL,
                         BlockType.COMPARISON_GREATER,

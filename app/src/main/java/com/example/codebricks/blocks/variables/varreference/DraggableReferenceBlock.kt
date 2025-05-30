@@ -182,6 +182,7 @@ fun DraggableReferenceBlock(
                                     BlockType.MATH_SUBTRACT,
                                     BlockType.MATH_MULTIPLY,
                                     BlockType.MATH_DIVIDE,
+                                    BlockType.MATH_MODULO,
                                     BlockType.IF,
                                     BlockType.ELSE_IF,
                                     BlockType.COMPARISON_EQUAL,
