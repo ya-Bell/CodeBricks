@@ -77,9 +77,9 @@ fun BottomBlockBar(
                         stringResource(id = R.string.control) to Color(0xFF3F51B5),
                         stringResource(id = R.string.variables) to Color(0xFFFFA500),
                         stringResource(id = R.string.math) to Color(0xFF4FC3F7),
-                        stringResource(id = R.string.comparison) to Color(0xFF9C27B0),
                         stringResource(id = R.string.logic) to Color(0xFF81C784),
                         stringResource(id = R.string.input_output) to Color(0xFFE57373),
+                        stringResource(id = R.string.comparison) to Color(0xFF9C27B0),
                         stringResource(id = R.string.loops) to Color(0xFFFFEB3B),
                         stringResource(id = R.string.functions) to Color(0xFFE91E63)
                     )

@@ -28,13 +28,12 @@
     <string name="functions_button">Functions</string>
 
     <string name="no_variables_created">No variables created yet.</string>
-    <string name="create_print_block">Create Print Block</string>
+    <string name="create_print_block">print [_]</string>
     <string name="select_variable_for_print">Select Variable for Print</string>
     <string name="cancel">Cancel</string>
 
-    <string name="create_start_block">Create Start Block</string>
-
-    <string name="create_stop_block">Create Stop Block</string>
+    <string name="create_start_block">Start</string>
+    <string name="create_stop_block">Stop</string>
 
     <string name="math_blocks">Math blocks go here</string>
     <string name="comparison_blocks">Comparison blocks go here</string>
@@ -44,7 +43,7 @@
 
     <string name="select_variable_to_print">Select variable to print</string>
 
-    <string name="create_variable">Create Variable</string>
+    <string name="create_variable">Declare (type) (variable) = (value)</string>
     <string name="declare_variable">Declare Variable</string>
     <string name="single">Single</string>
     <string name="multiple">Multiple</string>
@@ -87,12 +86,18 @@
     <string name="loops">Loops</string>
     <string name="functions">Functions</string>
 
-    <string name="set_variable">Set Variable</string>
+    <string name="set_variable">Set (variable) to [ ]</string>
     <string name="select_variable_and_set_value">Select Variable and Set Value</string>
     <string name="new_value_for">New Value for %1$s</string>
     <string name="set_value">Set Value</string>
-    <string name="change_variable_button">Change Variable</string>
+    <string name="change_variable_button">Change (variable) by [ ]</string>
     <string name="convert_variable">Convert Variable</string>
+
+    <string name="math_add">[ ] + [ ]</string>
+    <string name="math_subtract">[ ] - [ ]</string>
+    <string name="math_multiply">[ ] * [ ]</string>
+    <string name="math_divide">[ ] ÷ [ ]</string>
+
     <string name="add_operator">+</string>
     <string name="subtract_operator">-</string>
     <string name="multiply_operator">*</string>
@@ -135,5 +140,10 @@
     <string name="true_button">True</string>
     <string name="false_button">False</string>
     <string name="remove_button">Remove</string>
+
+    <string name="logic_if">if [ ] [op] [ ]</string>
+    <string name="logic_else_if">else if [ ] [op] [ ]</string>
+    <string name="logic_else">else</string>
+    <string name="logic_end_if">end if</string>
 
 </resources>

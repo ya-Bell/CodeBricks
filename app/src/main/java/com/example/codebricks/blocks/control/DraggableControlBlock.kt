@@ -63,7 +63,7 @@ fun DraggableControlBlock(
             .requiredSize(140.dp, 40.dp)
             .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
             .clip(RoundedCornerShape(12.dp))
-            .background(if (type == "Start") Color(0xFF4CAF50) else Color(0xFFf44336))
+            .background(Color(0xFF3F51B5))
             .zIndex(if (isBeingDragged) 100f else 1f)
             .pointerInput(Unit) {
                 detectDragGestures(
@@ -103,7 +103,7 @@ fun DraggableControlBlock(
 
         // Отображение текста
         Text(
-            text = type,
+            text = if (type == "CONTROL_START") "Start" else "Stop",
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(4.dp),

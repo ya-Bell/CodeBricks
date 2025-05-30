@@ -10,9 +10,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.codebricks.R
 import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.viewmodel.blocks.declareElseIfBlock
 
@@ -35,7 +37,7 @@ fun ElseIfBlock(viewModel: VariableViewModel) {
         border = BorderStroke(2.dp, Color.Black)
     ) {
         Text(
-            text = "Else If ..",
+            text = stringResource(id = R.string.logic_else_if),
             fontSize = 14.sp,
             fontWeight = FontWeight.ExtraBold
         )

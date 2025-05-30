@@ -84,22 +84,18 @@ fun BlockSection(selectedClass: String, viewModel: VariableViewModel) {
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     item {
-                        MathBlockButton("Add") { viewModel.declareMathBlock(BlockType.MATH_ADD) }
+                        MathBlockButton(stringResource(id = R.string.math_add)) { viewModel.declareMathBlock(BlockType.MATH_ADD) }
                     }
                     item {
-                        MathBlockButton("Subtract") { viewModel.declareMathBlock(BlockType.MATH_SUBTRACT) }
+                        MathBlockButton(stringResource(id = R.string.math_subtract)) { viewModel.declareMathBlock(BlockType.MATH_SUBTRACT) }
                     }
                     item {
-                        MathBlockButton("Multiply") { viewModel.declareMathBlock(BlockType.MATH_MULTIPLY) }
+                        MathBlockButton(stringResource(id = R.string.math_multiply)) { viewModel.declareMathBlock(BlockType.MATH_MULTIPLY) }
                     }
                     item {
-                        MathBlockButton("Divide") { viewModel.declareMathBlock(BlockType.MATH_DIVIDE) }
+                        MathBlockButton(stringResource(id = R.string.math_divide)) { viewModel.declareMathBlock(BlockType.MATH_DIVIDE) }
                     }
                 }
-            }
-
-            "Comparison" -> {
-                Text(stringResource(id = R.string.comparison_blocks))
             }
 
             "Logic" -> {
@@ -124,6 +120,10 @@ fun BlockSection(selectedClass: String, viewModel: VariableViewModel) {
 
             "Input/Output" -> {
                 CreatePrintBlock(viewModel)
+            }
+
+            "Comparison" -> {
+                Text(stringResource(id = R.string.comparison_blocks))
             }
 
             "Loops" -> {
