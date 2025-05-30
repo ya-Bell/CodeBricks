@@ -1,7 +1,6 @@
 package com.example.codebricks.screens.workscreen.sections
 
 import android.annotation.SuppressLint
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -16,8 +15,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,7 +33,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,7 +43,6 @@ import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.viewmodel.execution.checkBlockOrder
 import com.example.codebricks.viewmodel.execution.linkBlocksByPosition
 import kotlinx.coroutines.launch
-import androidx.compose.ui.graphics.ColorFilter
 
 @Composable
 fun WorkspaceControlBar(viewModel: VariableViewModel) {
@@ -61,17 +63,17 @@ fun WorkspaceControlBar(viewModel: VariableViewModel) {
         // Trash icon
         Box(
             modifier = Modifier
-                .padding(start = 8.dp)
-                .size(26.dp)
+                .padding(start = 4.dp)
+                .size(24.dp)
                 .clip(RoundedCornerShape(8.dp))
                 .clickable {
                     viewModel.clearWorkspace()
                 }) {
-            Image(
-                painter = painterResource(id = R.drawable.baseline_delete_forever_24),
+            Icon(
+                imageVector = Icons.Default.Delete,
                 contentDescription = stringResource(id = R.string.trash_bin),
                 modifier = Modifier.fillMaxSize(),
-                colorFilter = ColorFilter.tint(Color(0xFF515157))
+                tint = Color(0xFF797980)
             )
         }
 
@@ -104,17 +106,28 @@ fun WorkspaceControlBar(viewModel: VariableViewModel) {
                 .clip(RoundedCornerShape(12.dp))
                 .border(1.dp, Color.Black, RoundedCornerShape(12.dp))
                 .height(26.dp)
-                .width(60.dp),
+                .width(65.dp),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFFFFFFFF), contentColor = Color.Black
             ),
             contentPadding = PaddingValues(0.dp)
         ) {
-            Text(
-                text = stringResource(id = if (processRunning) R.string.reset else R.string.run),
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(id = if (processRunning) R.string.reset else R.string.run),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Icon(
+                    imageVector = if (processRunning) Icons.Filled.Refresh else Icons.Filled.PlayArrow,
+                    contentDescription = stringResource(id = if (processRunning) R.string.reset else R.string.run),
+                    tint = if (processRunning) Color.Red else Color.Green,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
         }
     }
 }
