@@ -28,7 +28,7 @@ fun CreateWriteBlock(viewModel: VariableViewModel) {
 
     val buttonModifier = Modifier
         .padding(4.dp)
-        .height(35.dp)
+        .height(36.dp)
         .wrapContentWidth()
 
     val buttonColors = ButtonDefaults.buttonColors(
@@ -43,7 +43,7 @@ fun CreateWriteBlock(viewModel: VariableViewModel) {
     ) {
         Text(
             text = stringResource(id = R.string.create_write_block),
-            fontSize = 12.sp,
+            fontSize = 14.sp,
             fontWeight = FontWeight.ExtraBold
         )
     }

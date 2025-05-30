@@ -6,10 +6,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -61,7 +63,8 @@ fun DraggablePrintBlock(
             val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 44f)
             IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
         }
-        .requiredSize(140.dp, 40.dp)
+        .wrapContentWidth()
+        .height(40.dp)
         .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
         .clip(RoundedCornerShape(12.dp))
         .background(Color(0xFFE57373))
@@ -99,7 +102,15 @@ fun DraggablePrintBlock(
             )
         }
 
-        val displayText = variable?.let { "print(${it.name})" } ?: "print(?)"
+        val displayText = when {
+            variable != null -> "print(${variable.name})"
+            viewModel.programBlocks.find { it.id == id }?.value != null -> {
+                val text = viewModel.programBlocks.find { it.id == id }?.value as? String
+                "print(\"$text\")"
+            }
+            else -> "print(?)"
+        }
+        
         Text(
             text = displayText,
             modifier = Modifier

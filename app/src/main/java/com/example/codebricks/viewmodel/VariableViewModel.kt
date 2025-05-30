@@ -187,10 +187,16 @@ class VariableViewModel : ViewModel() {
                                 }
                             }
                             BlockType.IO_PRINT -> {
-                                (block.inputBlocks.firstOrNull()?.value as? Variable)?.let { variable ->
+                                val variable = block.inputBlocks.firstOrNull()?.value as? Variable
+                                if (variable != null) {
                                     declaredVariables[variable.name]?.let { target ->
                                         logToConsole("📤 Output: ${target.name} = ${target.value}", true)
                                     } ?: logToConsole("❌ Error: variable '${variable.name}' not declared", true)
+                                } else {
+                                    val text = block.value as? String
+                                    if (text != null) {
+                                        logToConsole("📤 Output: $text", true)
+                                    }
                                 }
                             }
                             BlockType.IO_WRITE -> {
@@ -290,7 +296,6 @@ class VariableViewModel : ViewModel() {
                         logToConsole("❌ Error: $errorMessage", isError = true)
                         logToConsole("❌ Variable '${declaredVar.name}' expects type: ${declaredVar.type}", isError = true)
                         logToConsole("📥 Please enter the value again:", isError = true)
-                        logToConsole("-------------------", isError = true)
                     }
                 }
             }
@@ -362,11 +367,7 @@ class VariableViewModel : ViewModel() {
         val leftValue = when (leftBlock.type) {
             BlockType.VARIABLE_REFERENCE -> {
                 val variable = leftBlock.value as? Variable
-                (declaredVariables[variable?.name]?.value ?: variable?.value)
-                    ?.toString()?.toDoubleOrNull() ?: run {
-                    logToConsole("❌ Left operand is not a number")
-                    return false
-                }
+                declaredVariables[variable?.name]?.value ?: variable?.value
             }
             BlockType.MATH_ADD,
             BlockType.MATH_SUBTRACT,
@@ -383,11 +384,7 @@ class VariableViewModel : ViewModel() {
         val rightValue = when (rightBlock.type) {
             BlockType.VARIABLE_REFERENCE -> {
                 val variable = rightBlock.value as? Variable
-                (declaredVariables[variable?.name]?.value ?: variable?.value)
-                    ?.toString()?.toDoubleOrNull() ?: run {
-                    logToConsole("❌ Right operand is not a number")
-                    return false
-                }
+                declaredVariables[variable?.name]?.value ?: variable?.value
             }
             BlockType.MATH_ADD,
             BlockType.MATH_SUBTRACT,
@@ -401,15 +398,58 @@ class VariableViewModel : ViewModel() {
             }
         }
 
-        println("Evaluating condition: $leftValue ${block.operator} $rightValue")
+        // Стринговое сравнение
+        if (leftValue is String || rightValue is String) {
+            val leftStr = leftValue.toString()
+            val rightStr = rightValue.toString()
+            
+            val result = when (block.operator) {
+                "==" -> leftStr == rightStr
+                "!=" -> leftStr != rightStr
+                "<" -> leftStr < rightStr
+                ">" -> leftStr > rightStr
+                "<=" -> leftStr <= rightStr
+                ">=" -> leftStr >= rightStr
+                else -> {
+                    logToConsole("❌ Unsupported operator for strings: ${block.operator}")
+                    return false
+                }
+            }
+            return result
+        }
+
+        // Автоматическое поддеражание типов если есть возможность
+        val leftNum = when (leftValue) {
+            is Number -> leftValue.toDouble()
+            is String -> leftValue.toDoubleOrNull() ?: run {
+                logToConsole("❌ Left operand cannot be converted to number: $leftValue")
+                return false
+            }
+            else -> {
+                logToConsole("❌ Left operand is not a number or string: $leftValue")
+                return false
+            }
+        }
+
+        val rightNum = when (rightValue) {
+            is Number -> rightValue.toDouble()
+            is String -> rightValue.toDoubleOrNull() ?: run {
+                logToConsole("❌ Right operand cannot be converted to number: $rightValue")
+                return false
+            }
+            else -> {
+                logToConsole("❌ Right operand is not a number or string: $rightValue")
+                return false
+            }
+        }
 
         return when (block.operator) {
-            "==" -> leftValue == rightValue
-            "!=" -> leftValue != rightValue
-            ">"  -> leftValue > rightValue
-            "<"  -> leftValue < rightValue
-            ">=" -> leftValue >= rightValue
-            "<=" -> leftValue <= rightValue
+            "==" -> leftNum == rightNum
+            "!=" -> leftNum != rightNum
+            "<" -> leftNum < rightNum
+            ">" -> leftNum > rightNum
+            "<=" -> leftNum <= rightNum
+            ">=" -> leftNum >= rightNum
             else -> {
                 logToConsole("❌ Unsupported operator: ${block.operator}")
                 false

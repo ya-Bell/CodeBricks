@@ -19,3 +19,14 @@ fun VariableViewModel.declarePrintBlock(variable: Variable) {
     addBlock(printBlock)
     redrawTrigger.intValue++
 }
+
+// Создание блока Print(text), который выводит текст в консоль
+fun VariableViewModel.declarePrintTextBlock(text: String) {
+    val printBlock = Block(
+        type = BlockType.IO_PRINT,
+        value = text // Используем value для хранения текста
+    )
+
+    addBlock(printBlock)
+    redrawTrigger.intValue++
+}

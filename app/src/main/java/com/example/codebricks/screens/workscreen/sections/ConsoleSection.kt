@@ -3,12 +3,15 @@ package com.example.codebricks.screens.workscreen.sections
 import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -20,6 +23,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -39,6 +43,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.codebricks.R
 import com.example.codebricks.viewmodel.VariableViewModel
 
@@ -54,30 +59,6 @@ fun ConsoleSection(viewModel: VariableViewModel) {
 
     val consoleText = viewModel.consoleOutput.value
 
-    ConsoleSectionContent(
-        consoleHeight = consoleHeight,
-        consoleText = consoleText,
-        userInput = userInput,
-        onUserInputChange = { userInput = it },
-        onSendClick = {
-            if (userInput.isNotEmpty()) {
-                viewModel.processUserInput(userInput)
-                userInput = ""
-            }
-        },
-        scrollState = scrollStateVertical
-    )
-}
-
-@Composable
-private fun ConsoleSectionContent(
-    consoleHeight: Float,
-    consoleText: String,
-    userInput: String,
-    onUserInputChange: (String) -> Unit,
-    onSendClick: () -> Unit,
-    scrollState: androidx.compose.foundation.ScrollState
-) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -95,11 +76,28 @@ private fun ConsoleSectionContent(
                 )
                 .padding(horizontal = 12.dp, vertical = 2.dp)
         ) {
-            Text(
-                text = stringResource(id = R.string.console_header),
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(id = R.string.console_header),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp
+                )
+                
+                IconButton(
+                    onClick = { viewModel.clearConsole() },
+                    modifier = Modifier.size(24.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = stringResource(id = R.string.clear_console),
+                        tint = Color.Gray
+                    )
+                }
+            }
         }
 
         Box(
@@ -111,14 +109,36 @@ private fun ConsoleSectionContent(
             Box(
                 modifier = Modifier
                     .matchParentSize()
-                    .padding(4.dp)
-                    .verticalScroll(scrollState)
+                    .padding(end = 12.dp)
+                    .verticalScroll(scrollStateVertical)
             ) {
                 Text(
                     text = consoleText,
                     fontSize = 12.sp,
                     color = Color.Black,
                     lineHeight = 16.sp
+                )
+            }
+
+            val proportion = scrollStateVertical.maxValue.takeIf { it > 0 }?.let {
+                scrollStateVertical.value.toFloat() / it.toFloat()
+            } ?: 0f
+
+            val thumbHeight = 90f * (90f / (scrollStateVertical.maxValue + 90f))
+            val thumbOffset = (90f - thumbHeight) * proportion
+
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(4.dp)
+                    .align(Alignment.CenterEnd)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .offset(y = thumbOffset.dp)
+                        .height(thumbHeight.dp)
+                        .background(Color.DarkGray.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
                 )
             }
         }
@@ -132,8 +152,13 @@ private fun ConsoleSectionContent(
         ) {
             CompactTextField(
                 value = userInput,
-                onValueChange = onUserInputChange,
-                onSendClick = onSendClick
+                onValueChange = { userInput = it },
+                onSendClick = {
+                    if (userInput.isNotEmpty()) {
+                        viewModel.processUserInput(userInput)
+                        userInput = ""
+                    }
+                }
             )
         }
     }
