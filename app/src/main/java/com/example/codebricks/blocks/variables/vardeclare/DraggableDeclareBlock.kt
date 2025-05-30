@@ -20,7 +20,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -40,6 +39,7 @@ import com.example.codebricks.blocks.common.limitPosition
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.viewmodel.Variable
 import kotlin.math.roundToInt
+
 @Composable
 private fun formatVariableValue(variable: Variable): String {
     return when (variable.type) {
@@ -65,9 +65,9 @@ fun DraggableDeclareBlock(
     onDelete: (String) -> Unit
 ) {
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
-    var showDeleteIcon by remember { mutableStateOf(false) }
-    var dragStartTime by remember { mutableLongStateOf(0L) }
     var isPressed by remember { mutableStateOf(false) }
+
+    val showDeleteIcon = true
 
     LaunchedEffect(Unit) {
         BlockPositionTracker.updateBlockPosition(id, offset)
@@ -87,23 +87,17 @@ fun DraggableDeclareBlock(
             detectDragGestures { change, dragAmount ->
                 if (!isPressed) {
                     isPressed = true
-                    dragStartTime = System.currentTimeMillis()
                 }
 
                 offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
                 BlockPositionTracker.updateBlockPosition(id, offset)
                 change.consume()
-
-                if (System.currentTimeMillis() - dragStartTime >= 2500) {
-                    showDeleteIcon = true
-                }
             }
         }
         .pointerInput(Unit) {
             detectTapGestures(
                 onPress = {
                     isPressed = false
-                    showDeleteIcon = false
                 })
         }) {
         if (showDeleteIcon) {
@@ -122,6 +116,7 @@ fun DraggableDeclareBlock(
                 )
             }
         }
+
         Text(
             text = "Declare ${variable.type} ${variable.name} = ${formatVariableValue(variable)}",
             modifier = Modifier.align(Alignment.Center),
@@ -129,7 +124,6 @@ fun DraggableDeclareBlock(
             fontSize = 12.sp,
             color = Color.Black
         )
-
     }
 }
 
