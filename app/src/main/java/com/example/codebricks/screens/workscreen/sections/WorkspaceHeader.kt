@@ -24,9 +24,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.codebricks.R
+import com.example.codebricks.viewmodel.VariableViewModel
 
 @Composable
-fun WorkspaceHeader() {
+fun WorkspaceHeader(viewModel: VariableViewModel) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -45,7 +46,7 @@ fun WorkspaceHeader() {
         )
 
         Button(
-            onClick = { /* TODO: Debug */ },
+            onClick = { viewModel.isDebugMode.value = !viewModel.isDebugMode.value },
             modifier = Modifier
                 .padding(4.dp)
                 .clip(RoundedCornerShape(12.dp))
@@ -53,7 +54,8 @@ fun WorkspaceHeader() {
                 .height(26.dp)
                 .width(60.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFFFFFFF), contentColor = Color.Black
+                containerColor = if (viewModel.isDebugMode.value) Color(0xFF90CAF9) else Color(0xFFFFFFFF),
+                contentColor = Color.Black
             ),
             contentPadding = PaddingValues(0.dp)
         ) {

@@ -34,6 +34,9 @@ class VariableViewModel : ViewModel() {
     // Вывод в консоль
     val consoleOutput = mutableStateOf("Console ready.")
 
+    // Флаг режима отладки
+    val isDebugMode = mutableStateOf(false)
+
     // Последний слот, в который была произведена вставка (используется для анимации)
     val recentlyInsertedSlot = mutableStateOf<Pair<String, Int>?>(null)
 
@@ -65,6 +68,10 @@ class VariableViewModel : ViewModel() {
 
     // Добавить сообщение в консоль
     private fun logToConsole(message: String) {
+        // Если режим отладки выключен, показываем только вывод print и инициализацию
+        if (!isDebugMode.value && !message.startsWith("📤") && !message.startsWith("🟢") && !message.startsWith("🔴") && !message.startsWith("Console")) {
+            return
+        }
         consoleOutput.value += "\n$message"
     }
 
@@ -205,8 +212,10 @@ class VariableViewModel : ViewModel() {
                     skipUntilEndIf = !wasConditionMet
                     if (wasConditionMet) {
                         logToConsole("✅ IF condition is true")
+                        logToConsole("⏭️ Next ELSE IF blocks will be skipped")
                     } else {
                         logToConsole("❌ IF condition is false")
+                        logToConsole("➡️ Moving to next condition")
                     }
                 }
 
@@ -217,12 +226,15 @@ class VariableViewModel : ViewModel() {
                         skipUntilEndIf = !wasConditionMet
                         if (wasConditionMet) {
                             logToConsole("✅ ELSE IF condition is true")
+                            logToConsole("⏭️ Next ELSE IF/ELSE blocks will be skipped")
                         } else {
                             logToConsole("❌ ELSE IF condition is false")
+                            logToConsole("➡️ Moving to next condition")
                         }
                     } else {
                         // Если предыдущее условие выполнилось, пропускаем этот блок
                         skipUntilEndIf = true
+                        logToConsole("⏭️ Skipping ELSE IF block (previous condition was true)")
                     }
                 }
 
@@ -235,6 +247,7 @@ class VariableViewModel : ViewModel() {
                     } else {
                         // Если предыдущее условие выполнилось, пропускаем этот блок
                         skipUntilEndIf = true
+                        logToConsole("⏭️ Skipping ELSE block (previous condition was true)")
                     }
                 }
 
@@ -244,7 +257,7 @@ class VariableViewModel : ViewModel() {
                     }
                     skipUntilEndIf = false
                     wasConditionMet = false
-                    logToConsole("✅ END IF reached")
+                    logToConsole("✅ END IF reached - condition chain completed")
                 }
 
                 else -> {
