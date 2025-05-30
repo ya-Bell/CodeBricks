@@ -16,6 +16,7 @@ object BlockSlotTracker {
             right = bounds.right / BlockPositionTracker.canvasScale,
             bottom = bounds.bottom / BlockPositionTracker.canvasScale
         )
+        println("Registering slot: $blockId[$slotIndex] at $scaledBounds")
         slotBounds[blockId to slotIndex] = scaledBounds
     }
 

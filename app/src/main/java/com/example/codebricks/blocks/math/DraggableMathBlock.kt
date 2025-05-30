@@ -243,7 +243,15 @@ fun DraggableMathBlock(
                                     BlockType.MATH_ADD,
                                     BlockType.MATH_SUBTRACT,
                                     BlockType.MATH_MULTIPLY,
-                                    BlockType.MATH_DIVIDE
+                                    BlockType.MATH_DIVIDE,
+                                    BlockType.IF,
+                                    BlockType.ELSE_IF,
+                                    BlockType.COMPARISON_EQUAL,
+                                    BlockType.COMPARISON_GREATER,
+                                    BlockType.COMPARISON_LESS,
+                                    BlockType.LOGIC_AND,
+                                    BlockType.LOGIC_OR,
+                                    BlockType.LOGIC_NOT
                                 )
                                 isValidTarget
                             }

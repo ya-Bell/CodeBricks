@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.viewModelScope
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
+import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker.redrawTrigger
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker.MAGNETIC_PADDING
@@ -30,7 +31,15 @@ fun VariableViewModel.tryInsertIntoSlot(position: Offset, blockId: String) {
                     BlockType.MATH_ADD,
                     BlockType.MATH_SUBTRACT,
                     BlockType.MATH_MULTIPLY,
-                    BlockType.MATH_DIVIDE
+                    BlockType.MATH_DIVIDE,
+                    BlockType.IF,
+                    BlockType.ELSE_IF,
+                    BlockType.COMPARISON_EQUAL,
+                    BlockType.COMPARISON_GREATER,
+                    BlockType.COMPARISON_LESS,
+                    BlockType.LOGIC_AND,
+                    BlockType.LOGIC_OR,
+                    BlockType.LOGIC_NOT
                 ) &&
                 // Проверяем, что целевой блок не является частью перетаскиваемого блока
                 !isBlockInDraggedTree(slot.blockId, blockId)
@@ -187,8 +196,10 @@ fun VariableViewModel.replaceSlotBlock(parentId: String, slotIndex: Int, newBloc
 
 // Устанавливает визуально подсвеченный слот
 fun VariableViewModel.setHighlightedSlot(blockId: String?, slotIndex: Int?) {
-    highlightedSlot.value =
-        if (blockId != null && slotIndex != null) blockId to slotIndex else null
+    println("🎯 Setting highlighted slot: $blockId to $slotIndex (previous: ${highlightedSlot.value})")
+    highlightedSlot.value = if (blockId != null && slotIndex != null) blockId to slotIndex else null
+    // Вызываем перерисовку для обновления подсветки
+    BlockPositionTracker.redrawTrigger.intValue++
 }
 
 // Отмечает слот, в который только что вставили блок (для анимации/эффекта)

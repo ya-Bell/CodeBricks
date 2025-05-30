@@ -119,7 +119,8 @@ fun RenderBlockTree(
                 DraggableReferenceBlock(
                     id = block.id,
                     variable = variable,
-                    viewModel = viewModel
+                    viewModel = viewModel,
+                    onDelete = onDelete
                 )
             }
         }

@@ -10,10 +10,7 @@ fun VariableViewModel.declareIfBlock(operator: String = "==", variable: String =
         type = BlockType.IF,
         operator = operator,
         variable = variable,
-        inputBlocks = mutableListOf(
-            Block(type = BlockType.VARIABLE_REFERENCE),
-            Block(type = BlockType.VARIABLE_REFERENCE)
-        )
+        inputBlocks = mutableListOf(null, null)
     )
 
     addBlock(block)
@@ -25,10 +22,7 @@ fun VariableViewModel.declareElseIfBlock(operator: String = "==", variable: Stri
         type = BlockType.ELSE_IF,
         operator = operator,
         variable = variable,
-        inputBlocks = mutableListOf(
-            Block(type = BlockType.VARIABLE_REFERENCE),
-            Block(type = BlockType.VARIABLE_REFERENCE)
-        )
+        inputBlocks = mutableListOf(null, null)
     )
 
     addBlock(block)
