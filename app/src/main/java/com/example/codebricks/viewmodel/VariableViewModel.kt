@@ -9,6 +9,10 @@ import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker.re
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
 import com.example.codebricks.viewmodel.blocks.findUsedReferenceBlocks
 import com.example.codebricks.viewmodel.tree.findBlockById
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 // Модель данных для переменной
 data class Variable(val name: String, var value: Any, var type: String)
@@ -87,11 +91,30 @@ class VariableViewModel : ViewModel() {
         var currentBlockId: String? = null,
         var skipUntilEndIf: Boolean = false,
         var wasConditionMet: Boolean = false,
-        val conditionStack: MutableList<Boolean> = mutableListOf()
+        val conditionStack: MutableList<Boolean> = mutableListOf(),
+        val whileLoopStack: MutableList<String> = mutableListOf(),
+        var skipUntilWhileEnd: Boolean = false,
+        // Храним последовательность блоков для каждого цикла
+        val whileLoopSequence: MutableMap<String, MutableList<String>> = mutableMapOf(),
+        var isCollectingSequence: Boolean = false,
+        var currentWhileId: String? = null,
+        // Добавляем счетчик итераций для каждого цикла
+        val whileLoopIterations: MutableMap<String, Int> = mutableMapOf(),
+        // Максимальное количество итераций
+        val MAX_ITERATIONS: Int = 1000,
+        // Добавляем время начала выполнения цикла
+        var currentLoopStartTime: Long = 0,
+        // Максимальное время выполнения одной итерации (в миллисекундах)
+        val MAX_ITERATION_TIME: Long = 1000,
+        // Флаг для остановки выполнения
+        var shouldStop: Boolean = false
     )
 
     private val executionState = ExecutionState()
     private var continueExecutionCallback: (() -> Unit)? = null
+
+    // Добавляем корутину для выполнения программы
+    private var executionJob: kotlinx.coroutines.Job? = null
 
     // Исполнение блоков программы
     fun executeProgram(onFinish: () -> Unit) {
@@ -104,172 +127,345 @@ class VariableViewModel : ViewModel() {
             skipUntilEndIf = false
             wasConditionMet = false
             conditionStack.clear()
+            whileLoopStack.clear()
+            whileLoopSequence.clear()
+            whileLoopIterations.clear()
+            skipUntilWhileEnd = false
+            isCollectingSequence = false
+            currentWhileId = null
+            currentLoopStartTime = 0
+            shouldStop = false
         }
 
-        fun executeBlock(block: Block): Boolean {
-            when (block.type) {
-                BlockType.CONTROL_START -> {
-                    logToConsole("🟢 Program started")
+        // Запускаем выполнение в отдельном потоке
+        executionJob = GlobalScope.launch(kotlinx.coroutines.Dispatchers.Default) {
+            try {
+                // Запускаем сторожевой таймер в отдельной корутине
+                val watchdogJob = launch {
+                    while (isActive) {
+                        if (executionState.whileLoopStack.isNotEmpty()) {
+                            val currentTime = System.currentTimeMillis()
+                            if (currentTime - executionState.currentLoopStartTime > executionState.MAX_ITERATION_TIME) {
+                                withContext(kotlinx.coroutines.Dispatchers.Main) {
+                                    logToConsole("⚠️ Warning: Maximum iteration time exceeded (${executionState.MAX_ITERATION_TIME}ms). Loop stopped.", isError = true)
+                                }
+                                executionState.shouldStop = true
+                                break
+                            }
+                        }
+                        kotlinx.coroutines.delay(100) // Проверяем каждые 100мс
+                    }
                 }
-                BlockType.CONTROL_STOP -> {
-                    if (!executionState.skipUntilEndIf) {
-                        logToConsole("🔴 Program stopped")
+
+                fun executeBlock(block: Block): Boolean {
+                    if (executionState.shouldStop) {
                         return false
                     }
-                }
-                BlockType.IF -> {
-                    executionState.wasConditionMet = evaluateCondition(block, declaredVariables)
-                    executionState.conditionStack.add(executionState.wasConditionMet)
-                    executionState.skipUntilEndIf = !executionState.wasConditionMet
-                    if (executionState.wasConditionMet) {
-                        logToConsole("✅ IF condition is true")
-                    } else {
-                        logToConsole("❌ IF condition is false")
-                    }
-                }
-                BlockType.ELSE_IF -> {
-                    if (!executionState.wasConditionMet) {
-                        executionState.wasConditionMet = evaluateCondition(block, declaredVariables)
-                        executionState.skipUntilEndIf = !executionState.wasConditionMet
-                        if (executionState.wasConditionMet) {
-                            logToConsole("✅ ELSE IF condition is true")
-                        } else {
-                            logToConsole("❌ ELSE IF condition is false")
-                        }
-                    } else {
-                        executionState.skipUntilEndIf = true
-                    }
-                }
-                BlockType.ELSE -> {
-                    if (!executionState.wasConditionMet) {
-                        executionState.skipUntilEndIf = false
-                        executionState.wasConditionMet = true
-                        logToConsole("✅ ELSE block executed")
-                    } else {
-                        executionState.skipUntilEndIf = true
-                    }
-                }
-                BlockType.END_IF -> {
-                    if (executionState.conditionStack.isNotEmpty()) {
-                        executionState.conditionStack.removeAt(executionState.conditionStack.lastIndex)
-                    }
-                    executionState.skipUntilEndIf = false
-                    executionState.wasConditionMet = false
-                }
-                else -> {
-                    if (!executionState.skipUntilEndIf) {
-                        when (block.type) {
-                            BlockType.VARIABLE_DECLARE -> {
-                                (block.value as? Variable)?.let { variable ->
-                                    declaredVariables[variable.name] = variable.copy()
-                                    logToConsole("✅ Declared ${variable.name} = ${variable.value}")
-                                }
-                            }
-                            BlockType.VARIABLE_SET -> {
-                                val targetVar = block.inputBlocks.getOrNull(0)?.value as? Variable
-                                val valueBlock = block.inputBlocks.getOrNull(1)
 
-                                if (targetVar == null) {
-                                    logToConsole("❌ Error: No variable selected in Set block.")
-                                } else {
-                                    declaredVariables[targetVar.name]?.let { memoryVar ->
-                                        val rawValue = MathExpressionEvaluator.evaluate(valueBlock)
-                                        val newValue = when (memoryVar.type) {
-                                            "int" -> rawValue.toInt()
-                                            "double" -> rawValue
-                                            "bool" -> rawValue != 0.0
-                                            else -> rawValue.toString()
-                                        }
-                                        memoryVar.value = newValue
-                                        logToConsole("✅ Set ${memoryVar.name} = ${memoryVar.value}")
-                                    } ?: logToConsole("❌ Error: variable '${targetVar.name}' not declared")
+                    when (block.type) {
+                        BlockType.CONTROL_START -> {
+                            GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                logToConsole("🟢 Program started")
+                            }
+                        }
+                        BlockType.CONTROL_STOP -> {
+                            if (!executionState.skipUntilEndIf) {
+                                GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                    logToConsole("🔴 Program stopped")
+                                }
+                                return false
+                            }
+                        }
+                        BlockType.IF -> {
+                            executionState.wasConditionMet = evaluateCondition(block, declaredVariables)
+                            executionState.conditionStack.add(executionState.wasConditionMet)
+                            executionState.skipUntilEndIf = !executionState.wasConditionMet
+                            if (executionState.wasConditionMet) {
+                                GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                    logToConsole("✅ IF condition is true")
+                                }
+                            } else {
+                                GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                    logToConsole("❌ IF condition is false")
                                 }
                             }
-                            BlockType.IO_PRINT -> {
-                                val variable = block.inputBlocks.firstOrNull()?.value as? Variable
-                                if (variable != null) {
-                                    declaredVariables[variable.name]?.let { target ->
-                                        logToConsole("📤 Output: ${target.name} = ${target.value}", true)
-                                    } ?: logToConsole("❌ Error: variable '${variable.name}' not declared", true)
+                        }
+                        BlockType.ELSE_IF -> {
+                            if (!executionState.wasConditionMet) {
+                                executionState.wasConditionMet = evaluateCondition(block, declaredVariables)
+                                executionState.skipUntilEndIf = !executionState.wasConditionMet
+                                if (executionState.wasConditionMet) {
+                                    GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                        logToConsole("✅ ELSE IF condition is true")
+                                    }
                                 } else {
-                                    val text = block.value as? String
-                                    if (text != null) {
-                                        logToConsole("📤 Output: $text", true)
+                                    GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                        logToConsole("❌ ELSE IF condition is false")
+                                    }
+                                }
+                            } else {
+                                executionState.skipUntilEndIf = true
+                            }
+                        }
+                        BlockType.ELSE -> {
+                            if (!executionState.wasConditionMet) {
+                                executionState.skipUntilEndIf = false
+                                executionState.wasConditionMet = true
+                                GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                    logToConsole("✅ ELSE block executed")
+                                }
+                            } else {
+                                executionState.skipUntilEndIf = true
+                            }
+                        }
+                        BlockType.END_IF -> {
+                            if (executionState.conditionStack.isNotEmpty()) {
+                                executionState.conditionStack.removeAt(executionState.conditionStack.lastIndex)
+                            }
+                            executionState.skipUntilEndIf = false
+                            executionState.wasConditionMet = false
+                        }
+                        BlockType.WHILE -> {
+                            val condition = evaluateCondition(block, declaredVariables)
+                            GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                logToConsole("🔄 Checking WHILE condition: $condition")
+                            }
+                            if (condition) {
+                                val iterations = executionState.whileLoopIterations.getOrDefault(block.id, 0)
+                                if (iterations >= executionState.MAX_ITERATIONS) {
+                                    GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                        logToConsole("⚠️ Warning: Maximum number of iterations reached (${executionState.MAX_ITERATIONS}). Loop stopped.", isError = true)
+                                    }
+                                    executionState.skipUntilWhileEnd = true
+                                    return true
+                                }
+                                
+                                executionState.whileLoopStack.add(block.id)
+                                executionState.whileLoopIterations[block.id] = iterations + 1
+                                executionState.isCollectingSequence = true
+                                executionState.currentWhileId = block.id
+                                executionState.whileLoopSequence[block.id] = mutableListOf()
+                                executionState.currentLoopStartTime = System.currentTimeMillis()
+                                GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                    logToConsole("✅ WHILE condition is true, entering loop (iteration ${iterations + 1})")
+                                }
+                            } else {
+                                executionState.skipUntilWhileEnd = true
+                                GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                    logToConsole("❌ WHILE condition is false, skipping loop")
+                                }
+                            }
+                        }
+                        BlockType.WHILE_END -> {
+                            if (executionState.whileLoopStack.isNotEmpty()) {
+                                val whileBlockId = executionState.whileLoopStack.last()
+                                val whileBlock = findBlockById(whileBlockId)
+                                if (whileBlock != null) {
+                                    if (executionState.isCollectingSequence) {
+                                        executionState.isCollectingSequence = false
+                                        executionState.currentWhileId = null
+                                    }
+                                    
+                                    val condition = evaluateCondition(whileBlock, declaredVariables)
+                                    GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                        logToConsole("🔄 Checking WHILE condition again: $condition")
+                                    }
+                                    if (condition) {
+                                        val iterations = executionState.whileLoopIterations.getOrDefault(whileBlockId, 0)
+                                        if (iterations >= executionState.MAX_ITERATIONS) {
+                                            GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                                logToConsole("⚠️ Warning: Maximum number of iterations reached (${executionState.MAX_ITERATIONS}). Loop stopped.", isError = true)
+                                            }
+                                            executionState.whileLoopStack.removeAt(executionState.whileLoopStack.lastIndex)
+                                            executionState.whileLoopSequence.remove(whileBlockId)
+                                            executionState.whileLoopIterations.remove(whileBlockId)
+                                            return true
+                                        }
+
+                                        executionState.currentLoopStartTime = System.currentTimeMillis()
+                                        GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                            logToConsole("🔄 WHILE condition still true, repeating loop (iteration ${iterations + 1})")
+                                        }
+                                        
+                                        val sequence = executionState.whileLoopSequence[whileBlockId] ?: mutableListOf()
+                                        for (blockId in sequence) {
+                                            executeBlock(findBlockById(blockId) ?: return true)
+                                        }
+                                        executionState.currentBlockId = whileBlock.nextBlockId
+                                        return true
+                                    } else {
+                                        GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                            logToConsole("✅ WHILE loop completed after ${executionState.whileLoopIterations[whileBlockId]} iterations")
+                                        }
+                                        executionState.whileLoopStack.removeAt(executionState.whileLoopStack.lastIndex)
+                                        executionState.whileLoopSequence.remove(whileBlockId)
+                                        executionState.whileLoopIterations.remove(whileBlockId)
+                                        executionState.currentBlockId = block.nextBlockId
                                     }
                                 }
                             }
-                            BlockType.IO_WRITE -> {
-                                (block.value as? Variable)?.let { variable ->
-                                    declaredVariables[variable.name]?.let { target ->
-                                        logToConsole("📥 Input: Enter value for ${target.name}:", true)
-                                        waitingForInput = true
-                                        waitingVariable = variable
-                                        programExecution = continueExecutionCallback
-                                        return false
-                                    } ?: logToConsole("❌ Error: variable '${variable.name}' not declared", true)
+                            executionState.skipUntilWhileEnd = false
+                        }
+                        else -> {
+                            if (!executionState.skipUntilEndIf && !executionState.skipUntilWhileEnd) {
+                                if (executionState.isCollectingSequence && executionState.currentWhileId != null) {
+                                    executionState.whileLoopSequence[executionState.currentWhileId]?.add(block.id)
+                                }
+                                
+                                when (block.type) {
+                                    BlockType.VARIABLE_DECLARE -> {
+                                        (block.value as? Variable)?.let { variable ->
+                                            declaredVariables[variable.name] = variable.copy()
+                                            GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                                logToConsole("✅ Declared ${variable.name} = ${variable.value}")
+                                            }
+                                        }
+                                    }
+                                    BlockType.VARIABLE_SET -> {
+                                        val targetVar = block.inputBlocks.getOrNull(0)?.value as? Variable
+                                        val valueBlock = block.inputBlocks.getOrNull(1)
+
+                                        if (targetVar == null) {
+                                            GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                                logToConsole("❌ Error: No variable selected in Set block")
+                                            }
+                                        } else {
+                                            declaredVariables[targetVar.name]?.let { memoryVar ->
+                                                val rawValue = MathExpressionEvaluator.evaluate(valueBlock)
+                                                val newValue = when (memoryVar.type) {
+                                                    "int" -> rawValue.toInt()
+                                                    "double" -> rawValue
+                                                    "bool" -> rawValue != 0.0
+                                                    else -> rawValue.toString()
+                                                }
+                                                memoryVar.value = newValue
+                                                GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                                    logToConsole("✅ Set ${memoryVar.name} = ${memoryVar.value}")
+                                                }
+                                            } ?: GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                                logToConsole("❌ Error: Variable '${targetVar.name}' not declared")
+                                            }
+                                        }
+                                    }
+                                    BlockType.IO_PRINT -> {
+                                        val variable = block.inputBlocks.firstOrNull()?.value as? Variable
+                                        if (variable != null) {
+                                            declaredVariables[variable.name]?.let { target ->
+                                                GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                                    logToConsole("📤 Output: ${target.name} = ${target.value}", true)
+                                                }
+                                            } ?: GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                                logToConsole("❌ Error: Variable '${variable.name}' not declared", true)
+                                            }
+                                        } else {
+                                            val text = block.value as? String
+                                            if (text != null) {
+                                                GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                                    logToConsole("📤 Output: $text", true)
+                                                }
+                                            }
+                                        }
+                                    }
+                                    BlockType.IO_WRITE -> {
+                                        (block.value as? Variable)?.let { variable ->
+                                            declaredVariables[variable.name]?.let { target ->
+                                                GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                                    logToConsole("📥 Input: Enter value for ${target.name}:", true)
+                                                    waitingForInput = true
+                                                    waitingVariable = variable
+                                                    programExecution = continueExecutionCallback
+                                                    return@launch
+                                                }
+                                            } ?: GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                                logToConsole("❌ Error: Variable '${variable.name}' not declared", true)
+                                            }
+                                        }
+                                    }
+                                    BlockType.MATH_ADD, BlockType.MATH_SUBTRACT, BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE,BlockType.MATH_MODULO -> {
+                                        val result = MathExpressionEvaluator.evaluate(block)
+                                        GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                            logToConsole("🧮 Math expression result: $result")
+                                        }
+                                    }
+                                    BlockType.VARIABLE_CHANGE -> {
+                                        val targetVar = block.inputBlocks.getOrNull(0)?.value as? Variable
+                                        if (targetVar == null) {
+                                            GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                                logToConsole("❌ Error: No variable selected in Change block")
+                                            }
+                                        } else {
+                                            declaredVariables[targetVar.name]?.let { memoryVar ->
+                                                val currentValue = when (memoryVar.value) {
+                                                    is Int -> memoryVar.value as Int
+                                                    is Double -> (memoryVar.value as Double).toInt()
+                                                    else -> 0
+                                                }
+                                                val changeAmount = block.changeAmount
+                                                val newValue = when (block.changeSign) {
+                                                    "+" -> currentValue + changeAmount
+                                                    "-" -> currentValue - changeAmount
+                                                    "*" -> currentValue * changeAmount
+                                                    "/" -> if (changeAmount != 0) currentValue / changeAmount else currentValue
+                                                    "%" -> if (changeAmount != 0) currentValue % changeAmount else currentValue
+                                                    else -> currentValue
+                                                }
+                                                memoryVar.value = when (memoryVar.type) {
+                                                    "int" -> newValue
+                                                    "double" -> newValue.toDouble()
+                                                    else -> newValue
+                                                }
+                                                GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                                    logToConsole("✅ Changed ${memoryVar.name} by ${block.changeSign}$changeAmount to ${memoryVar.value}")
+                                                }
+                                            } ?: GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                                                logToConsole("❌ Error: Variable '${targetVar.name}' not declared")
+                                            }
+                                        }
+                                    }
+                                    else -> {}
                                 }
                             }
-                            BlockType.MATH_ADD, BlockType.MATH_SUBTRACT, BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE,BlockType.MATH_MODULO -> {
-                                val result = MathExpressionEvaluator.evaluate(block)
-                                logToConsole("🧮 Result of math expression: $result")
-                            }
-                            BlockType.VARIABLE_CHANGE -> {
-                                val targetVar = block.inputBlocks.getOrNull(0)?.value as? Variable
-                                if (targetVar == null) {
-                                    logToConsole("❌ Error: No variable selected in Change block.")
-                                } else {
-                                    declaredVariables[targetVar.name]?.let { memoryVar ->
-                                        val currentValue = when (memoryVar.value) {
-                                            is Int -> memoryVar.value as Int
-                                            is Double -> (memoryVar.value as Double).toInt()
-                                            else -> 0
-                                        }
-                                        val changeAmount = block.changeAmount
-                                        val newValue = when (block.changeSign) {
-                                            "+" -> currentValue + changeAmount
-                                            "-" -> currentValue - changeAmount
-                                            "*" -> currentValue * changeAmount
-                                            "/" -> if (changeAmount != 0) currentValue / changeAmount else currentValue
-                                            "%" -> if (changeAmount != 0) currentValue % changeAmount else currentValue
-                                            else -> currentValue
-                                        }
-                                        memoryVar.value = when (memoryVar.type) {
-                                            "int" -> newValue
-                                            "double" -> newValue.toDouble()
-                                            else -> newValue
-                                        }
-                                        logToConsole("✅ Changed ${memoryVar.name} by ${block.changeSign}$changeAmount to ${memoryVar.value}")
-                                    } ?: logToConsole("❌ Error: variable '${targetVar.name}' not declared")
-                                }
-                            }
-                            else -> {}
                         }
                     }
+                    return true
+                }
+
+                var shouldContinue = true
+                while (shouldContinue && executionState.currentBlockId != null && !waitingForInput) {
+                    val currentBlock = blocksById[executionState.currentBlockId]
+                    if (currentBlock != null) {
+                        shouldContinue = executeBlock(currentBlock)
+                        if (shouldContinue && executionState.currentBlockId == currentBlock.id) {
+                            executionState.currentBlockId = currentBlock.nextBlockId
+                        }
+                    } else {
+                        shouldContinue = false
+                    }
+                }
+
+                watchdogJob.cancel() // Останавливаем сторожевой таймер
+
+                withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    if (!waitingForInput) {
+                        onFinish()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    logToConsole("❌ Error: ${e.message}", isError = true)
+                    onFinish()
                 }
             }
-            return true
         }
+    }
 
-        fun continueExecution() {
-            var shouldContinue = true
-            while (shouldContinue && executionState.currentBlockId != null && !waitingForInput) {
-                val currentBlock = blocksById[executionState.currentBlockId]
-                if (currentBlock != null) {
-                    shouldContinue = executeBlock(currentBlock)
-                    executionState.currentBlockId = currentBlock.nextBlockId
-                } else {
-                    shouldContinue = false
-                }
-            }
-            
-            if (!waitingForInput) {
-                onFinish()
-            }
+    // Добавляем метод для остановки выполнения
+    fun stopExecution() {
+        executionState.shouldStop = true
+        executionJob?.cancel()
+        GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+            logToConsole("🛑 Program execution stopped", isError = true)
         }
-
-        // Сохраняем callback для продолжения выполнения
-        continueExecutionCallback = ::continueExecution
-        continueExecution()
     }
 
     // Обработка пользовательского ввода в консоли
@@ -281,10 +477,8 @@ class VariableViewModel : ViewModel() {
             val declaredVar = declaredVariables[variable.name]
             
             if (declaredVar != null) {
-                // Заменяем запятую на точку для чисел
                 val processedInput = input.replace(",", ".")
                 
-                // Пытаемся преобразовать значение в соответствии с типом переменной
                 val conversionResult = when (declaredVar.type) {
                     "int" -> {
                         processedInput.toIntOrNull()?.let { 
@@ -309,20 +503,22 @@ class VariableViewModel : ViewModel() {
                 when {
                     conversionResult.isSuccess -> {
                         declaredVar.value = conversionResult.getOrNull()!!
-                        logToConsole("✅ Input accepted: ${declaredVar.name} = ${declaredVar.value}", true)
+                        GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                            logToConsole("✅ Input accepted: ${declaredVar.name} = ${declaredVar.value}", true)
+                        }
 
-                        // Сбрасываем флаги ожидания
                         waitingForInput = false
                         waitingVariable = null
                         
-                        // Продолжаем выполнение программы
                         programExecution?.invoke()
                     }
                     conversionResult.isFailure -> {
                         val errorMessage = conversionResult.exceptionOrNull()?.message ?: "Invalid format"
-                        logToConsole("❌ Error: $errorMessage", isError = true)
-                        logToConsole("❌ Variable '${declaredVar.name}' expects type: ${declaredVar.type}", isError = true)
-                        logToConsole("📥 Please enter the value again:", isError = true)
+                        GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                            logToConsole("❌ Error: $errorMessage", isError = true)
+                            logToConsole("❌ Variable '${declaredVar.name}' expects type: ${declaredVar.type}", isError = true)
+                            logToConsole("📥 Please enter the value again:", isError = true)
+                        }
                     }
                 }
             }
@@ -378,7 +574,9 @@ class VariableViewModel : ViewModel() {
 
     fun evaluateCondition(block: Block, declaredVariables: Map<String, Variable>): Boolean {
         if (block.operator.isBlank()) {
-            logToConsole("❌ Condition operator not specified")
+            GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                logToConsole("❌ Error: Condition operator not specified")
+            }
             return false
         }
 
@@ -386,7 +584,9 @@ class VariableViewModel : ViewModel() {
         val rightBlock = block.inputBlocks.getOrNull(1)
 
         if (leftBlock == null || rightBlock == null) {
-            logToConsole("❌ Condition operands not set")
+            GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                logToConsole("❌ Error: Condition operands not set")
+            }
             return false
         }
 
@@ -404,7 +604,9 @@ class VariableViewModel : ViewModel() {
                 MathExpressionEvaluator.evaluate(leftBlock)
             }
             else -> {
-                logToConsole("❌ Unsupported left operand type: ${leftBlock.type}")
+                GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                    logToConsole("❌ Error: Unsupported left operand type: ${leftBlock.type}")
+                }
                 return false
             }
         }
@@ -421,108 +623,51 @@ class VariableViewModel : ViewModel() {
             BlockType.MATH_MODULO -> {
                 MathExpressionEvaluator.evaluate(rightBlock)
             }
-            else -> {
-                logToConsole("❌ Unsupported right operand type: ${rightBlock.type}")
-                return false
-            }
+            else -> rightBlock.value // Добавляем прямое значение для числовых констант
         }
 
-        // Сравнение булевых значений
-        if (leftValue is Boolean || rightValue is Boolean || 
-            (leftValue is String && leftValue.lowercase() in listOf("true", "false", "1", "0")) ||
-            (rightValue is String && rightValue.lowercase() in listOf("true", "false", "1", "0"))) {
-            
-            // Преобразуем значения в boolean
-            val leftBool = when (leftValue) {
-                is Boolean -> leftValue
-                is Number -> leftValue.toDouble() != 0.0
-                is String -> when (leftValue.lowercase()) {
-                    "true", "1" -> true
-                    "false", "0" -> false
-                    else -> {
-                        logToConsole("❌ Left operand cannot be converted to boolean: $leftValue")
-                        return false
-                    }
-                }
-                else -> {
-                    logToConsole("❌ Left operand is not a boolean, number or string: $leftValue")
-                    return false
-                }
-            }
-
-            val rightBool = when (rightValue) {
-                is Boolean -> rightValue
-                is Number -> rightValue.toDouble() != 0.0
-                is String -> when (rightValue.lowercase()) {
-                    "true", "1" -> true
-                    "false", "0" -> false
-                    else -> {
-                        logToConsole("❌ Right operand cannot be converted to boolean: $rightValue")
-                        return false
-                    }
-                }
-                else -> {
-                    logToConsole("❌ Right operand is not a boolean, number or string: $rightValue")
-                    return false
-                }
-            }
-
-            return when (block.operator) {
-                "==" -> leftBool == rightBool
-                "!=" -> leftBool != rightBool
-                else -> {
-                    logToConsole("❌ Unsupported operator for boolean values: ${block.operator}")
-                    false
-                }
-            }
-        }
-
-        // Стринговое сравнение (если не boolean)
-        if (leftValue is String || rightValue is String) {
-            val leftStr = leftValue.toString()
-            val rightStr = rightValue.toString()
-            
-            val result = when (block.operator) {
-                "==" -> leftStr == rightStr
-                "!=" -> leftStr != rightStr
-                "<" -> leftStr < rightStr
-                ">" -> leftStr > rightStr
-                "<=" -> leftStr <= rightStr
-                ">=" -> leftStr >= rightStr
-                else -> {
-                    logToConsole("❌ Unsupported operator for strings: ${block.operator}")
-                    return false
-                }
-            }
-            return result
+        GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+            logToConsole("🔍 Debug: Comparing left($leftValue: ${leftValue?.javaClass?.simpleName}) ${block.operator} right($rightValue: ${rightValue?.javaClass?.simpleName})")
         }
 
         // Числовое сравнение (если не строки и не boolean)
         val leftNum = when (leftValue) {
             is Number -> leftValue.toDouble()
             is String -> leftValue.toDoubleOrNull() ?: run {
-                logToConsole("❌ Left operand cannot be converted to number: $leftValue")
+                GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                    logToConsole("❌ Error: Left operand cannot be converted to number: $leftValue")
+                }
                 return false
             }
             else -> {
-                logToConsole("❌ Left operand is not a number or string: $leftValue")
+                GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                    logToConsole("❌ Error: Left operand is not a number or string: $leftValue")
+                }
                 return false
             }
         }
 
         val rightNum = when (rightValue) {
             is Number -> rightValue.toDouble()
-            is String -> rightValue.toDoubleOrNull() ?: run {
-                logToConsole("❌ Right operand cannot be converted to number: $rightValue")
+            is String -> rightValue.toString().toDoubleOrNull() ?: run {
+                GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                    logToConsole("❌ Error: Right operand cannot be converted to number: $rightValue")
+                }
                 return false
             }
             else -> {
-                logToConsole("❌ Right operand is not a number or string: $rightValue")
+                GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                    logToConsole("❌ Error: Right operand is not a number or string: $rightValue")
+                }
                 return false
             }
         }
 
-        return when (block.operator) {
+        GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+            logToConsole("🔍 Debug: Converted to numbers - left: $leftNum, right: $rightNum")
+        }
+
+        val result = when (block.operator) {
             "==" -> leftNum == rightNum
             "!=" -> leftNum != rightNum
             "<" -> leftNum < rightNum
@@ -530,9 +675,16 @@ class VariableViewModel : ViewModel() {
             "<=" -> leftNum <= rightNum
             ">=" -> leftNum >= rightNum
             else -> {
-                logToConsole("❌ Unsupported operator: ${block.operator}")
+                GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+                    logToConsole("❌ Error: Unsupported operator: ${block.operator}")
+                }
                 false
             }
         }
+
+        GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {
+            logToConsole("🔍 Debug: Comparison result: $result")
+        }
+        return result
     }
 }
