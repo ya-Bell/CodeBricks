@@ -44,6 +44,8 @@
     <string name="create_print_block">print [ ]</string>
     <string name="select_variable_for_print">Select Variable for Print</string>
     <string name="cancel">Cancel</string>
+    <string name="print_text">Print text</string>
+    <string name="select_print_type">Select print text</string>
 
     <string name="create_start_block">Start</string>
     <string name="create_stop_block">Stop</string>
@@ -53,8 +55,6 @@
     <string name="logic_blocks">Logic blocks go here</string>
     <string name="loops_blocks">Loops blocks go here</string>
     <string name="functions_blocks">Function blocks go here</string>
-
-    <string name="select_variable_to_print">Select variable to print</string>
 
     <string name="create_variable">Declare (type) (variable) = (value)</string>
     <string name="declare_variable">Declare Variable</string>
@@ -116,7 +116,6 @@
     <string name="multiply_operator">*</string>
     <string name="divide_operator">÷</string>
     <string name="delete_icon_description">Delete</string>
-    <string name="block_type_unknown">?</string>
 
     <string name="change_label">Change</string>
     <string name="by_label">by</string>
@@ -160,5 +159,8 @@
     <string name="logic_end_if">end if</string>
 
     <string name="repository_url">https://github.com/ya-Bell/CodeBricks</string>
+
+    <string name="create_write_block">write [ ]</string>
+    <string name="select_variable_to_write">Select Variable to Write</string>
 
 </resources>

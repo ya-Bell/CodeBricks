@@ -13,6 +13,7 @@ enum class BlockType {
 
     // Input / Output
     IO_PRINT,
+    IO_WRITE,
 
     // Future blocks
     MATH_ADD,

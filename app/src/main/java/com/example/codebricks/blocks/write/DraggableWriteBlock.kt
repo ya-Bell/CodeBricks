@@ -1,10 +1,9 @@
-package com.example.codebricks.blocks.print
+package com.example.codebricks.blocks.write
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -42,7 +41,7 @@ import com.example.codebricks.viewmodel.VariableViewModel
 import kotlin.math.roundToInt
 
 @Composable
-fun DraggablePrintBlock(
+fun DraggableWriteBlock(
     id: String,
     variable: Variable?,
     containerWidth: Float,
@@ -102,15 +101,7 @@ fun DraggablePrintBlock(
             )
         }
 
-        val displayText = when {
-            variable != null -> "print(${variable.name})"
-            viewModel.programBlocks.find { it.id == id }?.value != null -> {
-                val text = viewModel.programBlocks.find { it.id == id }?.value as? String
-                "print(\"$text\")"
-            }
-            else -> "print(?)"
-        }
-        
+        val displayText = variable?.let { "write (${it.name})" } ?: "write(?)"
         Text(
             text = displayText,
             modifier = Modifier
@@ -121,4 +112,4 @@ fun DraggablePrintBlock(
             color = Color.White
         )
     }
-}
+} 

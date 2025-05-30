@@ -45,7 +45,32 @@ class VariableViewModel : ViewModel() {
 
     var skipNextBlock = false
 
+    // Флаги для обработки ввода
+    private var waitingForInput = false
+    private var waitingVariable: Variable? = null
+    private var programExecution: (() -> Unit)? = null
 
+    // Map для хранения объявленных переменных
+    private val declaredVariables = mutableMapOf<String, Variable>()
+
+    // Очистка консоли
+    fun clearConsole() {
+        consoleOutput.value = "Console cleared."
+    }
+
+    // Добавить сообщение в консоль
+    private fun logToConsole(message: String, isPrintOutput: Boolean = false, isError: Boolean = false) {
+        // Если режим отладки выключен, показываем только:
+        // - вывод print
+        // - инициализацию и остановку программы
+        // - сообщения об ошибках ввода
+        if (!isDebugMode.value && !isPrintOutput && !isError && 
+            !message.startsWith("🟢") && !message.startsWith("🔴") && 
+            !message.startsWith("Console")) {
+            return
+        }
+        consoleOutput.value += "\n$message"
+    }
 
     //ОТКЛАДКА
     fun logAllProgramBlocks() {
@@ -58,21 +83,223 @@ class VariableViewModel : ViewModel() {
         }
     }
 
-    //ОТКЛАДКА
+    // Состояние выполнения программы
+    private data class ExecutionState(
+        var currentBlockId: String? = null,
+        var skipUntilEndIf: Boolean = false,
+        var wasConditionMet: Boolean = false,
+        val conditionStack: MutableList<Boolean> = mutableListOf()
+    )
 
+    private val executionState = ExecutionState()
+    private var continueExecutionCallback: (() -> Unit)? = null
 
-    // Очистка консоли
-    fun clearConsole() {
-        consoleOutput.value = "Console cleared."
+    // Исполнение блоков программы
+    fun executeProgram(onFinish: () -> Unit) {
+        val blocksById = programBlocks.associateBy { it.id }
+        declaredVariables.clear()
+        
+        // Инициализация состояния
+        executionState.apply {
+            currentBlockId = programBlocks.find { it.type == BlockType.CONTROL_START }?.id
+            skipUntilEndIf = false
+            wasConditionMet = false
+            conditionStack.clear()
+        }
+
+        fun executeBlock(block: Block): Boolean {
+            when (block.type) {
+                BlockType.CONTROL_START -> {
+                    logToConsole("🟢 Program started")
+                }
+                BlockType.CONTROL_STOP -> {
+                    if (!executionState.skipUntilEndIf) {
+                        logToConsole("🔴 Program stopped")
+                        return false
+                    }
+                }
+                BlockType.IF -> {
+                    executionState.wasConditionMet = evaluateCondition(block, declaredVariables)
+                    executionState.conditionStack.add(executionState.wasConditionMet)
+                    executionState.skipUntilEndIf = !executionState.wasConditionMet
+                    if (executionState.wasConditionMet) {
+                        logToConsole("✅ IF condition is true")
+                    } else {
+                        logToConsole("❌ IF condition is false")
+                    }
+                }
+                BlockType.ELSE_IF -> {
+                    if (!executionState.wasConditionMet) {
+                        executionState.wasConditionMet = evaluateCondition(block, declaredVariables)
+                        executionState.skipUntilEndIf = !executionState.wasConditionMet
+                        if (executionState.wasConditionMet) {
+                            logToConsole("✅ ELSE IF condition is true")
+                        } else {
+                            logToConsole("❌ ELSE IF condition is false")
+                        }
+                    } else {
+                        executionState.skipUntilEndIf = true
+                    }
+                }
+                BlockType.ELSE -> {
+                    if (!executionState.wasConditionMet) {
+                        executionState.skipUntilEndIf = false
+                        executionState.wasConditionMet = true
+                        logToConsole("✅ ELSE block executed")
+                    } else {
+                        executionState.skipUntilEndIf = true
+                    }
+                }
+                BlockType.END_IF -> {
+                    if (executionState.conditionStack.isNotEmpty()) {
+                        executionState.conditionStack.removeAt(executionState.conditionStack.lastIndex)
+                    }
+                    executionState.skipUntilEndIf = false
+                    executionState.wasConditionMet = false
+                }
+                else -> {
+                    if (!executionState.skipUntilEndIf) {
+                        when (block.type) {
+                            BlockType.VARIABLE_DECLARE -> {
+                                (block.value as? Variable)?.let { variable ->
+                                    declaredVariables[variable.name] = variable.copy()
+                                    logToConsole("✅ Declared ${variable.name} = ${variable.value}")
+                                }
+                            }
+                            BlockType.VARIABLE_SET -> {
+                                val targetVar = block.inputBlocks.getOrNull(0)?.value as? Variable
+                                val valueBlock = block.inputBlocks.getOrNull(1)
+
+                                if (targetVar == null) {
+                                    logToConsole("❌ Error: No variable selected in Set block.")
+                                } else {
+                                    declaredVariables[targetVar.name]?.let { memoryVar ->
+                                        val rawValue = MathExpressionEvaluator.evaluate(valueBlock)
+                                        val newValue = when (memoryVar.type) {
+                                            "int" -> rawValue.toInt()
+                                            "double" -> rawValue
+                                            "bool" -> rawValue != 0.0
+                                            else -> rawValue.toString()
+                                        }
+                                        memoryVar.value = newValue
+                                        logToConsole("✅ Set ${memoryVar.name} = ${memoryVar.value}")
+                                    } ?: logToConsole("❌ Error: variable '${targetVar.name}' not declared")
+                                }
+                            }
+                            BlockType.IO_PRINT -> {
+                                val variable = block.inputBlocks.firstOrNull()?.value as? Variable
+                                if (variable != null) {
+                                    declaredVariables[variable.name]?.let { target ->
+                                        logToConsole("📤 Output: ${target.name} = ${target.value}", true)
+                                    } ?: logToConsole("❌ Error: variable '${variable.name}' not declared", true)
+                                } else {
+                                    val text = block.value as? String
+                                    if (text != null) {
+                                        logToConsole("📤 Output: $text", true)
+                                    }
+                                }
+                            }
+                            BlockType.IO_WRITE -> {
+                                (block.value as? Variable)?.let { variable ->
+                                    declaredVariables[variable.name]?.let { target ->
+                                        logToConsole("📥 Input: Enter value for ${target.name}:", true)
+                                        waitingForInput = true
+                                        waitingVariable = variable
+                                        programExecution = continueExecutionCallback
+                                        return false
+                                    } ?: logToConsole("❌ Error: variable '${variable.name}' not declared", true)
+                                }
+                            }
+                            BlockType.MATH_ADD, BlockType.MATH_SUBTRACT, BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE -> {
+                                val result = MathExpressionEvaluator.evaluate(block)
+                                logToConsole("🧮 Result of math expression: $result")
+                            }
+                            else -> {}
+                        }
+                    }
+                }
+            }
+            return true
+        }
+
+        fun continueExecution() {
+            var shouldContinue = true
+            while (shouldContinue && executionState.currentBlockId != null && !waitingForInput) {
+                val currentBlock = blocksById[executionState.currentBlockId]
+                if (currentBlock != null) {
+                    shouldContinue = executeBlock(currentBlock)
+                    executionState.currentBlockId = currentBlock.nextBlockId
+                } else {
+                    shouldContinue = false
+                }
+            }
+            
+            if (!waitingForInput) {
+                onFinish()
+            }
+        }
+
+        // Сохраняем callback для продолжения выполнения
+        continueExecutionCallback = ::continueExecution
+        continueExecution()
     }
 
-    // Добавить сообщение в консоль
-    private fun logToConsole(message: String, isPrintOutput: Boolean = false) {
-        // Если режим отладки выключен, показываем только вывод print, инициализацию и остановку программы
-        if (!isDebugMode.value && !isPrintOutput && !message.startsWith("🟢") && !message.startsWith("🔴") && !message.startsWith("Console")) {
-            return
+    // Обработка пользовательского ввода в консоли
+    fun processUserInput(input: String) {
+        consoleOutput.value += "\n> $input"
+        
+        if (waitingForInput && waitingVariable != null) {
+            val variable = waitingVariable!!
+            val declaredVar = declaredVariables[variable.name]
+            
+            if (declaredVar != null) {
+                // Заменяем запятую на точку для чисел
+                val processedInput = input.replace(",", ".")
+                
+                // Пытаемся преобразовать значение в соответствии с типом переменной
+                val conversionResult = when (declaredVar.type) {
+                    "int" -> {
+                        processedInput.toIntOrNull()?.let { 
+                            Result.success(it as Any)
+                        } ?: Result.failure(Exception("Expected an integer number"))
+                    }
+                    "double" -> {
+                        processedInput.toDoubleOrNull()?.let {
+                            Result.success(it as Any)
+                        } ?: Result.failure(Exception("Expected a decimal number"))
+                    }
+                    "bool" -> {
+                        when (processedInput.lowercase()) {
+                            "true", "1" -> Result.success(true as Any)
+                            "false", "0" -> Result.success(false as Any)
+                            else -> Result.failure(Exception("Expected a boolean value (true/false or 1/0)"))
+                        }
+                    }
+                    else -> Result.success(processedInput as Any)
+                }
+
+                when {
+                    conversionResult.isSuccess -> {
+                        declaredVar.value = conversionResult.getOrNull()!!
+                        logToConsole("✅ Input accepted: ${declaredVar.name} = ${declaredVar.value}", true)
+                        logToConsole("-------------------", true)
+                        
+                        // Сбрасываем флаги ожидания
+                        waitingForInput = false
+                        waitingVariable = null
+                        
+                        // Продолжаем выполнение программы
+                        programExecution?.invoke()
+                    }
+                    conversionResult.isFailure -> {
+                        val errorMessage = conversionResult.exceptionOrNull()?.message ?: "Invalid format"
+                        logToConsole("❌ Error: $errorMessage", isError = true)
+                        logToConsole("❌ Variable '${declaredVar.name}' expects type: ${declaredVar.type}", isError = true)
+                        logToConsole("📥 Please enter the value again:", isError = true)
+                    }
+                }
+            }
         }
-        consoleOutput.value += "\n$message"
     }
 
     // Добавление блока в программу и перерисовка
@@ -92,6 +319,11 @@ class VariableViewModel : ViewModel() {
         BlockSlotTracker.clear()
         highlightedSlot.value = null
         recentlyInsertedSlot.value = null
+        skipNextBlock = false
+        waitingForInput = false
+        waitingVariable = null
+        programExecution = null
+        declaredVariables.clear()
     }
 
     // Удаление блока по ID (только верхнеуровневого)
@@ -135,11 +367,7 @@ class VariableViewModel : ViewModel() {
         val leftValue = when (leftBlock.type) {
             BlockType.VARIABLE_REFERENCE -> {
                 val variable = leftBlock.value as? Variable
-                (declaredVariables[variable?.name]?.value ?: variable?.value)
-                    ?.toString()?.toDoubleOrNull() ?: run {
-                    logToConsole("❌ Left operand is not a number")
-                    return false
-                }
+                declaredVariables[variable?.name]?.value ?: variable?.value
             }
             BlockType.MATH_ADD,
             BlockType.MATH_SUBTRACT,
@@ -156,11 +384,7 @@ class VariableViewModel : ViewModel() {
         val rightValue = when (rightBlock.type) {
             BlockType.VARIABLE_REFERENCE -> {
                 val variable = rightBlock.value as? Variable
-                (declaredVariables[variable?.name]?.value ?: variable?.value)
-                    ?.toString()?.toDoubleOrNull() ?: run {
-                    logToConsole("❌ Right operand is not a number")
-                    return false
-                }
+                declaredVariables[variable?.name]?.value ?: variable?.value
             }
             BlockType.MATH_ADD,
             BlockType.MATH_SUBTRACT,
@@ -174,144 +398,112 @@ class VariableViewModel : ViewModel() {
             }
         }
 
-        println("Evaluating condition: $leftValue ${block.operator} $rightValue")
+        // Сравнение булевых значений
+        if (leftValue is Boolean || rightValue is Boolean || 
+            (leftValue is String && leftValue.lowercase() in listOf("true", "false", "1", "0")) ||
+            (rightValue is String && rightValue.lowercase() in listOf("true", "false", "1", "0"))) {
+            
+            // Преобразуем значения в boolean
+            val leftBool = when (leftValue) {
+                is Boolean -> leftValue
+                is Number -> leftValue.toDouble() != 0.0
+                is String -> when (leftValue.lowercase()) {
+                    "true", "1" -> true
+                    "false", "0" -> false
+                    else -> {
+                        logToConsole("❌ Left operand cannot be converted to boolean: $leftValue")
+                        return false
+                    }
+                }
+                else -> {
+                    logToConsole("❌ Left operand is not a boolean, number or string: $leftValue")
+                    return false
+                }
+            }
+
+            val rightBool = when (rightValue) {
+                is Boolean -> rightValue
+                is Number -> rightValue.toDouble() != 0.0
+                is String -> when (rightValue.lowercase()) {
+                    "true", "1" -> true
+                    "false", "0" -> false
+                    else -> {
+                        logToConsole("❌ Right operand cannot be converted to boolean: $rightValue")
+                        return false
+                    }
+                }
+                else -> {
+                    logToConsole("❌ Right operand is not a boolean, number or string: $rightValue")
+                    return false
+                }
+            }
+
+            return when (block.operator) {
+                "==" -> leftBool == rightBool
+                "!=" -> leftBool != rightBool
+                else -> {
+                    logToConsole("❌ Unsupported operator for boolean values: ${block.operator}")
+                    false
+                }
+            }
+        }
+
+        // Стринговое сравнение (если не boolean)
+        if (leftValue is String || rightValue is String) {
+            val leftStr = leftValue.toString()
+            val rightStr = rightValue.toString()
+            
+            val result = when (block.operator) {
+                "==" -> leftStr == rightStr
+                "!=" -> leftStr != rightStr
+                "<" -> leftStr < rightStr
+                ">" -> leftStr > rightStr
+                "<=" -> leftStr <= rightStr
+                ">=" -> leftStr >= rightStr
+                else -> {
+                    logToConsole("❌ Unsupported operator for strings: ${block.operator}")
+                    return false
+                }
+            }
+            return result
+        }
+
+        // Числовое сравнение (если не строки и не boolean)
+        val leftNum = when (leftValue) {
+            is Number -> leftValue.toDouble()
+            is String -> leftValue.toDoubleOrNull() ?: run {
+                logToConsole("❌ Left operand cannot be converted to number: $leftValue")
+                return false
+            }
+            else -> {
+                logToConsole("❌ Left operand is not a number or string: $leftValue")
+                return false
+            }
+        }
+
+        val rightNum = when (rightValue) {
+            is Number -> rightValue.toDouble()
+            is String -> rightValue.toDoubleOrNull() ?: run {
+                logToConsole("❌ Right operand cannot be converted to number: $rightValue")
+                return false
+            }
+            else -> {
+                logToConsole("❌ Right operand is not a number or string: $rightValue")
+                return false
+            }
+        }
 
         return when (block.operator) {
-            "==" -> leftValue == rightValue
-            "!=" -> leftValue != rightValue
-            ">"  -> leftValue > rightValue
-            "<"  -> leftValue < rightValue
-            ">=" -> leftValue >= rightValue
-            "<=" -> leftValue <= rightValue
+            "==" -> leftNum == rightNum
+            "!=" -> leftNum != rightNum
+            "<" -> leftNum < rightNum
+            ">" -> leftNum > rightNum
+            "<=" -> leftNum <= rightNum
+            ">=" -> leftNum >= rightNum
             else -> {
                 logToConsole("❌ Unsupported operator: ${block.operator}")
                 false
             }
         }
     }
-
-    // Исполнение блоков программы
-    fun executeProgram(onFinish: () -> Unit) {
-        val blocksById = programBlocks.associateBy { it.id }
-        val declaredVariables = mutableMapOf<String, Variable>()
-        var current = programBlocks.find { it.type == BlockType.CONTROL_START }
-        
-        // Стек для отслеживания условных блоков
-        val conditionStack = mutableListOf<Boolean>()
-        var skipUntilEndIf = false
-        var wasConditionMet = false // Флаг для отслеживания выполненного условия в цепочке if-else
-
-        while (current != null) {
-            when (current.type) {
-                BlockType.CONTROL_START -> logToConsole("🟢 Program started")
-                BlockType.CONTROL_STOP -> {
-                    if (!skipUntilEndIf) {
-                        logToConsole("🔴 Program stopped")
-                        break // Прерываем программу только если блок реально выполняется
-                    }
-                }
-
-                BlockType.IF -> {
-                    wasConditionMet = evaluateCondition(current, declaredVariables)
-                    conditionStack.add(wasConditionMet)
-                    skipUntilEndIf = !wasConditionMet
-                    if (wasConditionMet) {
-                        logToConsole("✅ IF condition is true")
-                    } else {
-                        logToConsole("❌ IF condition is false")
-                    }
-                }
-
-                BlockType.ELSE_IF -> {
-                    if (!wasConditionMet) {
-                        // Проверяем условие ELSE IF только если предыдущие условия не выполнились
-                        wasConditionMet = evaluateCondition(current, declaredVariables)
-                        skipUntilEndIf = !wasConditionMet
-                        if (wasConditionMet) {
-                            logToConsole("✅ ELSE IF condition is true")
-                        } else {
-                            logToConsole("❌ ELSE IF condition is false")
-                        }
-                    } else {
-                        // Если предыдущее условие выполнилось, пропускаем этот блок
-                        skipUntilEndIf = true
-                    }
-                }
-
-                BlockType.ELSE -> {
-                    if (!wasConditionMet) {
-                        // Выполняем ELSE только если ни одно из предыдущих условий не выполнилось
-                        skipUntilEndIf = false
-                        wasConditionMet = true
-                        logToConsole("✅ ELSE block executed")
-                    } else {
-                        // Если предыдущее условие выполнилось, пропускаем этот блок
-                        skipUntilEndIf = true
-                    }
-                }
-
-                BlockType.END_IF -> {
-                    if (conditionStack.isNotEmpty()) {
-                        conditionStack.removeAt(conditionStack.lastIndex)
-                    }
-                    skipUntilEndIf = false
-                    wasConditionMet = false
-                }
-
-                else -> {
-                    if (!skipUntilEndIf) {
-                        when (current.type) {
-                            BlockType.VARIABLE_DECLARE -> {
-                                (current.value as? Variable)?.let { variable ->
-                                    declaredVariables[variable.name] = variable.copy()
-                                    logToConsole("✅ Declared ${variable.name} = ${variable.value}")
-                                }
-                            }
-
-                            BlockType.VARIABLE_SET -> {
-                                val targetVar = current.inputBlocks.getOrNull(0)?.value as? Variable
-                                val valueBlock = current.inputBlocks.getOrNull(1)
-
-                                if (targetVar == null) {
-                                    logToConsole("❌ Error: No variable selected in Set block.")
-                                } else {
-                                    declaredVariables[targetVar.name]?.let { memoryVar ->
-                                        val rawValue = MathExpressionEvaluator.evaluate(valueBlock)
-
-                                        val newValue = when (memoryVar.type) {
-                                            "int" -> rawValue.toInt()
-                                            "double" -> rawValue
-                                            "bool" -> rawValue != 0.0
-                                            else -> rawValue.toString()
-                                        }
-
-                                        memoryVar.value = newValue
-                                        logToConsole("✅ Set ${memoryVar.name} = ${memoryVar.value}")
-                                    } ?: logToConsole("❌ Error: variable '${targetVar.name}' not declared")
-                                }
-                            }
-
-                            BlockType.IO_PRINT -> {
-                                (current.inputBlocks.firstOrNull()?.value as? Variable)?.let { variable ->
-                                    declaredVariables[variable.name]?.let { target ->
-                                        logToConsole("📤 Output: ${target.name} = ${target.value}", true)
-                                    } ?: logToConsole("❌ Error: variable '${variable.name}' not declared", true)
-                                }
-                            }
-
-                            BlockType.MATH_ADD, BlockType.MATH_SUBTRACT, BlockType.MATH_MULTIPLY, BlockType.MATH_DIVIDE -> {
-                                val result = MathExpressionEvaluator.evaluate(current)
-                                logToConsole("🧮 Result of math expression: $result")
-                            }
-
-                            else -> {}
-                        }
-                    }
-                }
-            }
-            current = current?.nextBlockId?.let { blocksById[it] }
-        }
-        onFinish()
-    }
-
 }

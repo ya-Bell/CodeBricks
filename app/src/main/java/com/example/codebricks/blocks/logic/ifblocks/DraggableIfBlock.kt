@@ -268,7 +268,7 @@ fun DraggableIfBlock(
                     onDismissRequest = { expandedOperator.value = false },
                     modifier = Modifier.widthIn(min = 38.dp, max = 140.dp)
                 ) {
-                    listOf("==", ">", "<", ">=", "<=").forEach { operator ->
+                    listOf("==", "!=", ">", "<", ">=", "<=").forEach { operator ->
                         DropdownMenuItem(
                             text = { Text(operator, fontSize = 12.sp) },
                             modifier = Modifier.height(24.dp),
