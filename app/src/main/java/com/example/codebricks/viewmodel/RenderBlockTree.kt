@@ -42,10 +42,13 @@ fun RenderBlockTree(
 
     // Не рендерим блок, если он используется как input в другом блоке
     // или если это SET блок, который уже отрендерен
-    if (isUsedAsInput(block.id) || 
-        (block.type == BlockType.VARIABLE_SET && 
-         viewModel.programBlocks.any { it.id != block.id && it.type == BlockType.VARIABLE_SET && 
-                                     it.inputBlocks.any { input -> input?.id == block.id } })) {
+    if (isUsedAsInput(block.id) ||
+        (block.type == BlockType.VARIABLE_SET &&
+                viewModel.programBlocks.any {
+                    it.id != block.id && it.type == BlockType.VARIABLE_SET &&
+                            it.inputBlocks.any { input -> input?.id == block.id }
+                })
+    ) {
         return
     }
 
@@ -61,6 +64,7 @@ fun RenderBlockTree(
                 viewModel = viewModel
             )
         }
+
         BlockType.VARIABLE_SET -> {
             DraggableSetVariableBlock(
                 id = block.id,
@@ -71,6 +75,7 @@ fun RenderBlockTree(
                 viewModel = viewModel
             )
         }
+
         BlockType.VARIABLE_CHANGE -> {
             val variable = block.inputBlocks.getOrNull(0)?.value as? Variable
             DraggableChangeVariableBlock(
@@ -84,6 +89,7 @@ fun RenderBlockTree(
                 viewModel = viewModel
             )
         }
+
         BlockType.IO_PRINT -> {
             val variable = block.inputBlocks.firstOrNull()?.value as? Variable
             DraggablePrintBlock(
@@ -96,6 +102,7 @@ fun RenderBlockTree(
 
             )
         }
+
         BlockType.CONTROL_START, BlockType.CONTROL_STOP -> {
             DraggableControlBlock(
                 id = block.id,
@@ -106,6 +113,7 @@ fun RenderBlockTree(
                 viewModel = viewModel
             )
         }
+
         BlockType.VARIABLE_DECLARE -> {
             val variable = block.value as? Variable
             if (variable != null) {
@@ -119,6 +127,7 @@ fun RenderBlockTree(
                 )
             }
         }
+
         BlockType.VARIABLE_REFERENCE -> {
             val variable = block.value as? Variable
             if (variable != null) {
@@ -130,6 +139,7 @@ fun RenderBlockTree(
                 )
             }
         }
+
         BlockType.IF -> {
             DraggableIfBlock(
                 id = block.id,
@@ -204,6 +214,7 @@ fun RenderBlockTree(
                 viewModel = viewModel
             )
         }
+
         else -> {}
     }
 

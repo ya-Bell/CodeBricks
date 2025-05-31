@@ -29,7 +29,6 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -77,9 +76,13 @@ fun DraggableReferenceBlock(
     }
 
     val blockModifier = if (isInserted) {
-        Modifier.wrapContentWidth().heightIn(min = 32.dp)
+        Modifier
+            .wrapContentWidth()
+            .heightIn(min = 32.dp)
     } else {
-        Modifier.wrapContentWidth().height(32.dp)
+        Modifier
+            .wrapContentWidth()
+            .height(32.dp)
     }
 
     LaunchedEffect(currentId.value, isInserted, redrawTrigger) {
@@ -89,7 +92,8 @@ fun DraggableReferenceBlock(
                 it.blockId == parent?.id && parent.inputBlocks.getOrNull(it.slotIndex)?.id == currentId.value
             }
             val windowOffset = slot?.bounds?.let { Offset(it.left, it.top) } ?: Offset.Zero
-            val correctedOffset = layoutCoordinates!!.windowToLocal(windowOffset - BlockPositionTracker.canvasOffset)
+            val correctedOffset =
+                layoutCoordinates!!.windowToLocal(windowOffset - BlockPositionTracker.canvasOffset)
             if (!correctedOffset.x.isNaN() && !correctedOffset.y.isNaN() && correctedOffset != localOffset.value) {
                 localOffset.value = correctedOffset
             }
@@ -105,7 +109,11 @@ fun DraggableReferenceBlock(
             )
             .onGloballyPositioned { coords ->
                 layoutCoordinates = coords
-                BlockPositionTracker.setBlockSize(currentId.value, coords.size.width.toFloat(), coords.size.height.toFloat())
+                BlockPositionTracker.setBlockSize(
+                    currentId.value,
+                    coords.size.width.toFloat(),
+                    coords.size.height.toFloat()
+                )
 
                 if (isInserted) {
                     val parent = viewModel.findBlockContaining(currentId.value)
@@ -117,7 +125,11 @@ fun DraggableReferenceBlock(
                 }
             }
             .clip(RoundedCornerShape(8.dp))
-            .border(width = if (isInserted) 0.dp else 2.dp, color = TextBlack, shape = RoundedCornerShape(8.dp))
+            .border(
+                width = if (isInserted) 0.dp else 2.dp,
+                color = TextBlack,
+                shape = RoundedCornerShape(8.dp)
+            )
             .background(BlockVariables)
             .zIndex(if (isInserted) 0f else 1f)
             .pointerInput(currentId.value, isInserted) {
@@ -128,12 +140,13 @@ fun DraggableReferenceBlock(
                         if (isInserted) {
                             val original = viewModel.findBlockById(currentId.value)
                             val parentBlock = viewModel.findBlockContaining(currentId.value)
-                            
+
                             // Если это числовой блок, удаляем его при начале перетаскивания
                             if (isNumericBlock) {
                                 viewModel.removeBlockRecursively(currentId.value)
                                 if (parentBlock != null) {
-                                    val slotIndex = parentBlock.inputBlocks.indexOfFirst { it?.id == currentId.value }
+                                    val slotIndex =
+                                        parentBlock.inputBlocks.indexOfFirst { it?.id == currentId.value }
                                     if (slotIndex != -1) {
                                         parentBlock.inputBlocks[slotIndex] = null
                                     }
@@ -142,20 +155,24 @@ fun DraggableReferenceBlock(
                             }
 
                             viewModel.removeBlockFromParent(currentId.value)
-                            
+
                             if (parentBlock != null) {
-                                val slotIndex = parentBlock.inputBlocks.indexOfFirst { it?.id == currentId.value }
+                                val slotIndex =
+                                    parentBlock.inputBlocks.indexOfFirst { it?.id == currentId.value }
                                 if (slotIndex != -1) {
                                     parentBlock.inputBlocks[slotIndex] = null
                                 }
                             }
-                            
+
                             if (original != null) {
                                 layoutCoordinates?.boundsInWindow()?.topLeft?.let { windowPos ->
                                     val canvasOffset = windowPos + BlockPositionTracker.canvasOffset
                                     scope.launch {
                                         animOffset.snapTo(canvasOffset)
-                                        BlockPositionTracker.updateBlockPosition(original.id, canvasOffset)
+                                        BlockPositionTracker.updateBlockPosition(
+                                            original.id,
+                                            canvasOffset
+                                        )
                                         BlockPositionTracker.redrawTrigger.intValue++
                                     }
                                 }
@@ -176,9 +193,12 @@ fun DraggableReferenceBlock(
                             .filter { slot ->
                                 val slotParentBlock = viewModel.findBlockById(slot.blockId)
                                 slotParentBlock != null &&
-                                slot.blockId != currentId.value &&
-                                !viewModel.isRecursiveInsertion(currentId.value, slot.blockId) &&
-                                slotParentBlock.type in listOf(
+                                        slot.blockId != currentId.value &&
+                                        !viewModel.isRecursiveInsertion(
+                                            currentId.value,
+                                            slot.blockId
+                                        ) &&
+                                        slotParentBlock.type in listOf(
                                     BlockType.VARIABLE_SET,
                                     BlockType.MATH_ADD,
                                     BlockType.MATH_SUBTRACT,
@@ -231,14 +251,3 @@ fun DraggableReferenceBlock(
     }
 }
 
-
-@Preview(showBackground = true)
-@Composable
-fun DraggableReferenceBlockPreview() {
-    val mockViewModel = remember { VariableViewModel() }
-    val variable = Variable(name = "e", value = 10, type = "int")
-
-    DraggableReferenceBlock(
-        id = "ref-preview-id", variable = variable, viewModel = mockViewModel
-    )
-}

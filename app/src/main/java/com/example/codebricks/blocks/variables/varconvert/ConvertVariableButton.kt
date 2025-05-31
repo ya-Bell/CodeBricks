@@ -102,7 +102,10 @@ fun ConvertVariable(viewModel: VariableViewModel) {
                                     },
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .menuAnchor(type = MenuAnchorType.PrimaryEditable, enabled = true)
+                                        .menuAnchor(
+                                            type = MenuAnchorType.PrimaryEditable,
+                                            enabled = true
+                                        )
                                 )
 
                                 ExposedDropdownMenu(
@@ -111,7 +114,15 @@ fun ConvertVariable(viewModel: VariableViewModel) {
                                 ) {
                                     viewModel.variables.forEach { variable ->
                                         DropdownMenuItem(
-                                            text = { Text(stringResource(R.string.variable_with_type, variable.name, variable.type)) },
+                                            text = {
+                                                Text(
+                                                    stringResource(
+                                                        R.string.variable_with_type,
+                                                        variable.name,
+                                                        variable.type
+                                                    )
+                                                )
+                                            },
                                             onClick = {
                                                 selectedVariable.value = variable.name
                                                 newType.value = "int"
@@ -122,7 +133,10 @@ fun ConvertVariable(viewModel: VariableViewModel) {
                                 }
                             }
 
-                            Text(stringResource(id = R.string.select_new_type), fontWeight = FontWeight.Bold)
+                            Text(
+                                stringResource(id = R.string.select_new_type),
+                                fontWeight = FontWeight.Bold
+                            )
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween

@@ -1,6 +1,5 @@
 package com.example.codebricks.blocks.math
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.foundation.background
@@ -35,7 +34,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -52,7 +50,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -134,7 +131,8 @@ fun DraggableMathBlock(
                 it.blockId == parent?.id && parent.inputBlocks.getOrNull(it.slotIndex)?.id == id
             }
             val windowOffset = slot?.bounds?.let { Offset(it.left, it.top) } ?: Offset.Zero
-            val correctedOffset = layoutCoordinates!!.windowToLocal(windowOffset - BlockPositionTracker.canvasOffset)
+            val correctedOffset =
+                layoutCoordinates!!.windowToLocal(windowOffset - BlockPositionTracker.canvasOffset)
             if (!correctedOffset.x.isNaN() && !correctedOffset.y.isNaN() && correctedOffset != localOffset.value) {
                 localOffset.value = correctedOffset
             }
@@ -249,7 +247,10 @@ fun DraggableMathBlock(
                             }
 
                             // Обновляем позицию блока
-                            BlockPositionTracker.updateBlockPosition(id, canvasOffset ?: Offset.Zero)
+                            BlockPositionTracker.updateBlockPosition(
+                                id,
+                                canvasOffset ?: Offset.Zero
+                            )
                             BlockPositionTracker.redrawTrigger.intValue++
                         }
                     },
@@ -260,7 +261,8 @@ fun DraggableMathBlock(
                         }
                         BlockPositionTracker.updateBlockPosition(id, animOffset.value)
 
-                        val draggedBlock = viewModel.programBlocks.find { it.id == id } ?: return@detectDragGestures
+                        val draggedBlock = viewModel.programBlocks.find { it.id == id }
+                            ?: return@detectDragGestures
                         val treeIds = viewModel.collectDescendantIds(draggedBlock) + setOf(id)
 
                         val coords = layoutCoordinates ?: return@detectDragGestures
@@ -278,7 +280,8 @@ fun DraggableMathBlock(
                                 val isValidTarget = slot.blockId !in treeIds &&
                                         slotParentBlock != null &&
                                         !treeIds.contains(slotParentBlock.id) &&
-                                        !viewModel.collectDescendantIds(draggedBlock).contains(slot.blockId) &&
+                                        !viewModel.collectDescendantIds(draggedBlock)
+                                            .contains(slot.blockId) &&
                                         !viewModel.isRecursiveInsertion(id, slot.blockId) &&
                                         slotParentBlock.type in listOf(
                                     BlockType.VARIABLE_SET,
@@ -339,7 +342,8 @@ fun DraggableMathBlock(
         }
 
         Row(
-            modifier = Modifier.padding(horizontal = 8.dp)
+            modifier = Modifier
+                .padding(horizontal = 8.dp)
                 .widthIn(max = 2000.dp)
                 .horizontalScroll(scrollState),
             verticalAlignment = Alignment.CenterVertically
@@ -385,7 +389,8 @@ fun MathInputSlot(
             if (previousBlock.value != null &&
                 previousBlock.value?.id != block.id &&
                 previousBlock.value?.type == BlockType.VARIABLE_REFERENCE &&
-                (previousBlock.value?.value as? Variable)?.name?.toDoubleOrNull() != null) {
+                (previousBlock.value?.value as? Variable)?.name?.toDoubleOrNull() != null
+            ) {
                 viewModel.removeBlockRecursively(previousBlock.value!!.id)
             }
             previousBlock.value = block
@@ -426,7 +431,7 @@ fun MathInputSlot(
                 BlockType.MATH_SUBTRACT,
                 BlockType.MATH_MULTIPLY,
                 BlockType.MATH_DIVIDE,
-                BlockType.MATH_MODULO-> {
+                BlockType.MATH_MODULO -> {
                     if (!viewModel.programBlocks.any { it.id == block.id }) {
                         viewModel.addBlock(block)
                     }
@@ -458,7 +463,10 @@ fun MathInputSlot(
                 }
 
                 else -> {
-                    Text(block.value?.toString() ?: stringResource(R.string.unknown_value), fontSize = 12.sp)
+                    Text(
+                        block.value?.toString() ?: stringResource(R.string.unknown_value),
+                        fontSize = 12.sp
+                    )
                 }
             }
         } else {
@@ -508,66 +516,4 @@ fun MathInputSlot(
             )
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun DraggableMathBlockPreview() {
-    // Фейковый ViewModel
-    val viewModel = remember {
-        VariableViewModel().apply {
-            // Для примера можно добавить фейковые данные, если нужно
-        }
-    }
-
-    // Фейковые inputBlocks
-    val inputBlocks = remember {
-        mutableStateListOf<Block?>(
-            null,
-            null
-        )
-    }
-
-    DraggableMathBlock(
-        id = "preview-math-block",
-        type = BlockType.MATH_ADD,
-        inputBlocks = inputBlocks,
-        containerWidth = 300f,
-        containerHeight = 100f,
-        onDelete = {},
-        viewModel = viewModel
-    )
-}
-
-@SuppressLint("ViewModelConstructorInComposable")
-@Preview(showBackground = true)
-@Composable
-fun NestedMathBlockPreview() {
-    val viewModel = VariableViewModel()
-
-    val innerBlock = Block(
-        type = BlockType.MATH_ADD,
-        inputBlocks = mutableListOf(
-            Block(type = BlockType.VARIABLE_REFERENCE, value = Variable("a", 5, "int")),
-            Block(type = BlockType.VARIABLE_REFERENCE, value = Variable("b", 3, "int"))
-        )
-    )
-
-    val outerBlock = Block(
-        type = BlockType.MATH_MULTIPLY,
-        inputBlocks = mutableListOf(
-            innerBlock,
-            Block(type = BlockType.VARIABLE_REFERENCE, value = Variable("c", 2, "int"))
-        )
-    )
-
-    DraggableMathBlock(
-        id = outerBlock.id,
-        type = outerBlock.type,
-        inputBlocks = outerBlock.inputBlocks,
-        containerWidth = 400f,
-        containerHeight = 400f,
-        onDelete = {},
-        viewModel = viewModel
-    )
 }

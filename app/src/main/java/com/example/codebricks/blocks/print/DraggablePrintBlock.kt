@@ -59,35 +59,36 @@ fun DraggablePrintBlock(
         BlockPositionTracker.updateBlockPosition(id, offset)
     }
 
-    Box(modifier = Modifier
-        .offset {
-            val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 44f)
-            IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
-        }
-        .defaultMinSize(minWidth = 100.dp)
-        .wrapContentWidth()
-        .height(40.dp)
-        .border(2.dp, TextBlack, RoundedCornerShape(12.dp))
-        .clip(RoundedCornerShape(12.dp))
-        .background(BlockIO)
-        .pointerInput(Unit) {
-            detectDragGestures(
-                onDragStart = {
-                    viewModel.shouldDrawConnections.value = false
-                    isBeingDragged = true
-                    isPressed = true
-                },
-                onDrag = { change, dragAmount ->
-                    offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
-                    BlockPositionTracker.updateBlockPosition(id, offset)
-                    change.consume()
-                },
-                onDragEnd = {
-                    isBeingDragged = false
-                    isPressed = false
-                }
-            )
-        }) {
+    Box(
+        modifier = Modifier
+            .offset {
+                val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 44f)
+                IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
+            }
+            .defaultMinSize(minWidth = 100.dp)
+            .wrapContentWidth()
+            .height(40.dp)
+            .border(2.dp, TextBlack, RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(12.dp))
+            .background(BlockIO)
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragStart = {
+                        viewModel.shouldDrawConnections.value = false
+                        isBeingDragged = true
+                        isPressed = true
+                    },
+                    onDrag = { change, dragAmount ->
+                        offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
+                        BlockPositionTracker.updateBlockPosition(id, offset)
+                        change.consume()
+                    },
+                    onDragEnd = {
+                        isBeingDragged = false
+                        isPressed = false
+                    }
+                )
+            }) {
         Box(
             modifier = Modifier
                 .align(Alignment.TopEnd)
@@ -110,9 +111,10 @@ fun DraggablePrintBlock(
                 val text = viewModel.programBlocks.find { it.id == id }?.value as? String
                 stringResource(R.string.print_text1, text ?: "")
             }
+
             else -> stringResource(R.string.print_unknown)
         }
-        
+
         Text(
             text = displayText,
             modifier = Modifier

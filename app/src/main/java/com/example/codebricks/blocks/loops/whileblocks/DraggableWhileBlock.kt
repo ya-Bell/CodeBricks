@@ -127,7 +127,7 @@ fun DraggableWhileBlock(
                 val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 50f)
                 IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
             }
-            .onGloballyPositioned { 
+            .onGloballyPositioned {
                 layoutCoordinates = it
                 val bounds = it.boundsInWindow()
                 BlockPositionTracker.setBlockSize(id, bounds.width, bounds.height)
@@ -145,12 +145,12 @@ fun DraggableWhileBlock(
                         viewModel.shouldDrawConnections.value = false
                         isPressed = true
                         dragStartTime = System.currentTimeMillis()
-                        
+
                         val currentPosition = BlockPositionTracker.getPosition(id)
                         if (currentPosition != null) {
                             offset = currentPosition
                         }
-                        
+
                         BlockPositionTracker.redrawTrigger.intValue++
                     },
                     onDrag = { change, dragAmount ->
@@ -164,35 +164,42 @@ fun DraggableWhileBlock(
                             val matchedSlot = BlockSlotTracker.getAllSlots()
                                 .filter { slot ->
                                     val slotParentBlock = viewModel.findBlockById(slot.blockId)
-                                    val draggedBlock = viewModel.findBlockById(id) ?: return@filter false
+                                    val draggedBlock =
+                                        viewModel.findBlockById(id) ?: return@filter false
                                     val isValidTarget = slotParentBlock != null &&
-                                        slot.blockId != id &&
-                                        !viewModel.isRecursiveInsertion(id, slot.blockId) &&
-                                        when (slotParentBlock.type) {
-                                            BlockType.WHILE -> false // Cannot insert while block into another while block
-                                            BlockType.IF, BlockType.ELSE_IF -> draggedBlock.type in listOf(
-                                                BlockType.VARIABLE_REFERENCE,
-                                                BlockType.MATH_ADD,
-                                                BlockType.MATH_SUBTRACT,
-                                                BlockType.MATH_MULTIPLY,
-                                                BlockType.MATH_DIVIDE,
-                                                BlockType.COMPARISON_EQUAL,
-                                                BlockType.COMPARISON_GREATER,
-                                                BlockType.COMPARISON_LESS,
-                                                BlockType.LOGIC_AND,
-                                                BlockType.LOGIC_OR,
-                                                BlockType.LOGIC_NOT
-                                            )
-                                            else -> false
-                                        }
+                                            slot.blockId != id &&
+                                            !viewModel.isRecursiveInsertion(id, slot.blockId) &&
+                                            when (slotParentBlock.type) {
+                                                BlockType.WHILE -> false // Cannot insert while block into another while block
+                                                BlockType.IF, BlockType.ELSE_IF -> draggedBlock.type in listOf(
+                                                    BlockType.VARIABLE_REFERENCE,
+                                                    BlockType.MATH_ADD,
+                                                    BlockType.MATH_SUBTRACT,
+                                                    BlockType.MATH_MULTIPLY,
+                                                    BlockType.MATH_DIVIDE,
+                                                    BlockType.COMPARISON_EQUAL,
+                                                    BlockType.COMPARISON_GREATER,
+                                                    BlockType.COMPARISON_LESS,
+                                                    BlockType.LOGIC_AND,
+                                                    BlockType.LOGIC_OR,
+                                                    BlockType.LOGIC_NOT
+                                                )
+
+                                                else -> false
+                                            }
                                     isValidTarget
                                 }
                                 .map { it.copy(bounds = it.bounds.translate(BlockPositionTracker.canvasOffset)) }
-                                .filter { it.bounds.inflate(MAGNETIC_PADDING).contains(windowCenter) }
+                                .filter {
+                                    it.bounds.inflate(MAGNETIC_PADDING).contains(windowCenter)
+                                }
                                 .minByOrNull { it.bounds.center.minus(windowCenter).getDistance() }
 
                             if (matchedSlot != null) {
-                                viewModel.setHighlightedSlot(matchedSlot.blockId, matchedSlot.slotIndex)
+                                viewModel.setHighlightedSlot(
+                                    matchedSlot.blockId,
+                                    matchedSlot.slotIndex
+                                )
                             } else {
                                 viewModel.setHighlightedSlot(null, null)
                             }
@@ -233,7 +240,12 @@ fun DraggableWhileBlock(
                 .horizontalScroll(rememberScrollState()),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(stringResource(R.string.while_), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+            Text(
+                stringResource(R.string.while_),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextWhite
+            )
 
             BlockInputSlot(id, 0, inputBlocks.getOrNull(0), viewModel)
 
@@ -259,7 +271,15 @@ fun DraggableWhileBlock(
                     onDismissRequest = { expandedOperator.value = false },
                     modifier = Modifier.widthIn(min = 38.dp, max = 140.dp)
                 ) {
-                    listOf("==","!=",">", "<", ">=", "<=").forEach { operator ->
+                    val operators = listOf(
+                        stringResource(id = R.string.operator_equals),
+                        stringResource(id = R.string.operator_not_equals),
+                        stringResource(id = R.string.operator_greater),
+                        stringResource(id = R.string.operator_less),
+                        stringResource(id = R.string.operator_greater_equals),
+                        stringResource(id = R.string.operator_less_equals)
+                    )
+                    operators.forEach { operator ->
                         DropdownMenuItem(
                             text = { Text(operator, fontSize = 12.sp) },
                             modifier = Modifier.height(24.dp),

@@ -161,18 +161,3 @@ fun BlockSection(selectedClass: String, viewModel: VariableViewModel) {
         }
     }
 }
-
-@SuppressLint("ViewModelConstructorInComposable")
-@Preview(showBackground = true)
-@Composable
-fun BlockSectionPreview() {
-    val mockViewModel = VariableViewModel().apply {
-        declareVariable("score", 10, "int")
-    }
-
-    CodeBricksTheme {
-        BlockSection(
-            selectedClass = "Variables", viewModel = mockViewModel
-        )
-    }
-}

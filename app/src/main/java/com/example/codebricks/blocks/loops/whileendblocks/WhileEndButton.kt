@@ -32,11 +32,15 @@ fun WhileEndBlock(viewModel: VariableViewModel) {
         contentColor = TextWhite
     )
     Button(
-        onClick = {viewModel.declareWhileEndBlock()},
+        onClick = { viewModel.declareWhileEndBlock() },
         modifier = buttonModifier,
         colors = buttonColors,
         border = BorderStroke(2.dp, TextBlack)
     ) {
-        Text(text = stringResource(id = R.string.loops_while_end), fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
+        Text(
+            text = stringResource(id = R.string.loops_while_end),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.ExtraBold
+        )
     }
 }

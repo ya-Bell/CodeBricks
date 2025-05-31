@@ -332,7 +332,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                     readOnly = true,
                                     value = value.value,
                                     onValueChange = {},
-                                    label = { Text("Select Boolean") },
+                                    label = { Text(text = stringResource(id = R.string.select_boolean)) },
                                     trailingIcon = {
                                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                                     },

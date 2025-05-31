@@ -53,6 +53,7 @@ private fun formatVariableValue(variable: Variable): String {
             }
             "%.1f".format(doubleValue).replace(',', '.')
         }
+
         "bool" -> variable.value.toString()
         "string" -> "\"${variable.value}\""
         else -> variable.value.toString()
@@ -78,40 +79,41 @@ fun DraggableDeclareBlock(
         BlockPositionTracker.updateBlockPosition(id, offset)
     }
 
-    Box(modifier = Modifier
-        .offset {
-            val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 44f)
-            IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
-        }
-        .widthIn(min = 140.dp)
-        .requiredSizeIn(minHeight = 40.dp)
-        .border(2.dp, TextBlack, RoundedCornerShape(12.dp))
-        .clip(RoundedCornerShape(12.dp))
-        .background(BlockVariables)
-        .pointerInput(Unit) {
-            detectDragGestures(
-                onDragStart = {
-                    viewModel.shouldDrawConnections.value = false
-                    isBeingDragged = true
-                    isPressed = true
-                },
-                onDrag = { change, dragAmount ->
-                    offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
-                    BlockPositionTracker.updateBlockPosition(id, offset)
-                    change.consume()
-                },
-                onDragEnd = {
-                    isBeingDragged = false
-                    isPressed = false
-                }
-            )
-        }
-        .pointerInput(Unit) {
-            detectTapGestures(
-                onPress = {
-                    isPressed = false
-                })
-        }) {
+    Box(
+        modifier = Modifier
+            .offset {
+                val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 44f)
+                IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
+            }
+            .widthIn(min = 140.dp)
+            .requiredSizeIn(minHeight = 40.dp)
+            .border(2.dp, TextBlack, RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(12.dp))
+            .background(BlockVariables)
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragStart = {
+                        viewModel.shouldDrawConnections.value = false
+                        isBeingDragged = true
+                        isPressed = true
+                    },
+                    onDrag = { change, dragAmount ->
+                        offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
+                        BlockPositionTracker.updateBlockPosition(id, offset)
+                        change.consume()
+                    },
+                    onDragEnd = {
+                        isBeingDragged = false
+                        isPressed = false
+                    }
+                )
+            }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = {
+                        isPressed = false
+                    })
+            }) {
         if (showDeleteIcon) {
             Box(
                 modifier = Modifier

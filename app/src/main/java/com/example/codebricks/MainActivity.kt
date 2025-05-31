@@ -4,10 +4,12 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.core.net.toUri
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -36,7 +38,7 @@ class MainActivity : ComponentActivity() {
 
                     composable("start") {
                         StartScreen(
-                            onStartClick = { navController.navigate("work") },
+                            onStartClick = { navController.navigate("work_screen") },
                             onAboutClick = {
                                 val url = getString(R.string.repository_url)
                                 val intent = Intent(Intent.ACTION_VIEW, url.toUri())
@@ -48,9 +50,11 @@ class MainActivity : ComponentActivity() {
                             onLanguageToggle = { isEnglish = it })
                     }
 
-                    composable("work") {
+                    composable("work_screen") {
                         WorkScreen(
-                            onBackClick = { navController.popBackStack() })
+                            navController = navController,
+                            modifier = Modifier.fillMaxSize()
+                        )
                     }
                 }
             }

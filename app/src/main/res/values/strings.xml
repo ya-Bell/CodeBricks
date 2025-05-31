@@ -143,7 +143,7 @@
     <string name="string">String</string>
     <string name="doubles">Doubles</string>
 
-    <string name="set">Set</string>
+    <string name="just_set">Set</string>
     <string name="to">to</string>
     <string name="select_boolean">Select Boolean</string>
     <string name="language">Language</string>
@@ -227,8 +227,71 @@
     <string name="invalid_value_format">Invalid value format.</string>
     <string name="will_auto_fill_values">Will auto-fill %1$d missing value(s) with \'%2$s\'</string>
 
+    <string name="console_ready">Console ready.</string>
+    <string name="console_cleared">Console cleared.</string>
+    <string name="current_program_blocks">📦 Current program blocks:</string>
+    <string name="error_expected_integer">Expected an integer number</string>
+    <string name="error_expected_decimal">Expected a decimal number</string>
+    <string name="error_expected_boolean">Expected a boolean value (true/false or 1/0)</string>
+    <string name="input_accepted">✅ Input accepted: %1$s = %2$s</string>
+    <string name="error_message">❌ Error: %1$s</string>
+    <string name="error_variable_type">❌ Variable \'%1$s\' expects type: %2$s</string>
+    <string name="enter_value_again">📥 Please enter the value again:</string>
+    <string name="error_left_operand_not_number">❌ Error: Left operand cannot be converted to number: %1$s</string>
+    <string name="error_left_operand_invalid">❌ Error: Left operand is not a number or string: %1$s</string>
+    <string name="error_right_operand_not_number">❌ Error: Right operand cannot be converted to number: %1$s</string>
+    <string name="error_right_operand_invalid">❌ Error: Right operand is not a number or string: %1$s</string>
+    <string name="debug_numbers_converted">🔍 Debug: Converted to numbers - left: %1$.2f, right: %2$.2f</string>
 
+    <string name="warning_max_iteration_time_exceeded">⚠️ Warning: Maximum iteration time exceeded (%1$dms). Loop stopped.</string>
+    <string name="program_started">🟢 Program started</string>
+    <string name="program_stopped">🔴 Program stopped</string>
+    <string name="if_condition_is_true">✅ IF condition is true</string>
+    <string name="if_condition_is_false">❌ IF condition is false</string>
+    <string name="else_if_condition_is_true">✅ ELSE IF condition is true</string>
+    <string name="else_if_condition_is_false">❌ ELSE IF condition is false</string>
+    <string name="else_block_executed">✅ ELSE block executed</string>
+    <string name="checking_while_condition">🔄 Checking WHILE condition: %1$b</string>
+    <string name="warning_max_iterations_reached">⚠️ Warning: Maximum number of iterations reached (%1$d). Loop stopped.</string>
+    <string name="while_condition_is_true">✅ WHILE condition is true, entering loop (iteration %1$d)</string>
+    <string name="while_condition_is_false">❌ WHILE condition is false, skipping loop</string>
+    <string name="checking_while_condition_again">🔄 Checking WHILE condition again: %1$b</string>
+    <string name="while_condition_still_true">🔄 WHILE condition still true, repeating loop (iteration %1$d)</string>
+    <string name="while_loop_completed">✅ WHILE loop completed after %1$d iterations</string>
+    <string name="declared">✅ Declared %1$s = %2$s</string>
+    <string name="error_no_variable_selected_in_set_block">❌ Error: No variable selected in Set block</string>
+    <string name="set">✅ Set %1$s = %2$s</string>
+    <string name="error_variable_not_declared">❌ Error: Variable \'%1$s\' not declared</string>
+    <string name="output_variable">📤 Output: %1$s = %2$s</string>
+    <string name="output_text">📤 Output: %1$s</string>
+    <string name="enter_value_for">📥 Input: Enter value for %1$s:</string>
+    <string name="math_expression_result">🧮 Math expression result: %1$.2f</string>
+    <string name="error_no_variable_selected_in_change_block">❌ Error: No variable selected in Change block</string>
+    <string name="changed">✅ Changed %1$s by %2$s%3$d to %4$s</string>
+    <string name="error">❌ Error: %1$s</string>
+    <string name="program_execution_stopped">🛑 Program execution stopped</string>
+    <string name="error_condition_operator_not_specified">❌ Error: Condition operator not specified</string>
+    <string name="error_condition_operands_not_set">❌ Error: Condition operands not set</string>
+    <string name="error_unsupported_left_operand_type">❌ Error: Unsupported left operand type: %1$s</string>
+    <string name="debug_comparing_left">🔍 Debug: Comparing left(%1$s: %2$s) %3$s right(%4$s: %5$s)</string>
+    <string name="error_left_operand_cannot_be_converted_to_number">❌ Error: Left operand cannot be converted to number: %1$s</string>
+    <string name="error_left_operand_is_not_a_number_or_string">❌ Error: Left operand is not a number or string: %1$s</string>
+    <string name="error_right_operand_cannot_be_converted_to_number">❌ Error: Right operand cannot be converted to number: %1$s</string>
+    <string name="error_right_operand_is_not_a_number_or_string">❌ Error: Right operand is not a number or string: %1$s</string>
+    <string name="debug_converted_to_numbers">🔍 Debug: Converted to numbers - left: %1$.2f, right: %2$.2f</string>
+    <string name="error_unsupported_operator">❌ Error: Unsupported operator: %1$s</string>
+    <string name="debug_comparison_result">🔍 Debug: Comparison result: %1$b</string>
 
+    <string name="operator_equals">==</string>
+    <string name="operator_not_equals">!=</string>
+    <string name="operator_greater">&gt;</string>
+    <string name="operator_less">&lt;</string>
+    <string name="operator_greater_equals">&gt;=</string>
+    <string name="operator_less_equals">&lt;=</string>
 
+    <string name="enter_text_label">Enter text</string>
+    <string name="add_text_block">Add Text Block</string>
+
+    <string name="empty_text"></string>
 
 </resources>

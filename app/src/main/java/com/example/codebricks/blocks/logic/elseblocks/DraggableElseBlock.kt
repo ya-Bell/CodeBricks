@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,7 +41,6 @@ import com.example.codebricks.ui.theme.TextWhite
 import com.example.codebricks.viewmodel.VariableViewModel
 import kotlin.math.roundToInt
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DraggableElseBlock(
     id: String,
@@ -112,7 +110,12 @@ fun DraggableElseBlock(
             modifier = Modifier.align(Alignment.Center),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(stringResource(R.string.logic_else), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+            Text(
+                stringResource(R.string.logic_else),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextWhite
+            )
         }
     }
 }

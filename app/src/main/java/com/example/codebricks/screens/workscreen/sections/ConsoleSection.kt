@@ -90,7 +90,7 @@ fun ConsoleSection(viewModel: VariableViewModel) {
                     fontWeight = FontWeight.Bold,
                     fontSize = 14.sp
                 )
-                
+
                 IconButton(
                     onClick = { viewModel.clearConsole() },
                     modifier = Modifier.size(24.dp)

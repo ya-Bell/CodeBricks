@@ -432,7 +432,7 @@ fun DraggableSetVariableBlock(
                             }
 
                             else -> {
-                                Text(text = "", fontSize = 12.sp)
+                                Text(text = stringResource(id = R.string.empty_text), fontSize = 12.sp)
                             }
                         }
                     }
@@ -487,34 +487,3 @@ fun DraggableSetVariableBlock(
         }
     }
 }
-
-
-
-@Preview(showBackground = true)
-@Composable
-fun DraggableSetVariableBlockPreview() {
-    val mockViewModel = remember { VariableViewModel() }
-
-    val variableX = Variable(name = "x", value = 0, type = "int")
-    val variableY = Variable(name = "y", value = 123, type = "int")
-
-    mockViewModel.declareVariable(variableX.name, variableX.value, variableX.type)
-    mockViewModel.declareVariable(variableY.name, variableY.value, variableY.type)
-    val targetBlock = Block(
-        type = BlockType.VARIABLE_REFERENCE, value = variableX
-    )
-    val valueBlock = Block(
-        type = BlockType.VARIABLE_REFERENCE, value = variableY
-    )
-    val setBlock = Block(
-        type = BlockType.VARIABLE_SET, inputBlocks = mutableListOf(targetBlock, valueBlock)
-    )
-
-    DraggableSetVariableBlock(
-        id = setBlock.id, containerWidth = 1000f, containerHeight = 1000f, onDelete = {},
-//        inputBlocks = setBlock.inputBlocks,
-        viewModel = mockViewModel
-    )
-}
-
-

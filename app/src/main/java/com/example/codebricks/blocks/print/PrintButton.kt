@@ -91,12 +91,12 @@ fun CreatePrintBlock(viewModel: VariableViewModel) {
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
-                    
+
                     if (isTextMode) {
                         OutlinedTextField(
                             value = textInput,
                             onValueChange = { textInput = it },
-                            label = { Text("Enter text") },
+                            label = { Text(stringResource(id = R.string.enter_text_label)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth()
                         )
@@ -111,7 +111,7 @@ fun CreatePrintBlock(viewModel: VariableViewModel) {
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text("Add Text Block")
+                            Text(stringResource(id = R.string.add_text_block))
                         }
                     } else {
                         if (viewModel.variables.isNotEmpty()) {

@@ -69,7 +69,11 @@ fun BlockInputSlot(
     val redrawTrigger = BlockPositionTracker.redrawTrigger.intValue
     val focusRequester = remember { FocusRequester() }
     val scope = rememberCoroutineScope()
-    var layoutCoordinates by remember { mutableStateOf<androidx.compose.ui.layout.LayoutCoordinates?>(null) }
+    var layoutCoordinates by remember {
+        mutableStateOf<androidx.compose.ui.layout.LayoutCoordinates?>(
+            null
+        )
+    }
 
     LaunchedEffect(redrawTrigger) {
         layoutCoordinates?.let {
@@ -131,6 +135,7 @@ fun BlockInputSlot(
                             )
                         }
                     }
+
                     in listOf(
                         BlockType.MATH_ADD,
                         BlockType.MATH_SUBTRACT,
@@ -161,6 +166,7 @@ fun BlockInputSlot(
                             viewModel = viewModel
                         )
                     }
+
                     else -> {
                         Box(
                             modifier = Modifier
@@ -170,11 +176,16 @@ fun BlockInputSlot(
                                 .clickable { showInput = true },
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(stringResource(R.string.points), color = TextGray, fontSize = 12.sp)
+                            Text(
+                                stringResource(R.string.points),
+                                color = TextGray,
+                                fontSize = 12.sp
+                            )
                         }
                     }
                 }
             }
+
             else -> {
                 BasicTextField(
                     value = inputValue,
@@ -192,7 +203,8 @@ fun BlockInputSlot(
                     keyboardActions = KeyboardActions(
                         onDone = {
                             if (inputValue.isNotEmpty()) {
-                                val variable = Variable(name = inputValue, value = inputValue, type = "string")
+                                val variable =
+                                    Variable(name = inputValue, value = inputValue, type = "string")
                                 val newBlock = Block(
                                     type = BlockType.VARIABLE_REFERENCE,
                                     value = variable

@@ -24,12 +24,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.example.codebricks.R
 import com.example.codebricks.blocks.variables.vardeclare.DeclareVariable
 import com.example.codebricks.screens.workscreen.sections.BottomBlockBar
@@ -39,11 +40,18 @@ import com.example.codebricks.ui.theme.BackgroundBlue
 import com.example.codebricks.ui.theme.TextBlack
 import com.example.codebricks.ui.theme.TextWhite
 import com.example.codebricks.viewmodel.VariableViewModel
+import com.example.codebricks.viewmodel.VariableViewModelFactory
 
 @SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
-fun WorkScreen(onBackClick: () -> Unit) {
-    val viewModel: VariableViewModel = viewModel()
+fun WorkScreen(
+    navController: NavController,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val viewModel: VariableViewModel = viewModel(
+        factory = VariableViewModelFactory(context)
+    )
     var selectedClass by remember { mutableStateOf("Control") }
     var showDialog by remember { mutableStateOf(false) }
     var showHelpDialog by remember { mutableStateOf(false) }
@@ -60,7 +68,9 @@ fun WorkScreen(onBackClick: () -> Unit) {
     ) {
         Spacer(modifier = Modifier.height(4.dp))
 
-        Header(onBackClick = onBackClick, onHelpClick = { showHelpDialog = true })
+        Header(
+            onBackClick = { navController.popBackStack() },
+            onHelpClick = { showHelpDialog = true })
 
         Spacer(modifier = Modifier.height(4.dp))
 
@@ -148,38 +158,4 @@ fun Header(
             }
         }
     }
-}
-
-@Preview(
-
-    name = "Phone - Pixel 4",
-    showBackground = true,
-    showSystemUi = true,
-    device = "spec:width=411dp,height=891dp,dpi=420"
-)
-@Composable
-fun WorkScreenPreview_Pixel4() {
-    WorkScreen(onBackClick = {})
-}
-
-@Preview(
-    name = "Tablet - Nexus 9",
-    showBackground = true,
-    showSystemUi = true,
-    device = "spec:width=768dp,height=1024dp,dpi=320"
-)
-@Composable
-fun WorkScreenPreview_Tablet() {
-    WorkScreen(onBackClick = {})
-}
-
-@Preview(
-    name = "Small Phone - Nexus One",
-    showBackground = true,
-    showSystemUi = true,
-    device = "spec:width=320dp,height=480dp,dpi=160"
-)
-@Composable
-fun WorkScreenPreview_Small() {
-    WorkScreen(onBackClick = {})
 }

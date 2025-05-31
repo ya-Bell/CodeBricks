@@ -40,7 +40,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -195,15 +194,16 @@ fun WorkspaceCanvas(
                         if (from != null && to != null) {
                             val blockWidth = 140.dp.toPx()
                             val blockHeight = 40.dp.toPx()
-                            
+
                             // Точки начала и конца
-                            val fromPoint = from + Offset(blockWidth / 2, blockHeight)  // Внизу первого блока
+                            val fromPoint =
+                                from + Offset(blockWidth / 2, blockHeight)  // Внизу первого блока
                             val toPoint = to + Offset(blockWidth / 2, 0f)  // Вверху второго блока
-                            
+
                             // Контрольные точки для кривой Безье
                             val control1 = fromPoint + Offset(0f, 20f)  // 20px вниз от начала
                             val control2 = toPoint - Offset(0f, 20f)    // 20px вверх от конца
-                            
+
                             // Рисуем кривую Безье
                             drawPath(
                                 androidx.compose.ui.graphics.Path().apply {
@@ -264,15 +264,4 @@ fun WorkspaceCanvas(
             }
         }
     }
-}
-
-@SuppressLint("ViewModelConstructorInComposable")
-@Preview(
-    showBackground = true, widthDp = 360, heightDp = 330, name = "WorkspaceCanvas Preview"
-)
-@Composable
-fun WorkspaceCanvasPreview() {
-    val mockViewModel = VariableViewModel()
-    WorkspaceCanvas(
-        viewModel = mockViewModel, onSizeChanged = { _, _ -> })
 }

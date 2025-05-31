@@ -108,34 +108,35 @@ fun DraggableChangeVariableBlock(
         BlockPositionTracker.updateBlockPosition(id, offset)
     }
 
-    Box(modifier = Modifier
-        .offset {
-            val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 44f)
-            IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
-        }
-        .height(44.dp)
-        .clip(RoundedCornerShape(12.dp))
-        .border(2.dp, TextBlack, RoundedCornerShape(12.dp))
-        .background(BlockVariables)
-        .pointerInput(Unit) {
-            detectDragGestures { change, dragAmount ->
-                if (!isPressed) {
-                    isPressed = true
-                    dragStartTime = System.currentTimeMillis()
-                }
-
-                offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
-                BlockPositionTracker.updateBlockPosition(id, offset)
-                change.consume()
+    Box(
+        modifier = Modifier
+            .offset {
+                val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 44f)
+                IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
             }
-        }
-        .pointerInput(Unit) {
-            detectTapGestures(
-                onPress = {
-                    isPressed = false
-                })
-        }
-        .padding(horizontal = 4.dp, vertical = 2.dp), contentAlignment = Alignment.Center
+            .height(44.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .border(2.dp, TextBlack, RoundedCornerShape(12.dp))
+            .background(BlockVariables)
+            .pointerInput(Unit) {
+                detectDragGestures { change, dragAmount ->
+                    if (!isPressed) {
+                        isPressed = true
+                        dragStartTime = System.currentTimeMillis()
+                    }
+
+                    offset = Offset(offset.x + dragAmount.x, offset.y + dragAmount.y)
+                    BlockPositionTracker.updateBlockPosition(id, offset)
+                    change.consume()
+                }
+            }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = {
+                        isPressed = false
+                    })
+            }
+            .padding(horizontal = 4.dp, vertical = 2.dp), contentAlignment = Alignment.Center
     ) {
         Box(
             modifier = Modifier

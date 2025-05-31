@@ -15,13 +15,13 @@ object BlockPositionTracker {
             position.x - canvasOffset.x,
             position.y - canvasOffset.y
         )
-        
+
         // Затем масштабируем
         val scaledPosition = Offset(
             absolutePosition.x / canvasScale,
             absolutePosition.y / canvasScale
         )
-        
+
         // Проверяем, действительно ли позиция изменилась
         val currentPosition = blockPositions[id]
         if (currentPosition != scaledPosition) {
@@ -37,13 +37,13 @@ object BlockPositionTracker {
 
     fun getPosition(id: String): Offset? {
         val basePosition = blockPositions[id] ?: return null
-        
+
         // Сначала применяем масштаб
         val scaledPosition = Offset(
             basePosition.x * canvasScale,
             basePosition.y * canvasScale
         )
-        
+
         // Затем добавляем смещение канваса
         return Offset(
             scaledPosition.x + canvasOffset.x,

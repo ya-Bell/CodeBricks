@@ -115,7 +115,12 @@ fun DraggableEndIfBlock(
             modifier = Modifier.align(Alignment.Center),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(stringResource(R.string.logic_end_if), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+            Text(
+                stringResource(R.string.logic_end_if),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextWhite
+            )
         }
     }
 }

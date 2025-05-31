@@ -109,7 +109,7 @@ fun DraggableWhileEndBlock(
         Row(
             modifier = Modifier.align(Alignment.Center),
             verticalAlignment = Alignment.CenterVertically
-        ){
+        ) {
             Text(
                 stringResource(R.string.loops_while_end),
                 fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite

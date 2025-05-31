@@ -151,13 +151,13 @@ fun DraggableIfBlock(
                         viewModel.shouldDrawConnections.value = false
                         isPressed = true
                         dragStartTime = System.currentTimeMillis()
-                        
+
                         // Запоминаем текущую позицию для плавного перемещения
                         val currentPosition = BlockPositionTracker.getPosition(id)
                         if (currentPosition != null) {
                             offset = currentPosition
                         }
-                        
+
                         BlockPositionTracker.redrawTrigger.intValue++
                     },
                     onDrag = { change, dragAmount ->
@@ -170,43 +170,51 @@ fun DraggableIfBlock(
                             val matchedSlot = BlockSlotTracker.getAllSlots()
                                 .filter { slot ->
                                     val slotParentBlock = viewModel.findBlockById(slot.blockId)
-                                    val draggedBlock = viewModel.findBlockById(id) ?: return@filter false
+                                    val draggedBlock =
+                                        viewModel.findBlockById(id) ?: return@filter false
                                     val isValidTarget = slotParentBlock != null &&
-                                        slot.blockId != id &&
-                                        !viewModel.isRecursiveInsertion(id, slot.blockId) &&
-                                        when (slotParentBlock.type) {
-                                            BlockType.IF, BlockType.ELSE_IF -> draggedBlock.type in listOf(
-                                                BlockType.VARIABLE_REFERENCE,
-                                                BlockType.MATH_ADD,
-                                                BlockType.MATH_SUBTRACT,
-                                                BlockType.MATH_MULTIPLY,
-                                                BlockType.MATH_DIVIDE,
-                                                BlockType.MATH_MODULO,
-                                                BlockType.COMPARISON_EQUAL,
-                                                BlockType.COMPARISON_GREATER,
-                                                BlockType.COMPARISON_LESS,
-                                                BlockType.LOGIC_AND,
-                                                BlockType.LOGIC_OR,
-                                                BlockType.LOGIC_NOT
-                                            )
-                                            BlockType.VARIABLE_SET -> draggedBlock.type in listOf(
-                                                BlockType.VARIABLE_REFERENCE,
-                                                BlockType.MATH_ADD,
-                                                BlockType.MATH_SUBTRACT,
-                                                BlockType.MATH_MULTIPLY,
-                                                BlockType.MATH_DIVIDE,
-                                                BlockType.MATH_MODULO
-                                            )
-                                            else -> false
-                                        }
+                                            slot.blockId != id &&
+                                            !viewModel.isRecursiveInsertion(id, slot.blockId) &&
+                                            when (slotParentBlock.type) {
+                                                BlockType.IF, BlockType.ELSE_IF -> draggedBlock.type in listOf(
+                                                    BlockType.VARIABLE_REFERENCE,
+                                                    BlockType.MATH_ADD,
+                                                    BlockType.MATH_SUBTRACT,
+                                                    BlockType.MATH_MULTIPLY,
+                                                    BlockType.MATH_DIVIDE,
+                                                    BlockType.MATH_MODULO,
+                                                    BlockType.COMPARISON_EQUAL,
+                                                    BlockType.COMPARISON_GREATER,
+                                                    BlockType.COMPARISON_LESS,
+                                                    BlockType.LOGIC_AND,
+                                                    BlockType.LOGIC_OR,
+                                                    BlockType.LOGIC_NOT
+                                                )
+
+                                                BlockType.VARIABLE_SET -> draggedBlock.type in listOf(
+                                                    BlockType.VARIABLE_REFERENCE,
+                                                    BlockType.MATH_ADD,
+                                                    BlockType.MATH_SUBTRACT,
+                                                    BlockType.MATH_MULTIPLY,
+                                                    BlockType.MATH_DIVIDE,
+                                                    BlockType.MATH_MODULO
+                                                )
+
+                                                else -> false
+                                            }
                                     isValidTarget
                                 }
                                 .map { it.copy(bounds = it.bounds.translate(BlockPositionTracker.canvasOffset)) }
-                                .filter { it.bounds.inflate(MAGNETIC_PADDING).contains(windowCenter) }
+                                .filter {
+                                    it.bounds.inflate(MAGNETIC_PADDING).contains(windowCenter)
+                                }
                                 .minByOrNull { it.bounds.width * it.bounds.height }
 
                             if (matchedSlot != null) {
-                                viewModel.setHighlightedSlot(matchedSlot.blockId, matchedSlot.slotIndex)
+                                viewModel.setHighlightedSlot(
+                                    matchedSlot.blockId,
+                                    matchedSlot.slotIndex
+                                )
                             } else {
                                 viewModel.setHighlightedSlot(null, null)
                             }
@@ -248,7 +256,12 @@ fun DraggableIfBlock(
                 .horizontalScroll(rememberScrollState()),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(stringResource(R.string.if_), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+            Text(
+                stringResource(R.string.if_),
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextWhite
+            )
 
             BlockInputSlot(id, 0, inputBlocks.getOrNull(0), viewModel)
 
@@ -274,7 +287,15 @@ fun DraggableIfBlock(
                     onDismissRequest = { expandedOperator.value = false },
                     modifier = Modifier.widthIn(min = 38.dp, max = 140.dp)
                 ) {
-                    listOf("==","!=",">", "<", ">=", "<=").forEach { operator ->
+                    val operators = listOf(
+                        stringResource(id = R.string.operator_equals),
+                        stringResource(id = R.string.operator_not_equals),
+                        stringResource(id = R.string.operator_greater),
+                        stringResource(id = R.string.operator_less),
+                        stringResource(id = R.string.operator_greater_equals),
+                        stringResource(id = R.string.operator_less_equals)
+                    )
+                    operators.forEach { operator ->
                         DropdownMenuItem(
                             text = { Text(operator, fontSize = 12.sp) },
                             modifier = Modifier.height(24.dp),
@@ -356,6 +377,7 @@ fun BlockInputSlot(
                             )
                         }
                     }
+
                     in listOf(
                         BlockType.MATH_ADD,
                         BlockType.MATH_SUBTRACT,
@@ -388,6 +410,7 @@ fun BlockInputSlot(
                             viewModel = viewModel
                         )
                     }
+
                     else -> {
                         Box(
                             modifier = Modifier
@@ -397,11 +420,16 @@ fun BlockInputSlot(
                                 .clickable { showInput = true },
                             contentAlignment = Alignment.Center
                         ) {
-                            Text(stringResource(R.string.points), color = TextGray, fontSize = 12.sp)
+                            Text(
+                                stringResource(R.string.points),
+                                color = TextGray,
+                                fontSize = 12.sp
+                            )
                         }
                     }
                 }
             }
+
             else -> {
                 BasicTextField(
                     value = inputValue,
@@ -419,7 +447,8 @@ fun BlockInputSlot(
                     keyboardActions = KeyboardActions(
                         onDone = {
                             if (inputValue.isNotEmpty()) {
-                                val variable = Variable(name = inputValue, value = inputValue, type = "string")
+                                val variable =
+                                    Variable(name = inputValue, value = inputValue, type = "string")
                                 val newBlock = Block(
                                     type = BlockType.VARIABLE_REFERENCE,
                                     value = variable
