@@ -130,7 +130,12 @@ fun DraggableDeclareBlock(
         }
 
         Text(
-            text = "Declare ${variable.type} ${variable.name} = ${formatVariableValue(variable)}",
+            text = stringResource(
+                R.string.declare_block_format,
+                variable.type,
+                variable.name,
+                formatVariableValue(variable)
+            ),
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(horizontal = 8.dp),

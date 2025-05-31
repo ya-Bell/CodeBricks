@@ -110,7 +110,7 @@ fun DraggableElseIfBlock(
     val scope = rememberCoroutineScope()
     val animOffset = remember { Animatable(Offset.Zero, Offset.VectorConverter) }
     var layoutCoordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
-    var showDeleteIcon by remember { mutableStateOf(false) }
+    var showDeleteIcon by remember { mutableStateOf(true) }
     var dragStartTime by remember { mutableLongStateOf(0L) }
     var isPressed by remember { mutableStateOf(false) }
     val expandedOperator = remember { mutableStateOf(false) }
@@ -211,14 +211,9 @@ fun DraggableElseIfBlock(
                                 viewModel.setHighlightedSlot(null, null)
                             }
                         }
-
-                        if (System.currentTimeMillis() - dragStartTime >= 2500) {
-                            showDeleteIcon = true
-                        }
                     },
                     onDragEnd = {
                         isPressed = false
-                        showDeleteIcon = false
                         val windowCenter = layoutCoordinates?.boundsInWindow()?.center
                         if (windowCenter != null) {
                             scope.launch {
@@ -233,6 +228,7 @@ fun DraggableElseIfBlock(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
+                    .offset(x = 6.dp, y = (-6).dp)
                     .clickable { onDelete(id) }
             ) {
                 Icon(

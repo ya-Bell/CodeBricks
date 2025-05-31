@@ -116,7 +116,7 @@ fun DraggableSetVariableBlock(
     val isEditing = remember { mutableStateOf(false) }
     val isError = remember { mutableStateOf(false) }
 
-    var showDeleteIcon by remember { mutableStateOf(false) }
+    var showDeleteIcon by remember { mutableStateOf(true) }
     var dragStartTime by remember { mutableLongStateOf(0L) }
     var isPressed by remember { mutableStateOf(false) }
 
@@ -243,11 +243,6 @@ fun DraggableSetVariableBlock(
                         animOffset.snapTo(animOffset.value + dragAmount)
                     }
                     BlockPositionTracker.updateBlockPosition(id, animOffset.value)
-
-                    if (System.currentTimeMillis() - dragStartTime >= 2500) {
-                        showDeleteIcon = true
-                    }
-
                     // Проверяем возможные слоты для вставки
                     val coords = layoutCoordinates ?: return@detectDragGestures
                     val windowCenter = coords.boundsInWindow().center
@@ -282,7 +277,6 @@ fun DraggableSetVariableBlock(
                 },
                 onDragEnd = {
                     isBeingDragged = false
-                    showDeleteIcon = false
                     scope.launch {
                         viewModel.tryInsertIntoSlot(layoutCoordinates?.boundsInWindow()?.center ?: Offset.Zero, id)
                     }
@@ -293,7 +287,6 @@ fun DraggableSetVariableBlock(
             detectTapGestures(
                 onPress = {
                     isPressed = false
-                    showDeleteIcon = false
                 })
         }) {
         if (showDeleteIcon) {

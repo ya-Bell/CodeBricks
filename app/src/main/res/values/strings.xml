@@ -207,6 +207,8 @@
     <string name="write_variable">write(%1$s)</string>
     <string name="write_unknown">write(?)</string>
 
+    <string name="declare_block_format">Declare %1$s %2$s = %3$s</string>
+
     <string name="variable_button">Variable</string>
     <string name="text_button">Text</string>
     <string name="invalid_value_format_integer">Invalid value format. Please enter an integer (e.g. 5).</string>

@@ -2,14 +2,19 @@ package com.example.codebricks.blocks.loops.whileendblocks
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -47,9 +52,10 @@ fun DraggableWhileEndBlock(
     val redrawTrigger = BlockPositionTracker.redrawTrigger.intValue
 
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
-    var showDeleteIcon by remember { mutableStateOf(false) }
+    var showDeleteIcon by remember { mutableStateOf(true) }
     var dragStartTime by remember { mutableLongStateOf(0L) }
     var isPressed by remember { mutableStateOf(false) }
+
 
     LaunchedEffect(offset) {
         BlockPositionTracker.updateBlockPosition(id, offset)
@@ -78,17 +84,28 @@ fun DraggableWhileEndBlock(
                         BlockPositionTracker.updateBlockPosition(id, offset)
                         change.consume()
 
-                        if (System.currentTimeMillis() - dragStartTime >= 2500) {
-                            showDeleteIcon = true
-                        }
                     },
                     onDragEnd = {
                         isPressed = false
-                        showDeleteIcon = false
                     }
                 )
             }
     ) {
+        if (showDeleteIcon) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .offset(x = 6.dp, y = (-6).dp)
+                    .clickable { onDelete(id) }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = stringResource(R.string.delete_block),
+                    modifier = Modifier.size(12.dp),
+                    tint = TextBlack
+                )
+            }
+        }
         Row(
             modifier = Modifier.align(Alignment.Center),
             verticalAlignment = Alignment.CenterVertically

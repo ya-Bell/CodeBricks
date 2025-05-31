@@ -54,7 +54,7 @@ fun DraggableElseBlock(
     val redrawTrigger = BlockPositionTracker.redrawTrigger.intValue
 
     var offset by remember { mutableStateOf(Offset(0f, 0f)) }
-    var showDeleteIcon by remember { mutableStateOf(false) }
+    var showDeleteIcon by remember { mutableStateOf(true) }
     var dragStartTime by remember { mutableLongStateOf(0L) }
     var isPressed by remember { mutableStateOf(false) }
 
@@ -85,13 +85,9 @@ fun DraggableElseBlock(
                         BlockPositionTracker.updateBlockPosition(id, offset)
                         change.consume()
 
-                        if (System.currentTimeMillis() - dragStartTime >= 2500) {
-                            showDeleteIcon = true
-                        }
                     },
                     onDragEnd = {
                         isPressed = false
-                        showDeleteIcon = false
                     }
                 )
             }
@@ -100,6 +96,7 @@ fun DraggableElseBlock(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
+                    .offset(x = 6.dp, y = (-6).dp)
                     .clickable { onDelete(id) }
             ) {
                 Icon(
