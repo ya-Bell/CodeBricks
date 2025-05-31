@@ -2,20 +2,14 @@ package com.example.codebricks.blocks.loops.whileendblocks
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,16 +21,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.codebricks.R
 import com.example.codebricks.blocks.common.limitPosition
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
+import com.example.codebricks.ui.theme.BlockLoops
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextWhite
 import com.example.codebricks.viewmodel.VariableViewModel
-import com.example.codebricks.viewmodel.tree.removeBlockRecursively
 import kotlin.math.roundToInt
 
 @Composable
@@ -66,8 +63,8 @@ fun DraggableWhileEndBlock(
                 val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 50f)
                 IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
             }
-            .background(Color(0xFF9C27B0), RoundedCornerShape(12.dp))
-            .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
+            .background(BlockLoops, RoundedCornerShape(12.dp))
+            .border(2.dp, TextBlack, RoundedCornerShape(12.dp))
             .padding(8.dp)
             .pointerInput(Unit) {
                 detectDragGestures(
@@ -97,8 +94,8 @@ fun DraggableWhileEndBlock(
             verticalAlignment = Alignment.CenterVertically
         ){
             Text(
-                text = "end while",
-                fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White
+                stringResource(R.string.loops_while_end),
+                fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite
             )
 
         }

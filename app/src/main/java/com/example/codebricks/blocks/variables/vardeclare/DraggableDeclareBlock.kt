@@ -26,7 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -36,6 +35,9 @@ import androidx.compose.ui.unit.sp
 import com.example.codebricks.R
 import com.example.codebricks.blocks.common.limitPosition
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
+import com.example.codebricks.ui.theme.BlockVariables
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextWhite
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
 import kotlin.math.roundToInt
@@ -83,9 +85,9 @@ fun DraggableDeclareBlock(
         }
         .widthIn(min = 140.dp)
         .requiredSizeIn(minHeight = 40.dp)
-        .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
+        .border(2.dp, TextBlack, RoundedCornerShape(12.dp))
         .clip(RoundedCornerShape(12.dp))
-        .background(Color(0xFFFB8C00))
+        .background(BlockVariables)
         .pointerInput(Unit) {
             detectDragGestures(
                 onDragStart = {
@@ -122,7 +124,7 @@ fun DraggableDeclareBlock(
                     imageVector = Icons.Filled.Close,
                     contentDescription = stringResource(id = R.string.delete_icon_description),
                     modifier = Modifier.size(12.dp),
-                    tint = Color.Black
+                    tint = TextBlack
                 )
             }
         }
@@ -134,7 +136,7 @@ fun DraggableDeclareBlock(
                 .padding(horizontal = 8.dp),
             fontWeight = FontWeight.Bold,
             fontSize = 12.sp,
-            color = Color.White
+            color = TextWhite
         )
     }
 }

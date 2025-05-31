@@ -27,14 +27,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.codebricks.R
 import com.example.codebricks.blocks.common.limitPosition
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
+import com.example.codebricks.ui.theme.BlockLogic
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextWhite
 import com.example.codebricks.viewmodel.VariableViewModel
 import kotlin.math.roundToInt
 
@@ -67,8 +71,8 @@ fun DraggableEndIfBlock(
                 val newOffset = limitPosition(offset, containerWidth, containerHeight, 300f, 50f)
                 IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
             }
-            .background(Color(0xFF81C784), RoundedCornerShape(12.dp))
-            .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
+            .background(BlockLogic, RoundedCornerShape(12.dp))
+            .border(2.dp, TextBlack, RoundedCornerShape(12.dp))
             .padding(8.dp)
             .pointerInput(Unit) {
                 detectDragGestures(
@@ -103,9 +107,9 @@ fun DraggableEndIfBlock(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Close,
-                    contentDescription = "Delete Block",
+                    contentDescription = stringResource(R.string.delete_block),
                     modifier = Modifier.size(12.dp),
-                    tint = Color.Black
+                    tint = TextBlack
                 )
             }
         }
@@ -114,7 +118,7 @@ fun DraggableEndIfBlock(
             modifier = Modifier.align(Alignment.Center),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("end if ", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(stringResource(R.string.logic_end_if), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite)
         }
     }
 }

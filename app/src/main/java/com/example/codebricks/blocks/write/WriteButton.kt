@@ -13,12 +13,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.codebricks.R
+import com.example.codebricks.ui.theme.BlockIO
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextWhite
 import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.viewmodel.blocks.declareWriteBlock
 
@@ -32,14 +34,15 @@ fun CreateWriteBlock(viewModel: VariableViewModel) {
         .wrapContentWidth()
 
     val buttonColors = ButtonDefaults.buttonColors(
-        containerColor = Color(0xFFE57373), contentColor = Color.White
+        containerColor = BlockIO,
+        contentColor = TextWhite
     )
 
     Button(
         onClick = { showDialog.value = true },
         modifier = buttonModifier,
         colors = buttonColors,
-        border = BorderStroke(2.dp, Color.Black)
+        border = BorderStroke(2.dp, TextBlack)
     ) {
         Text(
             text = stringResource(id = R.string.create_write_block),

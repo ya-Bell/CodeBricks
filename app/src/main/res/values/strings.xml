@@ -8,6 +8,9 @@
     <string name="logo_description">Logo</string>
     <string name="code_bricks_logo">CodeBricks</string>
 
+    <string name="app_logo">App Logo</string>
+    <string name="loading_percentage">%1$d%%</string>
+
     <string name="help_button">Help</string>
     <string name="back_button">Back</string>
 
@@ -158,6 +161,13 @@
     <string name="logic_else_if">else if [ ] [op] [ ]</string>
     <string name="logic_else">else</string>
     <string name="logic_end_if">end if</string>
+    <string name="else_if">else if</string>
+    <string name="if_">if</string>
+    <string name="while_">while</string>
+
+
+    <string name="points">...</string>
+
 
     <string name="repository_url">https://github.com/ya-Bell/CodeBricks</string>
 
@@ -166,5 +176,55 @@
 
     <string name="loops_while">while [ ] [op] [ ]</string>
     <string name="loops_while_end">while end</string>
+
+    <string name="enter_command">Enter command...</string>
+    <string name="send">Send</string>
+
+    <string name="delete_block">Delete Block</string>
+    <string name="start">Start</string>
+    <string name="stop">Stop</string>
+
+    <string name="unknown_value">?</string>
+
+    <string name="print_variable">print(%1$s)</string>
+    <string name="print_text1">print(\"%1$s\")</string>
+    <string name="print_unknown">print(?)</string>
+
+    <string name="select_variable_placeholder">Select variable</string>
+    <string name="variable_with_type">%1$s (%2$s)</string>
+
+    <string name="help_section_control">Control</string>
+    <string name="help_section_variables">Variables</string>
+    <string name="help_section_math">Math</string>
+    <string name="help_section_io">Input/Output</string>
+    <string name="help_section_logic">Logic</string>
+    <string name="help_section_debug">Debug</string>
+    <string name="help_section_run">Run</string>
+    <string name="help_section_clear">Clear</string>
+
+    <string name="write_variable">write(%1$s)</string>
+    <string name="write_unknown">write(?)</string>
+
+    <string name="variable_button">Variable</string>
+    <string name="text_button">Text</string>
+    <string name="invalid_value_format_integer">Invalid value format. Please enter an integer (e.g. 5).</string>
+    <string name="invalid_value_format_for">Invalid value format for %1$s</string>
+
+    <string name="please_provide_variable_name">Please provide a variable name.</string>
+    <string name="variable_already_exists">Variable \'%1$s\' already exists.</string>
+    <string name="variable_names_must_be_unique">Variable names must be unique.</string>
+    <string name="invalid_variable_name_format">Invalid variable name: %1$s</string>
+    <string name="single_mode_no_commas">Single mode doesn\'t allow commas.</string>
+    <string name="too_many_values">Too many values. Expected %1$d, but got %2$d.</string>
+    <string name="invalid_value_format_for_variable">Invalid value format for variable %1$s</string>
+    <string name="string_value_empty">String value cannot be empty.</string>
+    <string name="invalid_variable_name">Invalid variable name.</string>
+    <string name="invalid_integer_format">Invalid value format. Please enter an integer (e.g. 5).</string>
+    <string name="invalid_value_format">Invalid value format.</string>
+    <string name="will_auto_fill_values">Will auto-fill %1$d missing value(s) with \'%2$s\'</string>
+
+
+
+
 
 </resources>

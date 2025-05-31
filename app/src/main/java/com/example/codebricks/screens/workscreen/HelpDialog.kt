@@ -33,6 +33,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.codebricks.R
+import com.example.codebricks.ui.theme.BlockClear
+import com.example.codebricks.ui.theme.BlockControl
+import com.example.codebricks.ui.theme.BlockDebug
+import com.example.codebricks.ui.theme.BlockIO
+import com.example.codebricks.ui.theme.BlockLogic
+import com.example.codebricks.ui.theme.BlockMath
+import com.example.codebricks.ui.theme.BlockRun
+import com.example.codebricks.ui.theme.BlockVariables
+import com.example.codebricks.ui.theme.ButtonError
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextWhite
 
 @Composable
 fun HelpDialog(onDismiss: () -> Unit) {
@@ -45,7 +56,7 @@ fun HelpDialog(onDismiss: () -> Unit) {
                 .fillMaxWidth()
                 .padding(16.dp),
             shape = RoundedCornerShape(16.dp),
-            color = Color.White
+            color = TextWhite
         ) {
             Column(
                 modifier = Modifier
@@ -84,8 +95,8 @@ fun HelpDialog(onDismiss: () -> Unit) {
                         onClick = { if (currentPage > 0) currentPage-- },
                         enabled = currentPage > 0,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF3F51B5),
-                            contentColor = Color.White
+                            containerColor = BlockControl,
+                            contentColor = TextWhite
                         )
                     ) {
                         Text(stringResource(id = R.string.help_previous))
@@ -101,8 +112,8 @@ fun HelpDialog(onDismiss: () -> Unit) {
                         onClick = { if (currentPage < totalPages - 1) currentPage++ },
                         enabled = currentPage < totalPages - 1,
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF3F51B5),
-                            contentColor = Color.White
+                            containerColor = BlockControl,
+                            contentColor = TextWhite
                         )
                     ) {
                         Text(stringResource(id = R.string.help_next))
@@ -115,8 +126,8 @@ fun HelpDialog(onDismiss: () -> Unit) {
                         .fillMaxWidth()
                         .padding(top = 8.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFE57373),
-                        contentColor = Color.White
+                        containerColor = ButtonError,
+                        contentColor = TextWhite
                     )
                 ) {
                     Text(stringResource(id = R.string.help_close))
@@ -133,18 +144,18 @@ private fun Page1() {
     ) {
         HelpItem(
             text = stringResource(id = R.string.help_control),
-            title = "Control",
-            color = Color(0xFF3F51B5)
+            title = stringResource(id = R.string.help_section_control),
+            color = BlockControl
         )
         HelpItem(
             text = stringResource(id = R.string.help_variables),
-            title = "Variables",
-            color = Color(0xFFFFA500)
+            title = stringResource(id = R.string.help_section_variables),
+            color = BlockVariables
         )
         HelpItem(
             text = stringResource(id = R.string.help_math),
-            title = "Math",
-            color = Color(0xFF4FC3F7)
+            title = stringResource(id = R.string.help_section_math),
+            color = BlockMath
         )
     }
 
@@ -157,13 +168,13 @@ private fun Page2() {
     ) {
         HelpItem(
             text = stringResource(id = R.string.help_io),
-            title = "Input/Output",
-            color = Color(0xFFE57373)
+            title = stringResource(id = R.string.help_section_io),
+            color = BlockIO
         )
         HelpItem(
             text = stringResource(id = R.string.help_logic),
-            title = "Logic",
-            color = Color(0xFF81C784)
+            title = stringResource(id = R.string.help_section_logic),
+            color = BlockLogic
         )
     }
 }
@@ -175,18 +186,18 @@ private fun Page3() {
     ) {
         HelpItem(
             text = stringResource(id = R.string.help_debug),
-            title = "Debug",
-            color = Color(0xFF9C27B0)
+            title = stringResource(id = R.string.help_section_debug),
+            color = BlockDebug
         )
         HelpItem(
             text = stringResource(id = R.string.help_run),
-            title = "Run",
-            color = Color(0xFFE91E63)
+            title = stringResource(id = R.string.help_section_run),
+            color = BlockRun
         )
         HelpItem(
             text = stringResource(id = R.string.help_clear),
-            title = "Clear",
-            color = Color(0xFFE57373)
+            title = stringResource(id = R.string.help_section_clear),
+            color = BlockClear
         )
     }
 }
@@ -209,10 +220,10 @@ private fun HelpItem(text: String, title: String, color: Color) {
                 text = title,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = TextWhite,
                 style = MaterialTheme.typography.bodyMedium.copy(
                     shadow = Shadow(
-                        color = Color.Black.copy(alpha = 0.5f),
+                        color = TextBlack.copy(alpha = 0.5f),
                         offset = Offset(1f, 1f),
                         blurRadius = 2f
                     )
@@ -224,7 +235,7 @@ private fun HelpItem(text: String, title: String, color: Color) {
                 fontSize = 15.sp,
                 lineHeight = 22.sp,
                 textAlign = TextAlign.Justify,
-                color = Color.White
+                color = TextWhite
             )
         }
     }

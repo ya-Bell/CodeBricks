@@ -28,26 +28,32 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import com.example.codebricks.R
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.math.DraggableMathBlock
 import com.example.codebricks.blocks.variables.varreference.DraggableReferenceBlock
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
+import com.example.codebricks.ui.theme.BlockHighlighted
+import com.example.codebricks.ui.theme.BlockNormal
+import com.example.codebricks.ui.theme.BlockSlotHighlighted
+import com.example.codebricks.ui.theme.BlockSuccess
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextGray
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.viewmodel.slot.setRecentlyInsertedSlot
 import com.example.codebricks.viewmodel.tree.findBlockById
 import com.example.codebricks.viewmodel.tree.removeBlockRecursively
-import kotlinx.coroutines.launch
 
 @Composable
 fun BlockInputSlot(
@@ -88,14 +94,14 @@ fun BlockInputSlot(
             .border(
                 width = if (isRecentlyInserted) 2.dp else 1.dp,
                 color = when {
-                    isRecentlyInserted -> Color(0xFF4CAF50)
-                    isHighlighted -> Color(0xFF2196F3)
-                    else -> Color.Gray
+                    isRecentlyInserted -> BlockSuccess
+                    isHighlighted -> BlockHighlighted
+                    else -> TextGray
                 },
                 shape = RoundedCornerShape(8.dp)
             )
             .background(
-                color = if (isHighlighted) Color(0xFFAAC9C7) else Color(0xFFDDE3E0),
+                color = if (isHighlighted) BlockSlotHighlighted else BlockNormal,
                 shape = RoundedCornerShape(8.dp)
             ),
         contentAlignment = Alignment.Center
@@ -164,7 +170,7 @@ fun BlockInputSlot(
                                 .clickable { showInput = true },
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("...", color = Color.LightGray, fontSize = 12.sp)
+                            Text(stringResource(R.string.points), color = TextGray, fontSize = 12.sp)
                         }
                     }
                 }
@@ -177,7 +183,7 @@ fun BlockInputSlot(
                     },
                     textStyle = TextStyle(
                         fontSize = 12.sp,
-                        color = Color.Black
+                        color = TextBlack
                     ),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(

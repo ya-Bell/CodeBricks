@@ -18,12 +18,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.codebricks.R
+import com.example.codebricks.ui.theme.BackgroundGray
+import com.example.codebricks.ui.theme.BackgroundLight
+import com.example.codebricks.ui.theme.BlockDebug
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextGray
 import com.example.codebricks.viewmodel.VariableViewModel
 
 @Composable
@@ -32,8 +36,8 @@ fun WorkspaceHeader(viewModel: VariableViewModel) {
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-            .background(Color(0xFFD9D9D9))
-            .border(1.dp, Color.Gray, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+            .background(BackgroundGray)
+            .border(1.dp, TextGray, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
             .padding(horizontal = 8.dp, vertical = 2.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -50,12 +54,12 @@ fun WorkspaceHeader(viewModel: VariableViewModel) {
             modifier = Modifier
                 .padding(4.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .border(1.dp, Color.Black, RoundedCornerShape(12.dp))
+                .border(1.dp, TextBlack, RoundedCornerShape(12.dp))
                 .height(26.dp)
                 .width(60.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (viewModel.isDebugMode.value) Color(0xFF90CAF9) else Color(0xFFFFFFFF),
-                contentColor = Color.Black
+                containerColor = if (viewModel.isDebugMode.value) BlockDebug else BackgroundLight,
+                contentColor = TextBlack
             ),
             contentPadding = PaddingValues(0.dp)
         ) {

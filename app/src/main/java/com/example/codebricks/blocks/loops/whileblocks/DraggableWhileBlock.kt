@@ -5,13 +5,10 @@ import androidx.compose.animation.core.VectorConverter
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
@@ -22,9 +19,6 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.DropdownMenuItem
@@ -43,39 +37,33 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import com.example.codebricks.R
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.common.limitPosition
-import com.example.codebricks.blocks.loops.whileblocks.BlockInputSlot
-import com.example.codebricks.blocks.math.DraggableMathBlock
-import com.example.codebricks.blocks.variables.varreference.DraggableReferenceBlock
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker.MAGNETIC_PADDING
-import com.example.codebricks.viewmodel.Variable
+import com.example.codebricks.ui.theme.BlockLoops
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextWhite
 import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.viewmodel.blocks.updateWhileBlockOperator
 import com.example.codebricks.viewmodel.slot.isRecursiveInsertion
 import com.example.codebricks.viewmodel.slot.setHighlightedSlot
-import com.example.codebricks.viewmodel.slot.setRecentlyInsertedSlot
 import com.example.codebricks.viewmodel.slot.tryInsertIntoSlot
 import com.example.codebricks.viewmodel.tree.findBlockById
-import com.example.codebricks.viewmodel.tree.removeBlockRecursively
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -148,8 +136,8 @@ fun DraggableWhileBlock(
                     BlockSlotTracker.setSlotBounds(id, index, bounds)
                 }
             }
-            .background(Color(0xFF9C27B0), RoundedCornerShape(12.dp))
-            .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
+            .background(BlockLoops, RoundedCornerShape(12.dp))
+            .border(2.dp, TextBlack, RoundedCornerShape(12.dp))
             .padding(8.dp)
             .pointerInput(Unit) {
                 detectDragGestures(
@@ -232,9 +220,9 @@ fun DraggableWhileBlock(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Close,
-                    contentDescription = "Delete Block",
+                    contentDescription = stringResource(R.string.delete_block),
                     modifier = Modifier.size(12.dp),
-                    tint = Color.Black
+                    tint = TextBlack
                 )
             }
         }
@@ -245,7 +233,7 @@ fun DraggableWhileBlock(
                 .horizontalScroll(rememberScrollState()),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("while", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(stringResource(R.string.while_), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite)
 
             BlockInputSlot(id, 0, inputBlocks.getOrNull(0), viewModel)
 
@@ -258,12 +246,12 @@ fun DraggableWhileBlock(
                         .padding(horizontal = 4.dp)
                         .width(40.dp)
                         .menuAnchor(type = MenuAnchorType.PrimaryEditable, enabled = true)
-                        .background(Color.White, RoundedCornerShape(8.dp))
-                        .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
+                        .background(TextWhite, RoundedCornerShape(8.dp))
+                        .border(1.dp, TextBlack, RoundedCornerShape(8.dp))
                         .clickable { expandedOperator.value = true },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = selectedOperator.value, fontSize = 16.sp, color = Color.Black)
+                    Text(text = selectedOperator.value, fontSize = 16.sp, color = TextBlack)
                 }
 
                 ExposedDropdownMenu(

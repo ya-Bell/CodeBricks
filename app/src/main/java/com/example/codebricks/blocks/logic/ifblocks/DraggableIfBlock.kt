@@ -46,11 +46,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import com.example.codebricks.R
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.common.limitPosition
@@ -66,6 +67,14 @@ import com.example.codebricks.blocks.variables.varreference.DraggableReferenceBl
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker.MAGNETIC_PADDING
+import com.example.codebricks.ui.theme.BlockHighlighted
+import com.example.codebricks.ui.theme.BlockLogic
+import com.example.codebricks.ui.theme.BlockNormal
+import com.example.codebricks.ui.theme.BlockSlotHighlighted
+import com.example.codebricks.ui.theme.BlockSuccess
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextGray
+import com.example.codebricks.ui.theme.TextWhite
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.viewmodel.blocks.updateIfBlockOperator
@@ -133,8 +142,8 @@ fun DraggableIfBlock(
                 IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
             }
             .onGloballyPositioned { layoutCoordinates = it }
-            .background(Color(0xFF81C784), RoundedCornerShape(12.dp))
-            .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
+            .background(BlockLogic, RoundedCornerShape(12.dp))
+            .border(2.dp, TextBlack, RoundedCornerShape(12.dp))
             .padding(8.dp)
             .pointerInput(Unit) {
                 detectDragGestures(
@@ -229,9 +238,9 @@ fun DraggableIfBlock(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Close,
-                    contentDescription = "Delete Block",
+                    contentDescription = stringResource(R.string.delete_block),
                     modifier = Modifier.size(12.dp),
-                    tint = Color.Black
+                    tint = TextBlack
                 )
             }
         }
@@ -242,7 +251,7 @@ fun DraggableIfBlock(
                 .horizontalScroll(rememberScrollState()),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("if", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text(stringResource(R.string.if_), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite)
 
             BlockInputSlot(id, 0, inputBlocks.getOrNull(0), viewModel)
 
@@ -255,12 +264,12 @@ fun DraggableIfBlock(
                         .padding(horizontal = 4.dp)
                         .width(40.dp)
                         .menuAnchor(type = MenuAnchorType.PrimaryEditable, enabled = true)
-                        .background(Color.White, RoundedCornerShape(8.dp))
-                        .border(1.dp, Color.Black, RoundedCornerShape(8.dp))
+                        .background(TextWhite, RoundedCornerShape(8.dp))
+                        .border(1.dp, TextBlack, RoundedCornerShape(8.dp))
                         .clickable { expandedOperator.value = true },
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = selectedOperator.value, fontSize = 16.sp, color = Color.Black)
+                    Text(text = selectedOperator.value, fontSize = 16.sp, color = TextBlack)
                 }
 
                 ExposedDropdownMenu(
@@ -316,15 +325,11 @@ fun BlockInputSlot(
             }
             .border(
                 width = if (isRecentlyInserted) 2.dp else 1.dp,
-                color = when {
-                    isRecentlyInserted -> Color(0xFF4CAF50)
-                    isHighlighted -> Color(0xFF2196F3)
-                    else -> Color.Gray
-                },
+                color = if (isRecentlyInserted) BlockSuccess else if (isHighlighted) BlockHighlighted else TextGray,
                 shape = RoundedCornerShape(8.dp)
             )
             .background(
-                color = if (isHighlighted) Color(0xFFAAC9C7) else Color(0xFFDDE3E0),
+                color = if (isHighlighted) BlockSlotHighlighted else BlockNormal,
                 shape = RoundedCornerShape(8.dp)
             ),
         contentAlignment = Alignment.Center
@@ -395,7 +400,7 @@ fun BlockInputSlot(
                                 .clickable { showInput = true },
                             contentAlignment = Alignment.Center
                         ) {
-                            Text("...", color = Color.LightGray, fontSize = 12.sp)
+                            Text(stringResource(R.string.points), color = TextGray, fontSize = 12.sp)
                         }
                     }
                 }
@@ -408,7 +413,7 @@ fun BlockInputSlot(
                     },
                     textStyle = TextStyle(
                         fontSize = 12.sp,
-                        color = Color.Black
+                        color = TextBlack
                     ),
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(

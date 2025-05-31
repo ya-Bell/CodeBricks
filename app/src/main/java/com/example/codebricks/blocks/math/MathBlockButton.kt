@@ -9,10 +9,12 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.codebricks.ui.theme.BlockMath
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextWhite
 
 
 @Composable
@@ -24,9 +26,10 @@ fun MathBlockButton(label: String, onClick: () -> Unit) {
             .height(36.dp)
             .widthIn(min = 100.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFF4FC3F7), contentColor = Color.White
+            containerColor = BlockMath,
+            contentColor = TextWhite
         ),
-        border = BorderStroke(2.dp, Color.Black)
+        border = BorderStroke(2.dp, TextBlack)
     ) {
         Text(text = label, fontSize = 14.sp, fontWeight = FontWeight.ExtraBold)
     }

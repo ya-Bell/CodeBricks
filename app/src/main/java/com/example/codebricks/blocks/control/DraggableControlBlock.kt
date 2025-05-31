@@ -24,15 +24,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import com.example.codebricks.R
 import com.example.codebricks.blocks.common.limitPosition
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
+import com.example.codebricks.ui.theme.BlockControl
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextWhite
 import com.example.codebricks.viewmodel.VariableViewModel
 import kotlin.math.roundToInt
 
@@ -61,9 +65,9 @@ fun DraggableControlBlock(
                 IntOffset(newOffset.x.roundToInt(), newOffset.y.roundToInt())
             }
             .requiredSize(140.dp, 40.dp)
-            .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
+            .border(2.dp, TextBlack, RoundedCornerShape(12.dp))
             .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFF3F51B5))
+            .background(BlockControl)
             .zIndex(if (isBeingDragged) 100f else 1f)
             .pointerInput(Unit) {
                 detectDragGestures(
@@ -96,21 +100,21 @@ fun DraggableControlBlock(
         ) {
             Icon(
                 imageVector = Icons.Filled.Close,
-                contentDescription = "Delete Block",
+                contentDescription = stringResource(R.string.delete_block),
                 modifier = Modifier.size(12.dp),
-                tint = Color.Black
+                tint = TextBlack
             )
         }
 
         // Отображение текста
         Text(
-            text = if (type == "CONTROL_START") "Start" else "Stop",
+            text = if (type == "CONTROL_START") stringResource(R.string.start) else stringResource(R.string.stop),
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(4.dp),
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
-            color = Color.White
+            color = TextWhite
         )
     }
 }

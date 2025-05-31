@@ -35,7 +35,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -44,6 +43,12 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.codebricks.R
+import com.example.codebricks.ui.theme.BackgroundGray
+import com.example.codebricks.ui.theme.BackgroundLight
+import com.example.codebricks.ui.theme.BlockHighlighted
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextDarkGray
+import com.example.codebricks.ui.theme.TextGray
 import com.example.codebricks.viewmodel.VariableViewModel
 
 @SuppressLint("ConfigurationScreenWidthHeight")
@@ -63,15 +68,15 @@ fun ConsoleSection(viewModel: VariableViewModel) {
             .fillMaxWidth()
             .height(consoleHeight.dp)
             .clip(RoundedCornerShape(16.dp))
-            .border(1.dp, Color.Gray, RoundedCornerShape(16.dp))
-            .background(Color.White)
+            .border(1.dp, TextGray, RoundedCornerShape(16.dp))
+            .background(BackgroundLight)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFFD9D9D9))
+                .background(BackgroundGray)
                 .border(
-                    1.dp, Color.Gray, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+                    1.dp, TextGray, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
                 )
                 .padding(horizontal = 8.dp, vertical = 1.dp)
         ) {
@@ -93,7 +98,7 @@ fun ConsoleSection(viewModel: VariableViewModel) {
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = stringResource(id = R.string.clear_console),
-                        tint = Color.Gray
+                        tint = TextGray
                     )
                 }
             }
@@ -114,7 +119,7 @@ fun ConsoleSection(viewModel: VariableViewModel) {
                 Text(
                     text = consoleText,
                     fontSize = 12.sp,
-                    color = Color.Black,
+                    color = TextBlack,
                     lineHeight = 16.sp
                 )
             }
@@ -137,7 +142,7 @@ fun ConsoleSection(viewModel: VariableViewModel) {
                         .fillMaxWidth()
                         .offset(y = thumbOffset.dp)
                         .height(thumbHeight.dp)
-                        .background(Color.DarkGray.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
+                        .background(TextDarkGray.copy(alpha = 0.6f), RoundedCornerShape(4.dp))
                 )
             }
         }
@@ -145,7 +150,7 @@ fun ConsoleSection(viewModel: VariableViewModel) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFFE0E0E0))
+                .background(BackgroundGray)
                 .padding(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -167,11 +172,11 @@ fun ConsoleSection(viewModel: VariableViewModel) {
 fun CompactTextField(
     value: String,
     onValueChange: (String) -> Unit,
-    placeholder: String = "Enter command...",
+    placeholder: String = stringResource(R.string.enter_command),
     onSendClick: () -> Unit
 ) {
     val shape = RoundedCornerShape(6.dp)
-    val borderColor = Color(0xFF2196F3)
+    val borderColor = BlockHighlighted
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -182,7 +187,7 @@ fun CompactTextField(
                 .weight(1f)
                 .border(1.dp, borderColor, shape)
                 .clip(shape)
-                .background(Color(0xFFF8F8F8))
+                .background(BackgroundGray)
                 .height(24.dp)
                 .padding(horizontal = 6.dp),
             contentAlignment = Alignment.CenterStart
@@ -193,7 +198,7 @@ fun CompactTextField(
                 onValueChange = onValueChange,
                 textStyle = TextStyle(
                     fontSize = 12.sp,
-                    color = Color.Black
+                    color = TextBlack
                 ),
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
@@ -207,7 +212,7 @@ fun CompactTextField(
                             Text(
                                 text = placeholder,
                                 fontSize = 12.sp,
-                                color = Color.Gray
+                                color = TextGray
                             )
                         }
                         innerTextField()
@@ -224,8 +229,8 @@ fun CompactTextField(
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.Send,
-                contentDescription = "Send",
-                tint = Color(0xFF2196F3),
+                contentDescription = stringResource(R.string.send),
+                tint = BlockHighlighted,
                 modifier = Modifier.size(20.dp)
             )
         }

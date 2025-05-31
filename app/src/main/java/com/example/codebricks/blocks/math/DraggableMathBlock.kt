@@ -43,14 +43,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -58,12 +57,21 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import com.example.codebricks.R
 import com.example.codebricks.blocks.common.Block
 import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.blocks.variables.varreference.DraggableReferenceBlock
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker.MAGNETIC_PADDING
+import com.example.codebricks.ui.theme.BlockHighlighted
+import com.example.codebricks.ui.theme.BlockMath
+import com.example.codebricks.ui.theme.BlockNormal
+import com.example.codebricks.ui.theme.BlockSlotHighlighted
+import com.example.codebricks.ui.theme.BlockSuccess
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextGray
+import com.example.codebricks.ui.theme.TextWhite
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.viewmodel.slot.isRecursiveInsertion
@@ -157,8 +165,8 @@ fun DraggableMathBlock(
                 }
             }
             .clip(RoundedCornerShape(12.dp))
-            .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
-            .background(Color(0xFF4FC3F7))
+            .border(2.dp, TextBlack, RoundedCornerShape(12.dp))
+            .background(BlockMath)
             .zIndex(if (isBeingDragged) 100f else if (isInserted) 0f else 1f)
             .pointerInput(Unit) {
                 detectDragGestures { change, dragAmount ->
@@ -324,9 +332,9 @@ fun DraggableMathBlock(
         ) {
             Icon(
                 imageVector = Icons.Default.Close,
-                contentDescription = "Delete",
+                contentDescription = stringResource(R.string.delete_block),
                 modifier = Modifier.size(12.dp),
-                tint = Color.Black
+                tint = TextBlack
             )
         }
 
@@ -345,7 +353,7 @@ fun DraggableMathBlock(
                 Text(
                     symbol,
                     fontSize = 16.sp,
-                    color = Color.White,
+                    color = TextWhite,
                     modifier = Modifier.padding(horizontal = 3.dp, vertical = 6.dp)
                 )
             }
@@ -400,14 +408,14 @@ fun MathInputSlot(
             .border(
                 width = if (isRecentlyInserted) 2.dp else 1.dp,
                 color = when {
-                    isRecentlyInserted -> Color(0xFF4CAF50)
-                    isHighlighted -> Color(0xFF2196F3)
-                    else -> Color.Gray
+                    isRecentlyInserted -> BlockSuccess
+                    isHighlighted -> BlockHighlighted
+                    else -> TextGray
                 },
                 shape = RoundedCornerShape(8.dp)
             )
             .background(
-                color = if (isHighlighted) Color(0xFFAAC9C7) else Color(0xFFDDE3E0),
+                color = if (isHighlighted) BlockSlotHighlighted else BlockNormal,
                 shape = RoundedCornerShape(8.dp)
             ),
         contentAlignment = Alignment.Center
@@ -445,12 +453,12 @@ fun MathInputSlot(
                             viewModel = viewModel
                         )
                     } else {
-                        Text("?", fontSize = 12.sp)
+                        Text(stringResource(R.string.unknown_value), fontSize = 12.sp)
                     }
                 }
 
                 else -> {
-                    Text(block.value?.toString() ?: "?", fontSize = 12.sp)
+                    Text(block.value?.toString() ?: stringResource(R.string.unknown_value), fontSize = 12.sp)
                 }
             }
         } else {
@@ -492,7 +500,7 @@ fun MathInputSlot(
                     }
                 }),
                 singleLine = true,
-                textStyle = TextStyle(fontSize = 12.sp, color = Color.Black),
+                textStyle = TextStyle(fontSize = 12.sp, color = TextBlack),
                 modifier = Modifier
                     .padding(horizontal = 8.dp)
                     .width(IntrinsicSize.Min)

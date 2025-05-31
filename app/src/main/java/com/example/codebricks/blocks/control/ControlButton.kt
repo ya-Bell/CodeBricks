@@ -11,12 +11,14 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.codebricks.R
+import com.example.codebricks.ui.theme.BlockControl
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextWhite
 import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.viewmodel.blocks.declareControlBlock
 
@@ -27,8 +29,8 @@ fun CreateControlBlock(viewModel: VariableViewModel) {
         .height(35.dp)
         .wrapContentWidth()
     val buttonColors = ButtonDefaults.buttonColors(
-        containerColor = Color(0xFF3F51B5),
-        contentColor = Color.White
+        containerColor = BlockControl,
+        contentColor = TextWhite
     )
 
     Row(
@@ -38,7 +40,7 @@ fun CreateControlBlock(viewModel: VariableViewModel) {
             onClick = { viewModel.declareControlBlock("Start") },
             modifier = buttonModifier,
             colors = buttonColors,
-            border = BorderStroke(2.dp, Color.Black)
+            border = BorderStroke(2.dp, TextBlack)
         ) {
             Text(
                 text = stringResource(id = R.string.create_start_block),
@@ -51,7 +53,7 @@ fun CreateControlBlock(viewModel: VariableViewModel) {
             onClick = { viewModel.declareControlBlock("Stop") },
             modifier = buttonModifier,
             colors = buttonColors,
-            border = BorderStroke(2.dp, Color.Black)
+            border = BorderStroke(2.dp, TextBlack)
         ) {
             Text(
                 text = stringResource(id = R.string.create_stop_block),

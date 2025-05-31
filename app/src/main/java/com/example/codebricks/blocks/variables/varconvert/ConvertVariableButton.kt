@@ -24,12 +24,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.codebricks.R
+import com.example.codebricks.ui.theme.BackgroundGray
+import com.example.codebricks.ui.theme.BlockVariables
+import com.example.codebricks.ui.theme.IconRed
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextGray
+import com.example.codebricks.ui.theme.TextWhite
 import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.viewmodel.conversion.convertVariableType
 
@@ -42,7 +47,7 @@ fun ConvertVariable(viewModel: VariableViewModel) {
         .fillMaxWidth()
 
     val buttonColors = ButtonDefaults.buttonColors(
-        containerColor = Color(0xFFFB8C00), contentColor = Color.White
+        containerColor = BlockVariables, contentColor = TextWhite
     )
 
     val showDialog = remember { mutableStateOf(false) }
@@ -59,7 +64,7 @@ fun ConvertVariable(viewModel: VariableViewModel) {
             onClick = { showDialog.value = true },
             modifier = buttonModifier,
             colors = buttonColors,
-            border = BorderStroke(2.dp, Color.Black)
+            border = BorderStroke(2.dp, TextBlack)
         ) {
             Text(
                 text = stringResource(id = R.string.convert_variable),
@@ -80,7 +85,7 @@ fun ConvertVariable(viewModel: VariableViewModel) {
                 text = {
                     Column {
                         if (viewModel.variables.isEmpty()) {
-                            Text(stringResource(id = R.string.no_variables), color = Color.Red)
+                            Text(stringResource(id = R.string.no_variables), color = IconRed)
                         } else {
 
                             ExposedDropdownMenuBox(
@@ -89,7 +94,7 @@ fun ConvertVariable(viewModel: VariableViewModel) {
                             ) {
                                 OutlinedTextField(
                                     readOnly = true,
-                                    value = selectedVariable.value.ifEmpty { "Select variable" },
+                                    value = selectedVariable.value.ifEmpty { stringResource(R.string.select_variable_placeholder) },
                                     onValueChange = {},
                                     label = { Text(stringResource(id = R.string.select_variable)) },
                                     trailingIcon = {
@@ -106,7 +111,7 @@ fun ConvertVariable(viewModel: VariableViewModel) {
                                 ) {
                                     viewModel.variables.forEach { variable ->
                                         DropdownMenuItem(
-                                            text = { Text("${variable.name} (${variable.type})") },
+                                            text = { Text(stringResource(R.string.variable_with_type, variable.name, variable.type)) },
                                             onClick = {
                                                 selectedVariable.value = variable.name
                                                 newType.value = "int"
@@ -126,9 +131,9 @@ fun ConvertVariable(viewModel: VariableViewModel) {
                                     onClick = { newType.value = "int" },
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = when {
-                                            currentType == "int" -> Color.LightGray.copy(alpha = 0.5f)
-                                            newType.value == "int" -> Color.Gray
-                                            else -> Color.LightGray
+                                            currentType == "int" -> BackgroundGray.copy(alpha = 0.5f)
+                                            newType.value == "int" -> TextGray
+                                            else -> BackgroundGray
                                         }
                                     ),
                                     modifier = Modifier
@@ -143,9 +148,9 @@ fun ConvertVariable(viewModel: VariableViewModel) {
                                     onClick = { newType.value = "bool" },
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = when {
-                                            currentType == "bool" -> Color.LightGray.copy(alpha = 0.5f)
-                                            newType.value == "bool" -> Color.Gray
-                                            else -> Color.LightGray
+                                            currentType == "bool" -> BackgroundGray.copy(alpha = 0.5f)
+                                            newType.value == "bool" -> TextGray
+                                            else -> BackgroundGray
                                         }
                                     ),
                                     modifier = Modifier
@@ -165,9 +170,9 @@ fun ConvertVariable(viewModel: VariableViewModel) {
                                     onClick = { newType.value = "string" },
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = when {
-                                            currentType == "string" -> Color.LightGray.copy(alpha = 0.5f)
-                                            newType.value == "string" -> Color.Gray
-                                            else -> Color.LightGray
+                                            currentType == "string" -> BackgroundGray.copy(alpha = 0.5f)
+                                            newType.value == "string" -> TextGray
+                                            else -> BackgroundGray
                                         }
                                     ),
                                     modifier = Modifier
@@ -182,9 +187,9 @@ fun ConvertVariable(viewModel: VariableViewModel) {
                                     onClick = { newType.value = "double" },
                                     colors = ButtonDefaults.buttonColors(
                                         containerColor = when {
-                                            currentType == "double" -> Color.LightGray.copy(alpha = 0.5f)
-                                            newType.value == "double" -> Color.Gray
-                                            else -> Color.LightGray
+                                            currentType == "double" -> BackgroundGray.copy(alpha = 0.5f)
+                                            newType.value == "double" -> TextGray
+                                            else -> BackgroundGray
                                         }
                                     ),
                                     modifier = Modifier
@@ -198,7 +203,7 @@ fun ConvertVariable(viewModel: VariableViewModel) {
                             }
 
                             if (errorMessage.value.isNotEmpty()) {
-                                Text(errorMessage.value, color = Color.Red)
+                                Text(errorMessage.value, color = IconRed)
                             }
                         }
                     }

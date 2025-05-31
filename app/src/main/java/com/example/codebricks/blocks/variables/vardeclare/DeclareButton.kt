@@ -27,12 +27,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.codebricks.R
+import com.example.codebricks.ui.theme.BackgroundGray
+import com.example.codebricks.ui.theme.BlockSuccess
+import com.example.codebricks.ui.theme.BlockVariables
+import com.example.codebricks.ui.theme.IconRed
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextGray
+import com.example.codebricks.ui.theme.TextWhite
 import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.viewmodel.blocks.declareVariable
 import com.example.codebricks.viewmodel.blocks.isVariableAlreadyDeclared
@@ -46,7 +52,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
         .fillMaxWidth()
 
     val buttonColors = ButtonDefaults.buttonColors(
-        containerColor = Color(0xFFFB8C00), contentColor = Color.White
+        containerColor = BlockVariables, contentColor = TextWhite
     )
 
     val showDialog = remember { mutableStateOf(false) }
@@ -60,6 +66,8 @@ fun DeclareVariable(viewModel: VariableViewModel) {
     val isSubmitDisabled = remember { mutableStateOf(true) }
 
     val selectedBool = remember { mutableStateOf("true") }
+
+
 
     LaunchedEffect(isMultiple.value) {
         names.value = ""
@@ -209,7 +217,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
             onClick = { showDialog.value = true },
             modifier = buttonModifier,
             colors = buttonColors,
-            border = BorderStroke(2.dp, Color.Black)
+            border = BorderStroke(2.dp, TextBlack)
         ) {
             Text(
                 text = stringResource(id = R.string.create_variable),
@@ -230,7 +238,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                         ) {
                             Button(
                                 onClick = { isMultiple.value = false },
-                                colors = ButtonDefaults.buttonColors(containerColor = if (!isMultiple.value) Color.Gray else Color.LightGray),
+                                colors = ButtonDefaults.buttonColors(containerColor = if (!isMultiple.value) TextGray else BackgroundGray),
                                 modifier = Modifier
                                     .padding(4.dp)
                                     .weight(1f),
@@ -243,7 +251,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                             }
                             Button(
                                 onClick = { isMultiple.value = true },
-                                colors = ButtonDefaults.buttonColors(containerColor = if (isMultiple.value) Color.Gray else Color.LightGray),
+                                colors = ButtonDefaults.buttonColors(containerColor = if (isMultiple.value) TextGray else BackgroundGray),
                                 modifier = Modifier
                                     .padding(4.dp)
                                     .weight(1f),
@@ -257,7 +265,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                         }
 
                         if (errorMessage.value.isNotEmpty()) {
-                            Text(text = errorMessage.value, color = Color.Red)
+                            Text(text = errorMessage.value, color = IconRed)
                         }
 
                         OutlinedTextField(
@@ -362,7 +370,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                         ).last().trim()
                                     }'",
                                     fontSize = 12.sp,
-                                    color = Color.Gray,
+                                    color = TextGray,
                                     modifier = Modifier.padding(top = 4.dp)
                                 )
                             }
@@ -379,7 +387,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                             ) {
                                 Button(
                                     onClick = { type.value = "int" },
-                                    colors = ButtonDefaults.buttonColors(containerColor = if (type.value == "int") Color.Gray else Color.LightGray),
+                                    colors = ButtonDefaults.buttonColors(containerColor = if (type.value == "int") TextGray else BackgroundGray),
                                     modifier = Modifier
                                         .padding(4.dp)
                                         .weight(1f),
@@ -389,7 +397,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                 }
                                 Button(
                                     onClick = { type.value = "bool" },
-                                    colors = ButtonDefaults.buttonColors(containerColor = if (type.value == "bool") Color.Gray else Color.LightGray),
+                                    colors = ButtonDefaults.buttonColors(containerColor = if (type.value == "bool") TextGray else BackgroundGray),
                                     modifier = Modifier
                                         .padding(4.dp)
                                         .weight(1f),
@@ -405,7 +413,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                             ) {
                                 Button(
                                     onClick = { type.value = "string" },
-                                    colors = ButtonDefaults.buttonColors(containerColor = if (type.value == "string") Color.Gray else Color.LightGray),
+                                    colors = ButtonDefaults.buttonColors(containerColor = if (type.value == "string") TextGray else BackgroundGray),
                                     modifier = Modifier
                                         .padding(4.dp)
                                         .weight(1f),
@@ -415,7 +423,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                 }
                                 Button(
                                     onClick = { type.value = "double" },
-                                    colors = ButtonDefaults.buttonColors(containerColor = if (type.value == "double") Color.Gray else Color.LightGray),
+                                    colors = ButtonDefaults.buttonColors(containerColor = if (type.value == "double") TextGray else BackgroundGray),
                                     modifier = Modifier
                                         .padding(4.dp)
                                         .weight(1f),
@@ -439,9 +447,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                             validateInputs()
                                         },
                                         colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color(
-                                                0xFF4CAF50
-                                            )
+                                            containerColor = BlockVariables
                                         ),
                                         shape = RoundedCornerShape(10.dp),
                                         modifier = Modifier
@@ -453,7 +459,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                     ) {
                                         Text(
                                             text = stringResource(id = R.string.true_button),
-                                            color = Color.White,
+                                            color = TextWhite,
                                             fontWeight = FontWeight.Bold
                                         )
                                     }
@@ -465,9 +471,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                             validateInputs()
                                         },
                                         colors = ButtonDefaults.buttonColors(
-                                            containerColor = Color(
-                                                0xFFF44336
-                                            )
+                                            containerColor = BlockVariables
                                         ),
                                         shape = RoundedCornerShape(10.dp),
                                         modifier = Modifier
@@ -479,7 +483,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                     ) {
                                         Text(
                                             text = stringResource(id = R.string.false_button),
-                                            color = Color.White,
+                                            color = TextWhite,
                                             fontWeight = FontWeight.Bold
                                         )
                                     }
@@ -494,7 +498,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                                 validateInputs()
                                             }
                                         },
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color.Gray),
+                                        colors = ButtonDefaults.buttonColors(containerColor = TextGray),
                                         shape = RoundedCornerShape(10.dp),
                                         modifier = Modifier
                                             .width(90.dp)
@@ -505,7 +509,7 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                     ) {
                                         Text(
                                             text = stringResource(id = R.string.remove_button),
-                                            color = Color.White,
+                                            color = TextWhite,
                                             fontWeight = FontWeight.Bold
                                         )
                                     }
@@ -558,10 +562,10 @@ fun DeclareVariable(viewModel: VariableViewModel) {
                                 showDialog.value = false
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50)),
+                        colors = ButtonDefaults.buttonColors(containerColor = BlockSuccess),
                         enabled = !isSubmitDisabled.value
                     ) {
-                        Text(text = stringResource(id = R.string.create), color = Color.White)
+                        Text(text = stringResource(id = R.string.create), color = TextWhite)
                     }
                 },
                 dismissButton = {

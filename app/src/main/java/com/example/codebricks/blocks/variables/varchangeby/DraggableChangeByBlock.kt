@@ -43,7 +43,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
@@ -56,6 +55,10 @@ import androidx.compose.ui.unit.sp
 import com.example.codebricks.R
 import com.example.codebricks.blocks.common.limitPosition
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
+import com.example.codebricks.ui.theme.BlockVariables
+import com.example.codebricks.ui.theme.IconRed
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextWhite
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.viewmodel.blocks.updateChangeBlockAmount
@@ -112,8 +115,8 @@ fun DraggableChangeVariableBlock(
         }
         .height(44.dp)
         .clip(RoundedCornerShape(12.dp))
-        .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
-        .background(Color(0xFFFB8C00))
+        .border(2.dp, TextBlack, RoundedCornerShape(12.dp))
+        .background(BlockVariables)
         .pointerInput(Unit) {
             detectDragGestures { change, dragAmount ->
                 if (!isPressed) {
@@ -144,7 +147,7 @@ fun DraggableChangeVariableBlock(
                 imageVector = Icons.Filled.Close,
                 contentDescription = stringResource(id = R.string.delete_icon_description),
                 modifier = Modifier.size(12.dp),
-                tint = Color.Black
+                tint = TextBlack
             )
         }
 
@@ -157,7 +160,7 @@ fun DraggableChangeVariableBlock(
                 text = stringResource(id = R.string.change_label),
                 fontWeight = FontWeight.Bold,
                 fontSize = 12.sp,
-                color = Color.White,
+                color = TextWhite,
                 modifier = Modifier.padding(end = 4.dp)
             )
 
@@ -173,12 +176,12 @@ fun DraggableChangeVariableBlock(
                         )
                         .widthIn(min = 48.dp, max = 300.dp)
                         .height(24.dp)
-                        .background(Color.White, RoundedCornerShape(4.dp))
-                        .border(2.dp, Color.Black, RoundedCornerShape(4.dp))
+                        .background(TextWhite, RoundedCornerShape(4.dp))
+                        .border(2.dp, TextBlack, RoundedCornerShape(4.dp))
                         .clickable { expandedVar.value = true }
                         .padding(horizontal = 8.dp),
                     contentAlignment = Alignment.CenterStart) {
-                    Text(text = selectedVar.value, fontSize = 11.sp, color = Color.Black)
+                    Text(text = selectedVar.value, fontSize = 11.sp, color = TextBlack)
                 }
                 ExposedDropdownMenu(
                     expanded = expandedVar.value,
@@ -202,7 +205,7 @@ fun DraggableChangeVariableBlock(
                 text = stringResource(id = R.string.by_label),
                 fontWeight = FontWeight.Bold,
                 fontSize = 12.sp,
-                color = Color.White,
+                color = TextWhite,
                 modifier = Modifier.padding(horizontal = 4.dp)
             )
 
@@ -216,8 +219,8 @@ fun DraggableChangeVariableBlock(
                         )
                         .width(24.dp)
                         .height(24.dp)
-                        .background(Color.White, RoundedCornerShape(4.dp))
-                        .border(2.dp, Color.Black, RoundedCornerShape(4.dp))
+                        .background(TextWhite, RoundedCornerShape(4.dp))
+                        .border(2.dp, TextBlack, RoundedCornerShape(4.dp))
                         .clickable { expandedSign.value = true },
                     contentAlignment = Alignment.Center
                 ) {
@@ -267,7 +270,7 @@ fun DraggableChangeVariableBlock(
                 }),
                 singleLine = true,
                 textStyle = TextStyle(
-                    fontSize = 12.sp, color = if (isError.value) Color.Red else Color.Black
+                    fontSize = 12.sp, color = if (isError.value) IconRed else TextBlack
                 ),
                 decorationBox = { innerTextField ->
                     Box(
@@ -280,10 +283,10 @@ fun DraggableChangeVariableBlock(
                 modifier = Modifier
                     .width(animatedWidth)
                     .height(24.dp)
-                    .background(Color.White, RoundedCornerShape(12.dp))
+                    .background(TextWhite, RoundedCornerShape(12.dp))
                     .border(
                         width = 2.dp,
-                        color = if (isError.value) Color.Red else Color.Black,
+                        color = if (isError.value) IconRed else TextBlack,
                         shape = RoundedCornerShape(12.dp)
                     )
                     .padding(horizontal = 2.dp)

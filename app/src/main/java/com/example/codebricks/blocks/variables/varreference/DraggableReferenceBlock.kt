@@ -24,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
@@ -39,6 +38,9 @@ import com.example.codebricks.blocks.common.BlockType
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker.MAGNETIC_PADDING
+import com.example.codebricks.ui.theme.BlockVariables
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextWhite
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.viewmodel.slot.isRecursiveInsertion
@@ -115,8 +117,8 @@ fun DraggableReferenceBlock(
                 }
             }
             .clip(RoundedCornerShape(8.dp))
-            .border(width = if (isInserted) 0.dp else 2.dp, color = Color.Black, shape = RoundedCornerShape(8.dp))
-            .background(Color(0xFFFB8C00))
+            .border(width = if (isInserted) 0.dp else 2.dp, color = TextBlack, shape = RoundedCornerShape(8.dp))
+            .background(BlockVariables)
             .zIndex(if (isInserted) 0f else 1f)
             .pointerInput(currentId.value, isInserted) {
                 detectDragGestures(
@@ -222,7 +224,7 @@ fun DraggableReferenceBlock(
         Text(
             text = variable.name,
             fontSize = 12.sp,
-            color = Color.White,
+            color = TextWhite,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(horizontal = 11.dp)
         )

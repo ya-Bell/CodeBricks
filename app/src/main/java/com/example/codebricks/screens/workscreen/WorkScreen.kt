@@ -23,7 +23,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -36,6 +35,9 @@ import com.example.codebricks.blocks.variables.vardeclare.DeclareVariable
 import com.example.codebricks.screens.workscreen.sections.BottomBlockBar
 import com.example.codebricks.screens.workscreen.sections.ConsoleSection
 import com.example.codebricks.screens.workscreen.sections.WorkSpaceSection
+import com.example.codebricks.ui.theme.BackgroundBlue
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextWhite
 import com.example.codebricks.viewmodel.VariableViewModel
 
 @SuppressLint("ConfigurationScreenWidthHeight")
@@ -53,7 +55,7 @@ fun WorkScreen(onBackClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFB7EFFF))
+            .background(BackgroundBlue)
             .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
     ) {
         Spacer(modifier = Modifier.height(4.dp))
@@ -125,10 +127,10 @@ fun Header(
                     .padding(start = 8.dp)
                     .height(36.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White, contentColor = Color.Black
+                    containerColor = TextWhite, contentColor = TextBlack
                 )
             ) {
-                Text(stringResource(id = R.string.help), color = Color.Black)
+                Text(stringResource(id = R.string.help), color = TextBlack)
             }
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -139,10 +141,10 @@ fun Header(
                     .padding(start = 8.dp)
                     .height(36.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White, contentColor = Color.Black
+                    containerColor = TextWhite, contentColor = TextBlack
                 )
             ) {
-                Text(stringResource(id = R.string.back), color = Color.Black)
+                Text(stringResource(id = R.string.back), color = TextBlack)
             }
         }
     }

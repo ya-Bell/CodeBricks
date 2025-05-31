@@ -47,7 +47,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
@@ -69,6 +68,13 @@ import com.example.codebricks.blocks.variables.varreference.DraggableReferenceBl
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker.MAGNETIC_PADDING
+import com.example.codebricks.ui.theme.BlockHighlighted
+import com.example.codebricks.ui.theme.BlockNormal
+import com.example.codebricks.ui.theme.BlockSuccess
+import com.example.codebricks.ui.theme.BlockVariables
+import com.example.codebricks.ui.theme.IconRed
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextWhite
 import com.example.codebricks.viewmodel.Variable
 import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.viewmodel.blocks.declareVariable
@@ -169,8 +175,8 @@ fun DraggableSetVariableBlock(
             }
         }
         .clip(RoundedCornerShape(12.dp))
-        .border(2.dp, Color.Black, RoundedCornerShape(12.dp))
-        .background(Color(0xFFFB8C00))
+        .border(2.dp, TextBlack, RoundedCornerShape(12.dp))
+        .background(BlockVariables)
         .zIndex(if (isBeingDragged) 100f else if (isInserted) 0f else 1f)
         .pointerInput(Unit) {
             detectDragGestures(
@@ -302,7 +308,7 @@ fun DraggableSetVariableBlock(
                     imageVector = Icons.Filled.Close,
                     contentDescription = stringResource(id = R.string.delete_icon_description),
                     modifier = Modifier.size(12.dp),
-                    tint = Color.Black
+                    tint = TextBlack
                 )
             }
         }
@@ -317,7 +323,7 @@ fun DraggableSetVariableBlock(
                 text = stringResource(id = R.string.set),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = TextWhite,
                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
             )
 
@@ -334,14 +340,14 @@ fun DraggableSetVariableBlock(
                         )
                         .widthIn(min = 48.dp, max = 300.dp)
                         .height(24.dp)
-                        .background(Color.White, RoundedCornerShape(4.dp))
-                        .border(1.dp, Color.Black, RoundedCornerShape(4.dp))
+                        .background(TextWhite, RoundedCornerShape(4.dp))
+                        .border(1.dp, TextBlack, RoundedCornerShape(4.dp))
                         .clickable { expanded.value = true }, contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = selectedVar.value,
                         fontSize = 11.sp,
-                        color = Color.Black,
+                        color = TextBlack,
                         modifier = Modifier.padding(horizontal = 8.dp)
                     )
                 }
@@ -363,7 +369,7 @@ fun DraggableSetVariableBlock(
                 text = stringResource(id = R.string.to),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White,
+                color = TextWhite,
                 modifier = Modifier.padding(horizontal = 4.dp)
             )
 
@@ -377,7 +383,7 @@ fun DraggableSetVariableBlock(
                     .wrapContentWidth()
                     .defaultMinSize(minWidth = 28.dp)
                     .background(
-                        color = if (isHighlighted) Color(0xFFAAC9C7) else Color(0xFFDDE3E0),
+                        color = if (isHighlighted) BlockHighlighted else BlockNormal,
                         shape = RoundedCornerShape(8.dp)
                     )
                     .onGloballyPositioned {
@@ -388,10 +394,10 @@ fun DraggableSetVariableBlock(
                     .border(
                         width = if (isRecentlyInserted) 2.dp else 1.dp,
                         color = when {
-                            isRecentlyInserted -> Color(0xFF4CAF50)
-                            isHighlighted -> Color(0xFF2196F3)
-                            isError.value -> Color.Red
-                            else -> Color.Black
+                            isRecentlyInserted -> BlockSuccess
+                            isHighlighted -> BlockHighlighted
+                            isError.value -> IconRed
+                            else -> TextBlack
                         },
                         shape = RoundedCornerShape(8.dp)
                     ),
@@ -474,7 +480,7 @@ fun DraggableSetVariableBlock(
                                 }
                             ),
                             singleLine = true,
-                            textStyle = TextStyle(fontSize = 12.sp, color = if (isError.value) Color.Red else Color.Black),
+                            textStyle = TextStyle(fontSize = 12.sp, color = if (isError.value) IconRed else TextBlack),
                             modifier = Modifier
                                 .padding(horizontal = 8.dp)
                                 .width(IntrinsicSize.Min)

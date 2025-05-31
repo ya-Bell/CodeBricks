@@ -63,7 +63,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.codebricks.R
+import com.example.codebricks.ui.theme.BackgroundLightBlue
+import com.example.codebricks.ui.theme.BorderGray
+import com.example.codebricks.ui.theme.ButtonPressedBlack
+import com.example.codebricks.ui.theme.ButtonPressedGray
 import com.example.codebricks.ui.theme.CodeBricksTheme
+import com.example.codebricks.ui.theme.OverlayBlack
+import com.example.codebricks.ui.theme.ShadowBlack
+import com.example.codebricks.ui.theme.SwitchActive
+import com.example.codebricks.ui.theme.SwitchInactive
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextDarkGray
+import com.example.codebricks.ui.theme.TextGray
+import com.example.codebricks.ui.theme.TextWhite
 
 
 @Composable
@@ -80,7 +92,7 @@ fun StartScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFAEEFFF))
+            .background(BackgroundLightBlue)
             .padding(24.dp)
     ) {
         // Кнопка настроек
@@ -106,8 +118,8 @@ fun StartScreen(
             Text(
                 text = stringResource(R.string.app_name),
                 style = MaterialTheme.typography.displayLarge.copy(
-                    color = Color.Black, shadow = Shadow(
-                        color = Color.Black.copy(alpha = 0.25f),
+                    color = TextBlack, shadow = Shadow(
+                        color = ShadowBlack,
                         offset = Offset(0f, 4f),
                         blurRadius = 4f
                     )
@@ -128,7 +140,7 @@ fun StartScreen(
         Text(
             text = stringResource(R.string.version),
             fontSize = 12.sp,
-            color = Color.Gray,
+            color = TextGray,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 8.dp),
@@ -176,7 +188,7 @@ fun SettingsOverlay(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.25f))
+                .background(OverlayBlack)
                 .clickable(
                     indication = null,
                     interactionSource = remember { MutableInteractionSource() }) {
@@ -187,15 +199,15 @@ fun SettingsOverlay(
                 modifier = Modifier
                     .width(235.dp)
                     .height(162.dp)
-                    .border(1.dp, Color(0xFFCCCCCC), shape = RoundedCornerShape(24.dp)),
+                    .border(1.dp, BorderGray, shape = RoundedCornerShape(24.dp)),
                 shape = RoundedCornerShape(24.dp),
-                color = Color.White,
+                color = TextWhite,
                 tonalElevation = 4.dp
             ) {
                 Box(Modifier.fillMaxSize()) {
                     Text(
                         text = "Settings",
-                        style = MaterialTheme.typography.headlineSmall.copy(color = Color.Black),
+                        style = MaterialTheme.typography.headlineSmall.copy(color = TextBlack),
                         modifier = Modifier
                             .align(Alignment.TopCenter)
                             .padding(top = 10.dp)
@@ -213,7 +225,7 @@ fun SettingsOverlay(
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = stringResource(id = R.string.delete_icon_description),
-                            tint = Color.Black
+                            tint = TextBlack
                         )
                     }
 
@@ -227,7 +239,7 @@ fun SettingsOverlay(
                             text = stringResource(id = R.string.language),
                             style = MaterialTheme.typography.titleMedium,
                             modifier = Modifier.height(24.dp),
-                            color = Color.Black
+                            color = TextBlack
                         )
 
                         Spacer(modifier = Modifier.height(6.dp))
@@ -258,7 +270,7 @@ fun SettingsOverlay(
                             Text(
                                 text = stringResource(id = R.string.dark_theme),
                                 style = MaterialTheme.typography.titleMedium,
-                                color = Color.Black,
+                                color = TextBlack,
                                 modifier = Modifier.align(Alignment.CenterStart)
                             )
 
@@ -291,14 +303,14 @@ fun CustomSwitch(
 
     val trackColor by transition.animateColor(
         label = "trackColor"
-    ) { if (it) Color(0xFF00D651) else Color(0xFFE0E0E0) }
+    ) { if (it) SwitchActive else SwitchInactive }
 
     Box(
         modifier = modifier
             .width(50.dp)
             .height(28.dp)
             .clip(RoundedCornerShape(50))
-            .background(trackColor)
+            .background(TextWhite)
             .clickable { onCheckedChange(!checked) },
         contentAlignment = Alignment.CenterStart
     ) {
@@ -307,7 +319,7 @@ fun CustomSwitch(
                 .offset(x = thumbOffset)
                 .size(24.dp)
                 .clip(CircleShape)
-                .background(Color.White)
+                .background(TextWhite)
         )
     }
 }
@@ -317,9 +329,9 @@ fun CustomSwitch(
 fun LanguageOption(
     text: String, isSelected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit
 ) {
-    val background = if (isSelected) Color(0xFF00D651) else Color.White
-    val border = if (isSelected) Color.Transparent else Color(0xFFCCCCCC)
-    val textColor = if (isSelected) Color.White else Color.Black
+    val background = if (isSelected) SwitchActive else TextWhite
+    val border = if (isSelected) Color.Transparent else BorderGray
+    val textColor = if (isSelected) TextWhite else TextBlack
 
     Box(
         modifier = modifier
@@ -346,8 +358,8 @@ fun StartWorkButton(
     )
 
     val backgroundColor by animateColorAsState(
-        targetValue = if (isPressed) Color.Black.copy(alpha = 0.85f)
-        else Color.Black, animationSpec = tween(durationMillis = 120)
+        targetValue = if (isPressed) ButtonPressedBlack
+        else TextBlack, animationSpec = tween(durationMillis = 120)
     )
 
     Box(
@@ -376,7 +388,7 @@ fun StartWorkButton(
     ) {
         Text(
             text = stringResource(R.string.start_work),
-            color = Color.White,
+            color = TextWhite,
             style = MaterialTheme.typography.titleLarge
         )
     }
@@ -394,12 +406,12 @@ fun AboutAppButton(
     )
 
     val backgroundColor by animateColorAsState(
-        targetValue = if (isPressed) Color(0xFFEEEEEE)
-        else Color.White, animationSpec = tween(120)
+        targetValue = if (isPressed) ButtonPressedGray
+        else TextWhite, animationSpec = tween(120)
     )
 
     val textColor by animateColorAsState(
-        targetValue = if (isPressed) Color(0xFF222222) else Color.Black, animationSpec = tween(120)
+        targetValue = if (isPressed) TextDarkGray else TextBlack, animationSpec = tween(120)
     )
 
     Box(
@@ -412,7 +424,7 @@ fun AboutAppButton(
             .shadow(
                 elevation = 4.dp, shape = RoundedCornerShape(100.dp), clip = false
             )
-            .background(color = backgroundColor, shape = RoundedCornerShape(100.dp))
+            .background(color = TextWhite, shape = CircleShape)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onPress = {
@@ -455,7 +467,7 @@ fun SettingsButton(
             .shadow(
                 elevation = 4.dp, shape = CircleShape, clip = false
             )
-            .background(color = Color.White, shape = CircleShape)
+            .background(color = TextWhite, shape = CircleShape)
             .pointerInput(Unit) {
                 detectTapGestures(
                     onPress = {
@@ -472,7 +484,7 @@ fun SettingsButton(
         Icon(
             painter = painterResource(id = R.drawable.ic_settings),
             contentDescription = stringResource(R.string.settings),
-            tint = Color.Black
+            tint = TextBlack
         )
     }
 }

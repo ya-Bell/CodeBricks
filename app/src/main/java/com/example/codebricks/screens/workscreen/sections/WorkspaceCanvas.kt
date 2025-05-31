@@ -31,7 +31,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
@@ -47,6 +46,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.codebricks.R
 import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker
+import com.example.codebricks.ui.theme.BackgroundCanvas
+import com.example.codebricks.ui.theme.GridLine
+import com.example.codebricks.ui.theme.IconRed
+import com.example.codebricks.ui.theme.OverlayWhite
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextGray
 import com.example.codebricks.viewmodel.RenderBlockTree
 import com.example.codebricks.viewmodel.VariableViewModel
 import com.example.codebricks.viewmodel.tree.findBlockContaining
@@ -109,8 +114,8 @@ fun WorkspaceCanvas(
         modifier = Modifier
             .fillMaxWidth()
             .height(adaptiveHeight.dp)
-            .background(Color(0xFFF0F0F0))
-            .border(1.dp, Color.Gray)
+            .background(BackgroundCanvas)
+            .border(1.dp, TextGray)
             .clipToBounds()
             .pointerInput(Unit) {
                 detectDragGestures { change, dragAmount ->
@@ -148,7 +153,7 @@ fun WorkspaceCanvas(
             Canvas(modifier = Modifier.matchParentSize()) {
                 // красная рамка
                 drawRect(
-                    color = Color.Red,
+                    color = IconRed,
                     topLeft = Offset.Zero,
                     size = Size(contentSize, contentSize),
                     style = Stroke(width = 4f)
@@ -157,12 +162,12 @@ fun WorkspaceCanvas(
                 val step = 40f * scale
                 var x = 0f
                 while (x <= contentSize) {
-                    drawLine(Color.LightGray, Offset(x, 0f), Offset(x, contentSize), 1f)
+                    drawLine(GridLine, Offset(x, 0f), Offset(x, contentSize), 1f)
                     x += step
                 }
                 var y = 0f
                 while (y <= contentSize) {
-                    drawLine(Color.LightGray, Offset(0f, y), Offset(contentSize, y), 1f)
+                    drawLine(GridLine, Offset(0f, y), Offset(contentSize, y), 1f)
                     y += step
                 }
             }
@@ -209,7 +214,7 @@ fun WorkspaceCanvas(
                                         toPoint.x, toPoint.y
                                     )
                                 },
-                                color = Color.Black,
+                                color = TextBlack,
                                 style = Stroke(width = 4f)
                             )
                         }
@@ -223,7 +228,7 @@ fun WorkspaceCanvas(
                 .align(Alignment.BottomEnd)
                 .padding(4.dp)
                 .background(
-                    Color.White.copy(alpha = 0.7f),
+                    OverlayWhite.copy(alpha = 0.7f),
                     shape = RoundedCornerShape(4.dp)
                 )
                 .padding(horizontal = 4.dp, vertical = 2.dp),
@@ -232,7 +237,7 @@ fun WorkspaceCanvas(
             Text(
                 text = stringResource(id = R.string.coordinates_format, offset.x, offset.y),
                 fontSize = 12.sp,
-                color = Color.Black
+                color = TextBlack,
             )
             Spacer(Modifier.width(8.dp))
             IconButton(

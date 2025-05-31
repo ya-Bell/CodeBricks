@@ -26,7 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
@@ -36,6 +35,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.codebricks.R
+import com.example.codebricks.ui.theme.BackgroundGray
+import com.example.codebricks.ui.theme.BlockComparison
+import com.example.codebricks.ui.theme.BlockControl
+import com.example.codebricks.ui.theme.BlockFunctions
+import com.example.codebricks.ui.theme.BlockInputOutput
+import com.example.codebricks.ui.theme.BlockLogic
+import com.example.codebricks.ui.theme.BlockLoops
+import com.example.codebricks.ui.theme.BlockMath
+import com.example.codebricks.ui.theme.BlockVariables
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextGray
+import com.example.codebricks.ui.theme.TextWhite
 import com.example.codebricks.viewmodel.VariableViewModel
 
 @SuppressLint("ConfigurationScreenWidthHeight")
@@ -58,9 +69,9 @@ fun BottomBlockBar(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
-                .background(Color(0xFFD9D9D9))
+                .background(BackgroundGray)
                 .border(
-                    1.dp, Color.Gray, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+                    1.dp, TextGray, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
                 )
                 .padding(8.dp)
                 .height(20.dp)
@@ -73,19 +84,19 @@ fun BottomBlockBar(
                         Modifier
                             .padding(end = 8.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .border(1.5.dp, Color.Black, RoundedCornerShape(10.dp))
+                            .border(1.5.dp, TextBlack, RoundedCornerShape(10.dp))
                             .height(26.dp)
                             .width(100.dp)
 
                     val categories = listOf(
-                        stringResource(id = R.string.control) to Color(0xFF3F51B5),
-                        stringResource(id = R.string.variables) to Color(0xFFFB8C00),
-                        stringResource(id = R.string.math) to Color(0xFF4FC3F7),
-                        stringResource(id = R.string.logic) to Color(0xFF81C784),
-                        stringResource(id = R.string.input_output) to Color(0xFFE57373),
-                        stringResource(id = R.string.loops) to Color(0xFF9C27B0),
-                        stringResource(id = R.string.comparison) to Color(0xFFFFEB3B),
-                        stringResource(id = R.string.functions) to Color(0xFFE91E63)
+                        stringResource(id = R.string.control) to BlockControl,
+                        stringResource(id = R.string.variables) to BlockVariables,
+                        stringResource(id = R.string.math) to BlockMath,
+                        stringResource(id = R.string.logic) to BlockLogic,
+                        stringResource(id = R.string.input_output) to BlockInputOutput,
+                        stringResource(id = R.string.loops) to BlockLoops,
+                        stringResource(id = R.string.comparison) to BlockComparison,
+                        stringResource(id = R.string.functions) to BlockFunctions
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -97,8 +108,8 @@ fun BottomBlockBar(
                                 onClick = { onClassSelected(name) },
                                 modifier = buttonModifier,
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = if (selectedClass == name) color else Color.White,
-                                    contentColor = if (selectedClass == name) Color.White else color
+                                    containerColor = if (selectedClass == name) color else TextWhite,
+                                    contentColor = if (selectedClass == name) TextWhite else color
                                 ),
                                 contentPadding = PaddingValues(0.dp)
                             ) {
@@ -108,7 +119,7 @@ fun BottomBlockBar(
                                     fontWeight = FontWeight.Bold,
                                     style = MaterialTheme.typography.bodyMedium.copy(
                                         shadow = Shadow(
-                                            color = Color.Black.copy(alpha = 0.5f),
+                                            color = TextBlack.copy(alpha = 0.5f),
                                             offset = Offset(1f, 1f),
                                             blurRadius = 2f
                                         )
@@ -127,9 +138,9 @@ fun BottomBlockBar(
                 .fillMaxWidth()
                 .height(adaptiveHeight.dp)
                 .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
-                .background(Color.White)
+                .background(TextWhite)
                 .border(
-                    1.dp, Color.Gray, RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
+                    1.dp, TextGray, RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp)
                 )
         ) {
             BlockSection(selectedClass, viewModel)

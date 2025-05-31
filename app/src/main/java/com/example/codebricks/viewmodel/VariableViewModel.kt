@@ -9,6 +9,7 @@ import com.example.codebricks.screens.workscreen.tracker.BlockPositionTracker.re
 import com.example.codebricks.screens.workscreen.tracker.BlockSlotTracker
 import com.example.codebricks.viewmodel.blocks.findUsedReferenceBlocks
 import com.example.codebricks.viewmodel.tree.findBlockById
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -117,6 +118,7 @@ class VariableViewModel : ViewModel() {
     private var executionJob: kotlinx.coroutines.Job? = null
 
     // Исполнение блоков программы
+    @OptIn(DelicateCoroutinesApi::class)
     fun executeProgram(onFinish: () -> Unit) {
         val blocksById = programBlocks.associateBy { it.id }
         declaredVariables.clear()
@@ -460,6 +462,7 @@ class VariableViewModel : ViewModel() {
     }
 
     // Добавляем метод для остановки выполнения
+    @OptIn(DelicateCoroutinesApi::class)
     fun stopExecution() {
         executionState.shouldStop = true
         executionJob?.cancel()
@@ -469,6 +472,7 @@ class VariableViewModel : ViewModel() {
     }
 
     // Обработка пользовательского ввода в консоли
+    @OptIn(DelicateCoroutinesApi::class)
     fun processUserInput(input: String) {
         consoleOutput.value += "\n> $input"
         
@@ -572,6 +576,7 @@ class VariableViewModel : ViewModel() {
         _programBlocks.value = updatedBlocks
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     fun evaluateCondition(block: Block, declaredVariables: Map<String, Variable>): Boolean {
         if (block.operator.isBlank()) {
             GlobalScope.launch(kotlinx.coroutines.Dispatchers.Main) {

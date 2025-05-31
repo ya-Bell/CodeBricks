@@ -11,19 +11,35 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.codebricks.R
+import com.example.codebricks.ui.theme.BackgroundBlue
+import com.example.codebricks.ui.theme.BackgroundLightBlue
+import com.example.codebricks.ui.theme.ButtonPrimary
+import com.example.codebricks.ui.theme.TextBlack
+import com.example.codebricks.ui.theme.TextGray
 import kotlinx.coroutines.delay
 
 @Composable
@@ -60,7 +76,7 @@ fun SplashScreen(navController: NavController) {
             .fillMaxSize()
             .background(
                 brush = Brush.horizontalGradient(
-                    listOf(Color(0xFF67CAD9), Color(0xFF9ADCE7))
+                    listOf(BackgroundBlue, BackgroundLightBlue)
                 )
             )
     ) {
@@ -75,7 +91,7 @@ fun SplashScreen(navController: NavController) {
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.logo),
-                    contentDescription = "App Logo",
+                    contentDescription = stringResource(R.string.app_logo),
                     modifier = Modifier.size(250.dp)
                 )
             }
@@ -93,21 +109,21 @@ fun SplashScreen(navController: NavController) {
                 Box(
                     modifier = Modifier
                         .size(width = 300.dp, height = 10.dp)
-                        .background(Color.Gray.copy(alpha = 0.5f), shape = RoundedCornerShape(5.dp))
+                        .background(TextGray.copy(alpha = 0.5f), shape = RoundedCornerShape(5.dp))
                 ) {
                     Box(
                         modifier = Modifier
                             .fillMaxHeight()
                             .width(300.dp * progressAnim)
-                            .background(Color(0xFF239EDE), shape = RoundedCornerShape(5.dp))
+                            .background(ButtonPrimary, shape = RoundedCornerShape(5.dp))
                             .animateContentSize()
                     )
                 }
             }
 
             Text(
-                text = "${(progressAnim * 100).toInt()}%",
-                style = MaterialTheme.typography.bodyMedium.copy(color = Color.Black),
+                text = stringResource(R.string.loading_percentage, (progressAnim * 100).toInt()),
+                style = MaterialTheme.typography.bodyMedium.copy(color = TextBlack),
                 modifier = Modifier
                     .align(Alignment.Center)
                     .padding(top = 20.dp)
