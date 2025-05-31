@@ -313,7 +313,7 @@ fun DraggableSetVariableBlock(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = stringResource(id = R.string.set),
+                text = stringResource(id = R.string.just_set),
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextWhite,
