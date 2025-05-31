@@ -38,6 +38,7 @@ import com.example.codebricks.ui.theme.BlockControl
 import com.example.codebricks.ui.theme.BlockDebug
 import com.example.codebricks.ui.theme.BlockIO
 import com.example.codebricks.ui.theme.BlockLogic
+import com.example.codebricks.ui.theme.BlockLoops
 import com.example.codebricks.ui.theme.BlockMath
 import com.example.codebricks.ui.theme.BlockRun
 import com.example.codebricks.ui.theme.BlockVariables
@@ -175,6 +176,11 @@ private fun Page2() {
             text = stringResource(id = R.string.help_logic),
             title = stringResource(id = R.string.help_section_logic),
             color = BlockLogic
+        )
+        HelpItem(
+            text = stringResource(id = R.string.help_while),
+            title = stringResource(id = R.string.help_section_loops),
+            color = BlockLoops
         )
     }
 }

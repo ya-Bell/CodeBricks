@@ -26,6 +26,7 @@
     <string name="help_debug">Debug mode - Step through program execution one block at a time. This helps you understand how program works and find errors. In debug mode, you can see the values of variables at each step.</string>
     <string name="help_run">Run - Execute program. When you click Run, the program will execute all blocks in sequence from Start to Stop. You can see the results in the console.</string>
     <string name="help_clear">Clear - Remove all blocks from workspace. This is useful when you want to start a new program or remove all blocks to reorganize code.</string>
+    <string name="help_while">Loops (purple) - Use while loops to repeat a block of code while a condition is true. The code inside the while block will execute repeatedly as long as the condition remains true. This is useful for tasks that need to be repeated multiple times.</string>
 
     <string name="console_label">Console</string>
 
@@ -201,6 +202,7 @@
     <string name="help_section_debug">Debug</string>
     <string name="help_section_run">Run</string>
     <string name="help_section_clear">Clear</string>
+    <string name="help_section_loops">Loops</string>
 
     <string name="write_variable">write(%1$s)</string>
     <string name="write_unknown">write(?)</string>
